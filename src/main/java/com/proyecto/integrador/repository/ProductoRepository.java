@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, String> {
     List<Producto> findByStockActualLessThan(Integer stockMinimo);
+    List<Producto> findByCategoria(String categoria);
+
+    // Buscar productos que se venden
+    List<Producto> findByEsVenta(Boolean esVenta);
 }

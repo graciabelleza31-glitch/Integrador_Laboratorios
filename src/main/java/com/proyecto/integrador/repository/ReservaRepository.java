@@ -11,4 +11,13 @@ import java.util.List;
 public interface ReservaRepository extends JpaRepository<Reserva, String> {
     List<Reserva> findByFechaReserva(LocalDate fecha);
     List<Reserva> findByEstado(String estado);
+
+    // Buscar reservas por laboratorio
+    List<Reserva> findByLaboratorioIdLab(String idLab);
+
+    // Buscar reservas por fecha y estado
+    List<Reserva> findByFechaReservaAndEstado(LocalDate fecha, String estado);
+
+    // Buscar reservas de hoy ordenadas por hora de inicio
+    List<Reserva> findByFechaReservaOrderByHoraInicioAsc(LocalDate fecha);
 }
