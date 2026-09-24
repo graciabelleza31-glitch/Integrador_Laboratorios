@@ -1,0 +1,456 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+.contenedor-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* MENÚ LATERAL */
+.barra-lateral {
+  width: 220px;
+  background-color: #151838;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 1.25rem 0.75rem;
+}
+
+.logo-lateral {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 0.75rem 1.75rem 0.75rem;
+}
+
+.insignia-utp {
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+
+.texto-lab {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.navegacion-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.item-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.item-menu i {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.item-menu:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #f8fafc;
+}
+
+.item-menu.activo {
+  background-color: #272d5d;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.contador-alerta {
+  position: absolute;
+  right: 0.8rem;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ÁREA PRINCIPAL */
+.area-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecera-superior {
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+
+.perfil-acciones {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.icono-campana {
+  position: relative;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.icono-campana i {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.punto-alerta {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.datos-perfil {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.titulo-saludo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.subtitulo-rol {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.circulo-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.enlace-salir {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.enlace-salir:hover {
+  background-color: #fef2f2;
+}
+
+.enlace-salir i {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* CUERPO DEL CHECKOUT */
+.seccion-checkout {
+  padding: 2.5rem 3.5rem;
+}
+
+.titular-seccion h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.titular-seccion p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.tarjeta-prestamo {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.icono-sala {
+  width: 52px;
+  height: 52px;
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.icono-sala i {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.informacion-prestamo {
+  flex: 1;
+}
+
+.fila-nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.texto-sala {
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.etiqueta-estado {
+  background-color: #dcfce7;
+  color: #15803d;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.codigo-prestamo {
+  margin-left: auto;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.fila-horario {
+  color: #64748b;
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+}
+
+.fila-detalles {
+  color: #475569;
+  font-size: 0.88rem;
+}
+
+.boton-recibir-morado {
+  background-color: #7c3aed; /* Morado de la maqueta */
+  color: #ffffff;
+  border: none;
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.05s;
+}
+
+.boton-recibir-morado:hover {
+  background-color: #6d28d9;
+}
+
+.boton-recibir-morado:active {
+  transform: scale(0.98);
+}
+
+.boton-recibir-morado i {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ESTADO VACÍO (SIN PRÉSTAMOS ACTIVOS) */
+.cuadro-sin-datos {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 4rem 2rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.icono-bandera {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.mensaje-sin-datos {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* VENTANA MODAL FLOTANTE */
+.fondo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tarjeta-modal {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2rem 2.2rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.encabezado-modal {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.subtitulo-modal {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.caja-resumen-modal {
+  background-color: #f8fafc;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.fila-resumen {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.etiqueta-gris {
+  color: #64748b;
+}
+
+.texto-negrita {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.banner-aviso-inspeccion {
+  background-color: #f5f3ff;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #7c3aed;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 1.75rem;
+}
+
+.lupa-inspeccion {
+  width: 1rem;
+  height: 1rem;
+}
+
+.acciones-modal {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-gris-cancelar {
+  flex: 1;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-morado-confirmar {
+  flex: 1;
+  background-color: #7c3aed;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-morado-confirmar:hover {
+  background-color: #6d28d9;
+}

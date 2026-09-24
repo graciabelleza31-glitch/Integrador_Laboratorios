@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Inspección de Estado</title>
+  <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+  <link rel="stylesheet" th:href="@{/css/inspeccion.css}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Script de Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    
+    <!-- MENÚ LATERAL -->
+    <aside class="barra-lateral">
+      <div class="logo-lateral">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+      </div>
+
+      <nav class="navegacion-menu">
+        <a th:href="@{/dashboardAdmin}" class="item-menu">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="item-menu">
+          <i data-lucide="check-square"></i>
+          <span>Check-in</span>
+        </a>
+        <a href="#" class="item-menu">
+          <i data-lucide="box"></i>
+          <span>Inventario</span>
+        </a>
+        <a th:href="@{/admin/checkout}" class="item-menu">
+          <i data-lucide="corner-down-left"></i>
+          <span>Check-out</span>
+        </a>
+        <a th:href="@{/admin/inspeccion}" class="item-menu activo">
+          <i data-lucide="microscope"></i>
+          <span>Inspección</span>
+        </a>
+        <a href="#" class="item-menu">
+          <i data-lucide="alert-triangle"></i>
+          <span>Incidencias</span>
+          <span class="contador-alerta">1</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="area-principal">
+      <header class="cabecera-superior">
+        <div class="logo-cabecera">
+          <span class="insignia-utp">UTP</span>
+          <span class="texto-lab">+Lab</span>
+        </div>
+
+        <div class="perfil-acciones">
+          <div class="icono-campana">
+            <i data-lucide="bell"></i>
+            <span class="punto-alerta">1</span>
+          </div>
+          <div class="datos-perfil">
+            <span class="titulo-saludo">Hola, Dr.</span>
+            <span class="subtitulo-rol">Administrador</span>
+          </div>
+          <div class="circulo-avatar">CH</div>
+          <a th:href="@{/logout}" class="enlace-salir">
+            <i data-lucide="log-out"></i>
+            <span>Salir</span>
+          </a>
+        </div>
+      </header>
+
+      <section class="seccion-checkout">
+        <div class="titular-seccion">
+          <h2>Inspección de Estado</h2>
+          <p>Verificación de materiales devueltos: Conforme o Dañado</p>
+        </div>
+
+        <!-- LISTA DE DEVOLUCIONES PENDIENTES -->
+        <div th:if="${not #lists.isEmpty(reservas)}" class="bloque-tarjetas">
+          <div th:each="r : ${reservas}" class="tarjeta-prestamo">
+            <div class="icono-sala lupa-fondo">
+              <i data-lucide="search"></i>
+            </div>
+            
+            <div class="informacion-prestamo">
+              <div class="fila-nombre">
+                <strong class="texto-sala" th:text="${r.laboratorio}">Lab. Química</strong>
+                <span class="tag-devuelta">Devuelta</span>
+                <span class="codigo-prestamo" th:text="${r.idReserva}">R-004</span>
+              </div>
+              <div class="fila-horario">
+                <span th:text="${r.cubiculo}">A-102</span> · 
+                <span th:text="${r.horario}">08:00–09:00</span> · 
+                <span th:text="${r.integrantes} + ' integrante(s)'">1 integrante(s)</span> · 
+                <span th:text="${r.totalItems} + ' ítems'">5 ítems</span>
+              </div>
+            </div>
+
+            <!-- Botón morado Inspeccionar -->
+            <button type="button" 
+                    class="boton-recibir-morado"
+                    th:attr="data-id=${r.idReserva},
+                             data-lab=${r.laboratorio}"
+                    onclick="abrirModalInspeccion(this)">
+              <i data-lucide="search"></i>
+              <span>Inspeccionar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ESTADO VACÍO: SIN DEVOLUCIONES PENDIENTES -->
+        <div th:if="${#lists.isEmpty(reservas)}" class="cuadro-sin-datos">
+          <div class="icono-lupa-vacia">🔍</div>
+          <p class="mensaje-sin-datos">Sin devoluciones pendientes</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- VENTANA MODAL DE INSPECCIÓN -->
+    <div id="modalInspeccion" class="fondo-modal" style="display: none;">
+      <div class="tarjeta-modal modal-ancho">
+        
+        <div class="cabecera-modal-oscura">
+          <div>
+            <h3 id="modalLabTitulo">Lab. Química</h3>
+            <p>Marque cada ítem como Conforme o Dañado</p>
+          </div>
+          <button type="button" class="btn-cerrar-x" onclick="cerrarModalInspeccion()">✕</button>
+        </div>
+
+        <form th:action="@{/admin/inspeccion/finalizar}" method="post" id="formInspeccion">
+          <input type="hidden" name="idReserva" id="modalReservaId" value="" />
+
+          <div class="cuerpo-scroll-modal">
+            <!-- INSUMOS -->
+            <div class="bloque-categoria">
+              <span class="etiqueta-categoria">INSUMOS</span>
+              <div id="contenedorInsumos" class="lista-items-inspeccion"></div>
+            </div>
+
+            <!-- EPPS -->
+            <div class="bloque-categoria" id="seccionEpps">
+              <span class="etiqueta-categoria">EPPS</span>
+              <div id="contenedorEpps" class="lista-items-inspeccion"></div>
+            </div>
+          </div>
+
+          <!-- BARRA INFERIOR CON ALERTA Y BOTÓN FINALIZAR -->
+          <div class="pie-modal-inspeccion">
+            <div id="alertaDanados" class="texto-alerta-danados" style="visibility: hidden;">
+              <i data-lucide="alert-triangle"></i>
+              <span id="contadorTextoDanados">1 ítem(s) dañado(s)</span>
+            </div>
+            <button type="submit" id="btnFinalizar" class="btn-finalizar-morado">
+              Finalizar →
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const todasLasReservas = /*[[${reservas}]]*/ [];
+    /*]]>*/
+
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    });
+
+    function abrirModalInspeccion(boton) {
+      const idReserva = boton.getAttribute('data-id');
+      const lab = boton.getAttribute('data-lab');
+
+      document.getElementById('modalReservaId').value = idReserva;
+      document.getElementById('modalLabTitulo').innerText = lab;
+
+      const reserva = todasLasReservas.find(r => r.idReserva === idReserva);
+      if (!reserva || !reserva.items) return;
+
+      const contInsumos = document.getElementById('contenedorInsumos');
+      const contEpps = document.getElementById('contenedorEpps');
+      contInsumos.innerHTML = '';
+      contEpps.innerHTML = '';
+
+      reserva.items.forEach(item => {
+        const esEpp = (item.categoria && item.categoria.toUpperCase() === 'EPP');
+        const icono = esEpp ? '🥼 ' : '';
+        const filaHtml = `
+          <div class="fila-item-inspeccion" id="caja_${item.idProducto}">
+            <div class="cabecera-fila-item">
+              <span class="nombre-item">${icono}${item.nombre}</span>
+              <div class="botones-estado-grupo">
+                <input type="hidden" name="estado_${item.idProducto}" id="input_estado_${item.idProducto}" value="CONFORME" />
+                <button type="button" 
+                        class="btn-estado btn-conforme activo" 
+                        onclick="marcarEstado('${item.idProducto}', 'CONFORME')">
+                  ✓ Conforme
+                </button>
+                <button type="button" 
+                        class="btn-estado btn-danado" 
+                        onclick="marcarEstado('${item.idProducto}', 'DANADO')">
+                  ✕ Dañado
+                </button>
+              </div>
+            </div>
+
+            <!-- Desplegable con monto predeterminado de la tabla -->
+            <div class="desplegable-dano" id="desplegable_${item.idProducto}" style="display: none;">
+              <input type="text" 
+                     name="descripcion_${item.idProducto}" 
+                     class="input-descripcion-dano" 
+                     placeholder="Descripción del daño..." />
+              <input type="text" 
+                     name="costo_${item.idProducto}" 
+                     class="input-costo-dano" 
+                     value="${item.costoReposicion}" />
+            </div>
+          </div>
+        `;
+
+        if (esEpp) {
+          contEpps.insertAdjacentHTML('beforeend', filaHtml);
+        } else {
+          contInsumos.insertAdjacentHTML('beforeend', filaHtml);
+        }
+      });
+
+      actualizarAlertaDanados();
+      document.getElementById('modalInspeccion').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function marcarEstado(idProd, estado) {
+      const input = document.getElementById('input_estado_' + idProd);
+      const caja = document.getElementById('caja_' + idProd);
+      const desplegable = document.getElementById('desplegable_' + idProd);
+      const btnConforme = caja.querySelector('.btn-conforme');
+      const btnDanado = caja.querySelector('.btn-danado');
+
+      input.value = estado;
+
+      if (estado === 'CONFORME') {
+        btnConforme.classList.add('activo');
+        btnDanado.classList.remove('activo');
+        caja.classList.remove('borde-danado');
+        desplegable.style.display = 'none';
+      } else {
+        btnDanado.classList.add('activo');
+        btnConforme.classList.remove('activo');
+        caja.classList.add('borde-danado');
+        desplegable.style.display = 'flex';
+      }
+
+      actualizarAlertaDanados();
+    }
+
+    function actualizarAlertaDanados() {
+      const inputs = document.querySelectorAll('input[id^="input_estado_"]');
+      let danados = 0;
+      inputs.forEach(i => {
+        if (i.value === 'DANADO') danados++;
+      });
+
+      const alerta = document.getElementById('alertaDanados');
+      const texto = document.getElementById('contadorTextoDanados');
+      if (danados > 0) {
+        alerta.style.visibility = 'visible';
+        texto.innerText = `${danados} ítem(s) dañado(s)`;
+      } else {
+        alerta.style.visibility = 'hidden';
+      }
+    }
+
+    function cerrarModalInspeccion() {
+      document.getElementById('modalInspeccion').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

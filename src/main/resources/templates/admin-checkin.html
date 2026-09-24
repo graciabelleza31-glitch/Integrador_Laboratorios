@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Check-in Presencial</title>
+  <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    
+    <!-- BARRA LATERAL ADMINISTRADOR -->
+    <aside class="barra-lateral">
+      <div class="logo-lateral">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+      </div>
+
+      <nav class="navegacion-menu">
+        <a th:href="@{/admin/dashboard}" class="item-menu">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a th:href="@{/admin/checkin}" class="item-menu activo">
+          <i data-lucide="check-square"></i>
+          <span>Check-in</span>
+        </a>
+        <a th:href="@{/admin/inventario}" class="item-menu">
+          <i data-lucide="package"></i>
+          <span>Inventario</span>
+        </a>
+        <a th:href="@{/admin/checkout}" class="item-menu">
+          <i data-lucide="corner-down-left"></i>
+          <span>Check-out</span>
+        </a>
+        <a th:href="@{/admin/inspeccion}" class="item-menu">
+          <i data-lucide="search"></i>
+          <span>Inspección</span>
+        </a>
+        <a th:href="@{/admin/incidencias}" class="item-menu item-incidencias">
+          <i data-lucide="alert-triangle"></i>
+          <span>Incidencias</span>
+          <span class="badge-alerta-roja">1</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="area-principal">
+      <header class="cabecera-superior">
+        <div class="logo-cabecera">
+          <span class="insignia-utp">UTP</span>
+          <span class="texto-lab">+Lab</span>
+        </div>
+
+        <div class="perfil-acciones">
+          <div class="contenedor-campana">
+            <i data-lucide="bell"></i>
+            <span class="punto-alerta-campana">1</span>
+          </div>
+          <div class="datos-perfil">
+            <span class="titulo-saludo">Hola, Dr.</span>
+            <span class="subtitulo-rol">Administrador</span>
+          </div>
+          <div class="circulo-avatar avatar-naranja">CH</div>
+          <a th:href="@{/logout}" class="enlace-salir">
+            <i data-lucide="log-out"></i>
+            <span>Salir</span>
+          </a>
+        </div>
+      </header>
+
+      <section class="seccion-checkout">
+        <div class="encabezado-checkin-seccion">
+          <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1>
+          <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
+        </div>
+
+        <!-- CONTENEDOR DE TARJETAS -->
+        <div id="contenedorListaCheckin" th:if="${not #lists.isEmpty(reservas)}" class="lista-tarjetas-checkin">
+          <div th:each="r : ${reservas}" 
+               class="tarjeta-reserva-checkin-fila" 
+               th:id="'tarjeta-reserva-' + ${r.idReserva}">
+            
+            <div class="icono-cuadro-checkin" th:classappend="${r.tipoLab == 'Física' ? 'bg-rayo' : 'bg-quimica'}">
+              <span th:if="${r.tipoLab == 'Física'}">⚡</span>
+              <span th:unless="${r.tipoLab == 'Física'}">⚗️</span>
+            </div>
+
+            <div class="info-central-checkin">
+              <div class="fila-nombre-estado">
+                <strong class="nombre-lab-checkin" th:text="${r.laboratorio}">Lab. Química</strong>
+                <span class="badge-estado-pill" 
+                      th:classappend="${r.estado == 'CONFIRMADA' ? 'estado-confirmada' : 'estado-pendiente'}"
+                      th:text="${r.estado == 'CONFIRMADA' ? 'Confirmada' : 'Pendiente'}">
+                  Confirmada
+                </span>
+              </div>
+              <div class="metadatos-horario-checkin">
+                <span th:text="${r.cubiculo + ' · ' + r.fecha + ' · ' + r.horario}">A-101 · 2026-08-21 · 09:00–11:00</span>
+              </div>
+              
+              <div class="pills-integrantes-flex">
+                <span th:each="integ : ${r.integrantes}" class="pill-integrante-nombre" th:text="${integ}">
+                  Mariafernanda Bruno Santos
+                </span>
+              </div>
+            </div>
+
+            <div class="accion-derecha-checkin">
+              <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
+              <button type="button" 
+                      class="btn-verde-iniciar" 
+                      th:data-id="${r.idReserva}"
+                      onclick="abrirModalCheckin(this.getAttribute('data-id'))">
+                <i data-lucide="check-square"></i> Iniciar
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+            <!-- Código de reserva a la derecha -->
+            <div class="accion-derecha-checkin">
+              <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
+              <button type="button" 
+                      class="btn-verde-iniciar" 
+                      th:data-id="${r.idReserva}"
+                      onclick="abrirModalCheckin(this.getAttribute('data-id'))">
+                <i data-lucide="check-square"></i> Iniciar
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CASO 2: NO HAY RESERVAS PENDIENTES (IGUAL A FIGMA) -->
+        <div id="tarjetaSinCheckins" 
+             class="tarjeta-sin-checkins-vacia" 
+             th:style="${#lists.isEmpty(reservas)} ? 'display:flex;' : 'display:none;'">
+          <span class="icono-fiesta-confeti">🎉</span>
+          <strong>Sin check-ins pendientes</strong>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ========================================================
+         MODAL DE CHECK-IN PRESENCIAL (FIGMA)
+         ======================================================== -->
+    <div id="modalCheckin" class="fondo-modal-oscuro" style="display: none;">
+      <div class="tarjeta-modal modal-checkin-ancho">
+        
+        <!-- CABECERA AZUL OSCURA -->
+        <div class="cabecera-modal-checkin">
+          <div>
+            <h3 id="modalLabTitulo">Lab. Química</h3>
+            <p id="modalLabSubtitulo">R-001 · 09:00–11:00</p>
+          </div>
+          <button type="button" class="btn-cerrar-blanco" onclick="cerrarModalCheckin()">✕</button>
+        </div>
+
+        <!-- CUERPO CON LAS 3 SECCIONES DE CHECKS -->
+        <div class="cuerpo-modal-checkin">
+          
+          <!-- 1. VERIFICAR IDENTIDAD -->
+          <div class="bloque-verif-seccion">
+            <span class="subtitulo-seccion-modal">1. VERIFICAR IDENTIDAD</span>
+            <div class="lista-verif-items" id="listaCheckIntegrantes">
+              <!-- Se inyecta por JS -->
+            </div>
+          </div>
+
+          <!-- 2. ENTREGAR INSUMOS -->
+          <div class="bloque-verif-seccion">
+            <span class="subtitulo-seccion-modal">2. ENTREGAR INSUMOS</span>
+            <div class="lista-verif-items" id="listaCheckInsumos">
+              <!-- Se inyecta por JS -->
+            </div>
+          </div>
+
+          <!-- 3. ENTREGAR EPPS -->
+          <div class="bloque-verif-seccion">
+            <span class="subtitulo-seccion-modal">3. ENTREGAR EPPS</span>
+            <div class="lista-verif-items" id="listaCheckEpps">
+              <!-- Se inyecta por JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PIE DEL MODAL CON CONTADOR DINÁMICO -->
+        <form id="formConfirmarCheckin" method="post" action="">
+          <div class="pie-modal-checkin">
+            <span class="contador-verificados-txt" id="txtContadorVerificados">0/0 verificados</span>
+            <button type="button" class="btn-confirmar-checkin-verde" id="btnConfirmarCheckin" onclick="enviarConfirmacionCheckin()">
+                Confirmar check-in →
+            </button>
+            </div>
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let reservaActualId = null;
+    let totalItemsVerificar = 0;
+    let itemsVerificados = 0;
+
+    function abrirModalCheckin(idReserva) {
+      reservaActualId = idReserva;
+      
+      const contInteg = document.getElementById('listaCheckIntegrantes');
+      const contInsum = document.getElementById('listaCheckInsumos');
+      const contEpps = document.getElementById('listaCheckEpps');
+
+      contInteg.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">Cargando integrantes...</span>';
+      contInsum.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">Cargando insumos...</span>';
+      contEpps.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">Cargando EPPs...</span>';
+
+      document.getElementById('modalCheckin').style.display = 'flex';
+
+      fetch(`/admin/checkin/api/${idReserva}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('modalLabTitulo').innerText = data.laboratorio;
+          document.getElementById('modalLabSubtitulo').innerText = `${data.idReserva} · ${data.horario}`;
+
+          totalItemsVerificar = 0;
+          itemsVerificados = 0;
+
+          // 1. Integrantes
+          contInteg.innerHTML = '';
+          data.integrantes.forEach(i => {
+            totalItemsVerificar++;
+            contInteg.insertAdjacentHTML('beforeend', `
+              <div class="tarjeta-check-item" onclick="toggleVerificacion(this)">
+                <input type="checkbox" class="check-oculto" />
+                <div class="caja-checkbox-cuadro"></div>
+                <div class="avatar-circulo-verif">${i.iniciales}</div>
+                <div class="info-texto-verif">
+                  <strong class="nombre-persona-verif">${i.nombre}</strong>
+                  <span class="sub-codigo-verif">${i.codigo}</span>
+                </div>
+                <span class="icono-check-verde">✓</span>
+              </div>
+            `);
+          });
+
+          // 2. Insumos
+          contInsum.innerHTML = '';
+          if (!data.insumos || data.insumos.length === 0) {
+            contInsum.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">No se solicitaron insumos extra.</span>';
+          } else {
+            data.insumos.forEach(ins => {
+              totalItemsVerificar++;
+              contInsum.insertAdjacentHTML('beforeend', `
+                <div class="tarjeta-check-item" onclick="toggleVerificacion(this)">
+                  <input type="checkbox" class="check-oculto" />
+                  <div class="caja-checkbox-cuadro"></div>
+                  <div class="info-texto-verif">
+                    <strong class="nombre-item-verif">${ins.nombre}</strong>
+                    <span class="sub-unidad-verif">${ins.unidad}</span>
+                  </div>
+                  <span class="icono-check-verde">✓</span>
+                </div>
+              `);
+            });
+          }
+
+          // 3. EPPs
+          contEpps.innerHTML = '';
+          data.epps.forEach(epp => {
+            totalItemsVerificar++;
+            contEpps.insertAdjacentHTML('beforeend', `
+              <div class="tarjeta-check-item" onclick="toggleVerificacion(this)">
+                <input type="checkbox" class="check-oculto" />
+                <div class="caja-checkbox-cuadro"></div>
+                <span class="emoji-epp-icon">${epp.emoji}</span>
+                <div class="info-texto-verif">
+                  <strong class="nombre-item-verif">${epp.nombre}</strong>
+                </div>
+                <span class="icono-check-verde">✓</span>
+              </div>
+            `);
+          });
+
+          actualizarContador();
+        })
+        .catch(() => {
+          alert('Error al cargar los detalles de la reserva.');
+          cerrarModalCheckin();
+        });
+    }
+
+    function cerrarModalCheckin() {
+      document.getElementById('modalCheckin').style.display = 'none';
+      reservaActualId = null;
+    }
+
+    function toggleVerificacion(tarjeta) {
+      const chk = tarjeta.querySelector('.check-oculto');
+      chk.checked = !chk.checked;
+      tarjeta.classList.toggle('marcado', chk.checked);
+
+      if (chk.checked) {
+        itemsVerificados++;
+      } else {
+        itemsVerificados--;
+      }
+      actualizarContador();
+    }
+
+    function actualizarContador() {
+      document.getElementById('txtContadorVerificados').innerText = `${itemsVerificados}/${totalItemsVerificar} verificados`;
+    }
+
+    // CONFIRMACIÓN ASÍNCRONA (SIN RECARGA NI REDIRECCIÓN)
+    function enviarConfirmacionCheckin() {
+      if (!reservaActualId) return;
+
+      const btn = document.getElementById('btnConfirmarCheckin');
+      btn.innerText = "Procesando...";
+      btn.disabled = true;
+
+      fetch(`/admin/checkin/confirmar/${reservaActualId}`, {
+        method: 'POST'
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Error en servidor");
+        return res.json();
+      })
+      .then(() => {
+        // 1. Cerrar el modal
+        cerrarModalCheckin();
+
+        // 2. Remover la tarjeta de la vista
+        const tarjeta = document.getElementById(`tarjeta-reserva-${reservaActualId}`);
+        if (tarjeta) {
+          tarjeta.remove();
+        }
+
+        // 3. Si no quedan tarjetas, mostrar el aviso de "Sin check-ins pendientes"
+        const contenedor = document.getElementById('contenedorListaCheckin');
+        const restantes = contenedor ? contenedor.querySelectorAll('.tarjeta-reserva-checkin-fila').length : 0;
+        
+        if (restantes === 0) {
+          document.getElementById('tarjetaSinCheckins').style.display = 'flex';
+        }
+      })
+      .catch(err => {
+        alert("Ocurrió un error al procesar el check-in.");
+      })
+      .finally(() => {
+        btn.innerText = "Confirmar check-in →";
+        btn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>

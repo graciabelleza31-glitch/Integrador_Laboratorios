@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Check-out / Recepción</title>
+  <link rel="stylesheet" th:href="@{/css/checkout.css}" href="/css/checkout.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    
+    <!-- MENÚ LATERAL -->
+    <aside class="barra-lateral">
+      <div class="logo-lateral">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+      </div>
+
+      <nav class="navegacion-menu">
+        <a th:href="@{/dashboardAdmin}" class="item-menu">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="item-menu">
+          <i data-lucide="check-square"></i>
+          <span>Check-in</span>
+        </a>
+        <a href="@{/admin/checkin}" class="item-menu">
+          <i data-lucide="box"></i>
+          <span>Inventario</span>
+        </a>
+        <a th:href="@{/admin/checkout}" class="item-menu activo">
+          <i data-lucide="corner-down-left"></i>
+          <span>Check-out</span>
+        </a>
+        <a th:href="@{/admin/inspeccion}" class="item-menu">
+          <i data-lucide="microscope"></i>
+          <span>Inspección</span>
+        </a>
+        <a href="#" class="item-menu">
+          <i data-lucide="alert-triangle"></i>
+          <span>Incidencias</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ÁREA DE CONTENIDO -->
+    <main class="area-principal">
+      
+      <!-- CABECERA SUPERIOR -->
+      <header class="cabecera-superior">
+        <div class="logo-cabecera">
+          <span class="insignia-utp">UTP</span>
+          <span class="texto-lab">+Lab</span>
+        </div>
+
+        <div class="perfil-acciones">
+          <div class="icono-campana">
+            <i data-lucide="bell"></i>
+            <span class="punto-alerta">1</span>
+          </div>
+          <div class="datos-perfil">
+            <span class="titulo-saludo">Hola, Dr.</span>
+            <span class="subtitulo-rol">Administrador</span>
+          </div>
+          <div class="circulo-avatar">CH</div>
+          <a th:href="@{/logout}" class="enlace-salir">
+            <i data-lucide="log-out"></i>
+            <span>Salir</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- SECCIÓN DEL CUERPO -->
+      <section class="seccion-checkout">
+        <div class="titular-seccion">
+          <h2>Check-out / Recepción</h2>
+          <p>Registro de devolución de materiales</p>
+        </div>
+
+        <!-- 1. SI HAY RESERVAS EN USO -->
+        <div th:if="${not #lists.isEmpty(reservas)}" class="bloque-tarjetas">
+          <div th:each="r : ${reservas}" class="tarjeta-prestamo">
+            <div class="icono-sala">
+              <i data-lucide="settings"></i>
+            </div>
+            
+            <div class="informacion-prestamo">
+              <div class="fila-nombre">
+                <strong class="texto-sala" th:text="${r.laboratorio}">Lab. Mecatrónica</strong>
+                <span class="etiqueta-estado">En uso</span>
+                <span class="codigo-prestamo" th:text="${r.idReserva}">RES005</span>
+              </div>
+              <div class="fila-horario">
+                <span th:text="${r.cubiculo}">B-101</span> · <span th:text="${r.horario}">14:00–16:00</span>
+              </div>
+              <div class="fila-detalles">
+                Responsable: <span th:text="${r.responsable}">Miguel Ángel Cruz</span> · 
+                <span th:text="${r.totalItems} + ' ítems prestados'">8 ítems prestados</span>
+              </div>
+            </div>
+
+            <!-- Botón para desplegar el modal -->
+            <button type="button" 
+                    class="boton-recibir-morado"
+                    th:attr="data-id=${r.idReserva},
+                             data-lab=${r.laboratorio},
+                             data-resp=${r.responsable},
+                             data-horario=${r.horario},
+                             data-items=${r.totalItems}"
+                    onclick="mostrarModalDevolucion(this)">
+              <i data-lucide="corner-down-left"></i>
+              <span>Recibir</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. SI NO HAY RESERVAS (ESTADO VACÍO) -->
+        <div th:if="${#lists.isEmpty(reservas)}" class="cuadro-sin-datos">
+          <div class="icono-bandera">🏁</div>
+          <p class="mensaje-sin-datos">Sin préstamos activos</p>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- VENTANA MODAL FLOTANTE -->
+    <div id="modalDevolucion" class="fondo-modal" style="display: none;">
+      <div class="tarjeta-modal">
+        <h3 class="encabezado-modal">Confirmar devolución</h3>
+        <p class="subtitulo-modal" id="textoModalSubtitulo">Lab. Mecatrónica · RES005</p>
+
+        <div class="caja-resumen-modal">
+          <div class="fila-resumen">
+            <span class="etiqueta-gris">Responsable</span>
+            <span class="texto-negrita" id="textoModalResponsable">Miguel Ángel Cruz</span>
+          </div>
+          <div class="fila-resumen">
+            <span class="etiqueta-gris">Horario</span>
+            <span class="texto-negrita" id="textoModalHorario">14:00–16:00</span>
+          </div>
+          <div class="fila-resumen">
+            <span class="etiqueta-gris">Ítems a recibir</span>
+            <span class="texto-negrita" id="textoModalItems">8</span>
+          </div>
+        </div>
+
+        <div class="banner-aviso-inspeccion">
+          <i data-lucide="search" class="lupa-inspeccion"></i>
+          <span>Tras confirmar, los materiales pasan a inspección.</span>
+        </div>
+
+        <form th:action="@{/admin/checkout/confirmar}" method="post" class="acciones-modal">
+          <input type="hidden" name="idReserva" id="campoIdReservaOculto" value="" />
+          <button type="button" class="btn-gris-cancelar" onclick="cerrarModalDevolucion()">Cancelar</button>
+          <button type="submit" class="btn-morado-confirmar">Confirmar</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function mostrarModalDevolucion(boton) {
+      const id = boton.getAttribute('data-id');
+      const lab = boton.getAttribute('data-lab');
+      const resp = boton.getAttribute('data-resp');
+      const horario = boton.getAttribute('data-horario');
+      const items = boton.getAttribute('data-items');
+
+      document.getElementById('campoIdReservaOculto').value = id;
+      document.getElementById('textoModalSubtitulo').innerText = lab + ' · ' + id;
+      document.getElementById('textoModalResponsable').innerText = resp;
+      document.getElementById('textoModalHorario').innerText = horario;
+      document.getElementById('textoModalItems').innerText = items;
+
+      document.getElementById('modalDevolucion').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function cerrarModalDevolucion() {
+      document.getElementById('modalDevolucion').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
