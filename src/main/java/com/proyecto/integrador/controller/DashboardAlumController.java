@@ -15,6 +15,6 @@ public class DashboardAlumController {
         }
 
         model.addAttribute("nombre", session.getAttribute("nombreUsuario"));
-        return "dashboardAlum"; // Apunta a src/main/resources/templates/dashboardAlum.html
+        return "estudiante/dashboard"; // Apunta a src/main/resources/templates/dashboardAlum.html
     }
 }

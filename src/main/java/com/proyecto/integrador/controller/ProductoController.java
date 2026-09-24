@@ -5,23 +5,40 @@ import com.proyecto.integrador.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Controller
-@RequestMapping("/productos")
 public class ProductoController {
     @Autowired
     private ProductoService productoService;
 
-    @GetMapping
-    public String listarProductos(Model model) {
-        model.addAttribute("productos", productoService.listarTodos());
-        return "productos/inventario";
+    /**
+     * Muestra la página de Inventario.
+     */
+    @GetMapping("/inventario")
+    public String mostrarInventario(Model model) {
+        List<Producto> productos = productoService.listarTodos();
+        List<Producto> stockBajo = productoService.obtenerProductosConStockBajo(10);
+        
+        model.addAttribute("productos", productos);
+        model.addAttribute("productosStockBajo", stockBajo);
+        return "admin/inventario";
     }
 
-    @PostMapping("/guardar")
-    public String guardarProducto(@ModelAttribute Producto producto) {
-        productoService.guardar(producto);
-        return "redirect:/productos";
+    /**
+     * Ajusta el stock de un producto (suma o resta).
+     * cantidad > 0 → suma
+     * cantidad < 0 → resta
+     */
+    @PostMapping("/inventario/ajustar")
+    public String ajustarStock(
+            @RequestParam String idProducto,
+            @RequestParam Integer cantidad) {
+        productoService.actualizarStock(idProducto, cantidad);
+        return "redirect:/inventario";
     }
 }

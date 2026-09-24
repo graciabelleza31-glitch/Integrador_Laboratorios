@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - UTP +Lab</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-cube"></i> UTP <span>+Lab</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a th:href="@{/dashboard-admin}" class="nav-item"><i class="fa-solid fa-folder"></i> Dashboard</a></li>
+            <li><a th:href="@{/check-in}" class="nav-item"><i class="fa-solid fa-circle-check"></i> Check-in</a></li>
+            <li><a th:href="@{/inventario}" class="nav-item active"><i class="fa-solid fa-box"></i> Inventario</a></li>
+            <li><a th:href="@{/check-out}" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Check-out</a></li>
+            <li><a href="#" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Inspección</a></li>
+            <li><a href="#" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> Incidencias <span class="nav-badge">1</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-logo">UTP <span>+Lab</span></div>
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell" style="color: #64748b; font-size: 1.2rem; cursor: pointer;"></i>
+                <div class="user-info">
+                    <div class="user-text">
+                        <div class="name">Hola, Dr.</div>
+                        <div class="role">Administrador</div>
+                    </div>
+                    <div class="avatar">CH</div>
+                </div>
+                <a th:href="@{/login}" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</a>
+            </div>
+        </header>
+
+        <!-- CONTENIDO -->
+        <div class="dashboard-container">
+
+            <!-- Encabezado -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>Inventario</h1>
+                    <p>Gestión de stock e insumos</p>
+                </div>
+            </div>
+
+            <!-- Alerta de stock bajo -->
+            <div class="alerta-stock-bajo" th:if="${!productosStockBajo.isEmpty()}">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <strong th:text="${productosStockBajo.size()} + ' material(es) bajo stock mínimo'">
+                        3 material(es) bajo stock mínimo
+                    </strong>
+                    <span th:text="${#strings.listJoin(productosStockBajo.![nombre], ', ')}">
+                        Hidróxido de sodio (NaOH), Vaso de precipitados 250mL, Bureta 50mL
+                    </span>
+                </div>
+            </div>
+
+            <!-- Filtros y buscador -->
+            <div class="filtros-inventario">
+                <input type="text" class="buscador" placeholder="Buscar material...">
+                <button class="filtro-btn active">Todos</button>
+                <button class="filtro-btn">Reactivos</button>
+                <button class="filtro-btn">Solventes</button>
+                <button class="filtro-btn">Cristalería</button>
+                <button class="filtro-btn">Instrumentos</button>
+                <button class="filtro-btn">Consumibles</button>
+            </div>
+
+            <!-- Tabla de inventario -->
+            <table class="inventario-table">
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Categoría</th>
+                        <th>Unidad</th>
+                        <th>Stock</th>
+                        <th>Mín.</th>
+                        <th>Estado</th>
+                        <th>Ajuste</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="prod : ${productos}">
+                        <td th:text="${prod.nombre}">Ácido clorhídrico (HCl) 1M</td>
+                        <td>
+                            <span class="categoria-badge"
+                                  th:classappend="${prod.categoria == 'Reactivos' ? 'cat-reactivos' : 
+                                                   (prod.categoria == 'Solventes' ? 'cat-solventes' : 
+                                                   (prod.categoria == 'Cristalería' ? 'cat-cristaleria' : 
+                                                   (prod.categoria == 'Instrumentos' ? 'cat-instrumentos' : 
+                                                   (prod.categoria == 'Consumibles' ? 'cat-consumibles' : 'cat-default'))))}"
+                                  th:text="${prod.categoria}">Reactivos</span>
+                        </td>
+                        <td th:text="${prod.esVenta ? 'und' : 'mL'}">mL</td>
+                        <td>
+                            <span class="stock-bar">
+                                <span class="stock-bar-fill"
+                                      th:classappend="${prod.stockActual < 10 ? 'critico' : (prod.stockActual < 30 ? 'bajo' : '')}"
+                                      th:style="'width: ' + ${prod.stockActual > 500 ? 100 : (prod.stockActual * 100 / 500)} + '%'"></span>
+                            </span>
+                            <span class="stock-value"
+                                  th:classappend="${prod.stockActual < 10 ? 'critico' : (prod.stockActual < 30 ? 'bajo' : '')}"
+                                  th:text="${prod.stockActual}">480</span>
+                        </td>
+                        <td th:text="10">100</td>
+                        <td>
+                            <span class="estado-badge"
+                                  th:classappend="${prod.stockActual < 10 ? 'estado-critico' : 
+                                                   (prod.stockActual < 30 ? 'estado-bajo' : 'estado-normal')}"
+                                  th:text="${prod.stockActual < 10 ? 'Crítico' : 
+                                            (prod.stockActual < 30 ? 'Bajo' : 'Normal')}">Normal</span>
+                        </td>
+                        <td>
+                            <div class="ajuste-botones">
+                                <form th:action="@{/inventario/ajustar}" method="post" style="margin: 0;">
+                                    <input type="hidden" name="idProducto" th:value="${prod.idProducto}">
+                                    <input type="hidden" name="cantidad" value="-1">
+                                    <button type="submit" class="btn-ajuste restar" title="Restar 1">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                </form>
+                                <form th:action="@{/inventario/ajustar}" method="post" style="margin: 0;">
+                                    <input type="hidden" name="idProducto" th:value="${prod.idProducto}">
+                                    <input type="hidden" name="cantidad" value="1">
+                                    <button type="submit" class="btn-ajuste sumar" title="Sumar 1">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Mensaje si no hay productos -->
+                    <tr th:if="${productos.isEmpty()}">
+                        <td colspan="7" style="text-align: center; color: #94a3b8; padding: 60px 20px;">
+                            <i class="fa-solid fa-box-open" style="font-size: 2.5rem; margin-bottom: 15px; display: block; color: #cbd5e1;"></i>
+                            <p style="font-size: 0.95rem;">No hay productos en el inventario.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </main>
+</body>
+</html>
