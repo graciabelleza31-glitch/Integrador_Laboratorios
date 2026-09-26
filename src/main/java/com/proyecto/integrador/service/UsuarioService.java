@@ -1,108 +1,140 @@
 package com.proyecto.integrador.service;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.proyecto.integrador.modelo.Administrador;
 import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.repository.AdministradorRepository;
 import com.proyecto.integrador.repository.AlumnoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
-    @Autowired 
-    private AlumnoRepository alumnoRepository;
 
-    @Autowired 
-    private AdministradorRepository administradorRepository;
+    @Autowired
+    private AlumnoRepository alumnoRepositorio;
 
-    /**
-     * Valida las credenciales de un usuario.
-     * Busca primero como alumno y luego como administrador.
-     * 
-     * @param codigoUtp El código UTP (ej: U15331490) o DNI del usuario
-     * @param password La contraseña
-     * @return Un objeto LoginResult con el tipo de usuario y los datos
-     */
-    public LoginResult validarCredenciales(String codigoUtp, String password) {
-        
-        // 1. Intentar como alumno (por idEstud)
-        Optional<Alumno> alumnoOpt = alumnoRepository.findById(codigoUtp);
-        if (alumnoOpt.isPresent()) {
-            Alumno alumno = alumnoOpt.get();
-            if (alumno.getPassword().equals(password)) {
-                return new LoginResult(
-                    "ALUMNO",
-                    alumno.getNombre(),
-                    alumno.getApellido(),
-                    alumno.getIdEstud()
-                );
-            }
+    @Autowired
+    private AdministradorRepository administradorRepositorio;
+
+    public ResultadoLogin validarCredenciales(String identificador, String password) {
+        if (identificador == null || identificador.trim().isEmpty()
+                || password == null || password.trim().isEmpty()) {
+            throw new RuntimeException("Por favor, ingresa tu usuario y contraseña.");
         }
 
-        // 2. Intentar como alumno (por DNI)
-        Optional<Alumno> alumnoPorDni = alumnoRepository.findByDni(codigoUtp);
-        if (alumnoPorDni.isPresent()) {
-            Alumno alumno = alumnoPorDni.get();
-            if (alumno.getPassword().equals(password)) {
-                return new LoginResult(
-                    "ALUMNO",
-                    alumno.getNombre(),
-                    alumno.getApellido(),
-                    alumno.getIdEstud()
-                );
-            }
+        String entrada = identificador.trim();
+        String clave = password.trim();
+
+        Optional<Alumno> alumnoOpcional = alumnoRepositorio.findById(entrada.toUpperCase());
+        if (alumnoOpcional.isEmpty()) {
+            alumnoOpcional = alumnoRepositorio.findByDni(entrada);
         }
 
-        // 3. Intentar como administrador (por DNI)
-        Optional<Administrador> adminOpt = administradorRepository.findByDni(codigoUtp);
-        if (adminOpt.isPresent()) {
-            Administrador admin = adminOpt.get();
-            if (admin.getPassword().equals(password)) {
-                return new LoginResult(
+        if (alumnoOpcional.isPresent()) {
+            Alumno alumno = alumnoOpcional.get();
+
+            if (!alumno.getPassword().equals(clave)) {
+                throw new RuntimeException("Código UTP o contraseña incorrectos.");
+            }
+
+            if (Boolean.FALSE.equals(alumno.getEsMatriculado())) {
+                throw new RuntimeException("El estudiante no figura como matriculado en el ciclo actual.");
+            }
+
+            String nombreCarrera = (alumno.getCarrera() != null)
+                    ? alumno.getCarrera().getNombre()
+                    : "General";
+
+            return new ResultadoLogin(
+                    "ALUMNO",
+                    alumno.getIdEstud(),
+                    alumno.getNombre(),
+                    alumno.getApellido(),
+                    alumno.getEstadoCuenta(),
+                    nombreCarrera
+            );
+        }
+
+        Optional<Administrador> adminOpcional = administradorRepositorio.findById(entrada.toUpperCase());
+        if (adminOpcional.isEmpty()) {
+            adminOpcional = administradorRepositorio.findByDni(entrada);
+        }
+
+        if (adminOpcional.isPresent()) {
+            Administrador admin = adminOpcional.get();
+
+            if (!admin.getPassword().equals(clave)) {
+                throw new RuntimeException("Código o contraseña incorrectos.");
+            }
+
+            return new ResultadoLogin(
                     "ADMIN",
+                    admin.getIdAdmin(),
                     admin.getNombre(),
                     admin.getApellido(),
-                    admin.getIdAdmin()
-                );
-            }
+                    "HABILITADO",
+                    "Gestión de Laboratorios"
+            );
         }
 
-        // 4. Si nada funcionó, devolver null
-        return null;
+        throw new RuntimeException("Código UTP o usuario no encontrado en el sistema.");
     }
-    /**
-     * Clase interna para devolver el resultado del login.
-     */
-     public static class LoginResult {
-        private final String tipoUsuario; // "ALUMNO" o "ADMIN"
+
+    public static class ResultadoLogin {
+
+        private final String rol;
+        private final String codigo;
         private final String nombre;
         private final String apellido;
-        private final String id;
+        private final String estadoCuenta;
+        private final String carrera;
 
-        public LoginResult(String tipoUsuario, String nombre, String apellido, String id) {
-            this.tipoUsuario = tipoUsuario;
+        public ResultadoLogin(String rol, String codigo, String nombre, String apellido, String estadoCuenta, String carrera) {
+            this.rol = rol;
+            this.codigo = codigo;
             this.nombre = nombre;
             this.apellido = apellido;
-            this.id = id;
+            this.estadoCuenta = estadoCuenta;
+            this.carrera = carrera;
         }
 
-        public String getTipoUsuario() { return tipoUsuario; }
-        public String getNombre() { return nombre; }
-        public String getApellido() { return apellido; }
-        public String getId() { return id; }
-
-        public boolean esAdmin() {
-            return "ADMIN".equals(tipoUsuario);
+        public String getRol() {
+            return rol;
         }
 
-        public boolean esAlumno() {
-            return "ALUMNO".equals(tipoUsuario);
+        public String getCodigo() {
+            return codigo;
+        }
+
+        public String getNombre() {
+            return nombre;
+        }
+
+        public String getApellido() {
+            return apellido;
+        }
+
+        public String getEstadoCuenta() {
+            return estadoCuenta;
+        }
+
+        public String getCarrera() {
+            return carrera;
         }
 
         public String getNombreCompleto() {
             return nombre + " " + apellido;
+        }
+
+        public boolean esAdmin() {
+            return "ADMIN".equalsIgnoreCase(rol);
+        }
+
+        public boolean esAlumno() {
+            return "ALUMNO".equalsIgnoreCase(rol);
         }
     }
 }

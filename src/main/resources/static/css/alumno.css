@@ -1,0 +1,1980 @@
+/* ==========================================================================
+   PORTAL ALUMNO - ESTILOS BASE Y CABECERA
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+.contenedor-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.area-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fila-bienvenida {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.titulo-bienvenida {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.subtitulo-bienvenida {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.subtitulo-bienvenida strong {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.btn-nueva-reserva {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.6rem;
+  border-radius: 20px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s, transform 0.05s;
+}
+
+.btn-nueva-reserva:hover {
+  background-color: #272d5d;
+}
+
+.btn-nueva-reserva:active {
+  transform: scale(0.98);
+}
+
+/* BOTÓN BLOQUEADO */
+.btn-reservas-bloqueadas {
+  background-color: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  padding: 0.75rem 1.4rem;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: not-allowed;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* BANNER DE BLOQUEO POR INCIDENCIAS */
+.banner-incidencias-bloqueo {
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 12px;
+  padding: 1.15rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.icono-bloqueo-circulo {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.texto-bloqueo-contenido strong {
+  display: block;
+  color: #b91c1c;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.texto-bloqueo-contenido p {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.subtitulo-seccion-gris {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+/* MIS RESERVAS ACTIVAS */
+.bloque-mis-reservas {
+  margin-bottom: 2.5rem;
+}
+
+.lista-mis-reservas {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tarjeta-reserva-activa {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.icono-matraz-verde {
+  width: 46px;
+  height: 46px;
+  background-color: #f0fdf4;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.info-reserva-activa {
+  flex: 1;
+}
+
+.nombre-lab-activa {
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.detalles-reserva-activa {
+  color: #64748b;
+  font-size: 0.88rem;
+  margin-top: 0.2rem;
+}
+
+.badge-confirmada {
+  background-color: #e0f2fe;
+  color: #0284c7;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.codigo-reserva-gris {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-left: 1rem;
+}
+
+/* CUADRÍCULA DE LABORATORIOS */
+.barra-filtros {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.barra-filtros.mini {
+  margin-bottom: 1rem;
+}
+
+.btn-filtro {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 0.45rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-filtro.activo {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  border-color: #1a1d3b;
+}
+
+.rejilla-laboratorios {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.tarjeta-lab-grid {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.tarjeta-lab-grid:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.tarjeta-lab-grid.tarjeta-deshabilitada {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.tarjeta-lab-grid.tarjeta-deshabilitada:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #e2e8f0;
+}
+
+.icono-cuadro-lab {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icono-cuadro-lab i {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.bg-quimica { background-color: #172554; color: #60a5fa; }
+.bg-engranaje { background-color: #1e1b4b; color: #a78bfa; }
+.bg-rayo { background-color: #18181b; color: #fbbf24; }
+
+.info-tarjeta-lab {
+  display: flex;
+  flex-direction: column;
+}
+
+.titulo-lab-grid {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.ubicacion-lab-grid {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.2rem 0 0.5rem 0;
+}
+
+.puestos-tag {
+  background-color: #f1f5f9;
+  color: #0284c7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.avatar-azul {
+  background-color: #2563eb !important;
+}
+
+/* ==========================================================================
+   MODAL 1: CONSULTA DE HORARIOS
+   ========================================================================== */
+.modal-horarios-ancho {
+  max-width: 480px !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.cabecera-modal-azul {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icono-cabecera-lab {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cabecera-modal-azul h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.cabecera-modal-azul p {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.cuerpo-modal-horarios {
+  padding: 1.5rem;
+}
+
+.fila-selector-fecha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.txt-horarios-disp {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.input-fecha-box {
+  border: 1px solid #e2e8f0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.matriz-horas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.btn-hora-slot {
+  text-align: center;
+  padding: 0.65rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.btn-hora-slot.disponible {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.btn-hora-slot.ocupado {
+  background-color: #f8fafc;
+  color: #cbd5e1;
+  text-decoration: line-through;
+  border: 1px solid #f1f5f9;
+}
+
+.leyenda-horarios {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.item-leyenda {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bolita {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.bolita.disp { background-color: #93c5fd; }
+.bolita.ocup { background-color: #e2e8f0; }
+
+.acciones-modal-horarios {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-gris-cerrar {
+  flex: 1;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-azul-reservar {
+  flex: 1;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   MODAL 2: WIZARD NUEVA RESERVA
+   ========================================================================== */
+.modal-wizard-ancho {
+  max-width: 580px !important;
+  padding: 1.75rem 2rem !important;
+}
+
+.cabecera-wizard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.titulo-wizard {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.indicadores-pasos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paso-circulo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paso-circulo.activo {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.paso-circulo.completado {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.linea-paso {
+  width: 16px;
+  height: 2px;
+  background-color: #e2e8f0;
+}
+
+.txt-paso-contador {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-left: 0.5rem;
+}
+
+.etiqueta-form-wizard {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.input-fecha-wizard {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+.rejilla-labs-wizard {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.item-lab-radio {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.item-lab-radio.seleccionado {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.info-lab-mini strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #0f172a;
+}
+
+.info-lab-mini span {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.icono-cuadro-lab.mini {
+  width: 34px;
+  height: 34px;
+}
+
+.fila-cabecera-bloques {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alerta-max-horas {
+  background-color: #fef3c7;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.rejilla-horas-seleccion {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.btn-slot-select {
+  text-align: center;
+  padding: 0.65rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #334155;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-slot-select.seleccionado {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.btn-slot-select.bloqueado {
+  background-color: #f1f5f9 !important;
+  color: #cbd5e1 !important;
+  text-decoration: line-through !important;
+  cursor: not-allowed !important;
+  border-color: #e2e8f0 !important;
+}
+
+.pie-wizard-paso {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.btn-azul-continuar {
+  flex: 1;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-azul-continuar:hover {
+  background-color: #1d4ed8;
+}
+
+/* PASO 2: INTEGRANTES */
+.cabecera-integrantes-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.titulo-integrantes-txt {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.sub-integrantes-txt {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.contador-badge-integrantes {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.lista-integrantes-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.tarjeta-integrante-fila {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.avatar-circulo-estudiante {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #1e1b4b;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-estud-fila {
+  flex: 1;
+}
+
+.nombre-estud-txt {
+  display: block;
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.codigo-estud-txt {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.btn-eliminar-integrante {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-eliminar-integrante:hover {
+  color: #ef4444;
+}
+
+.buscador-integrante-grupo {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.input-nombre-solo-lectura {
+  flex: 2;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.input-codigo-ingreso {
+  flex: 1.2;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+.btn-mas-azul {
+  width: 40px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mensaje-error-busqueda {
+  color: #ef4444;
+  font-size: 0.78rem;
+  margin-bottom: 1rem;
+}
+
+.caja-checkbox-insumos {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.label-checkbox-custom {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.txt-checkbox-titulo {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sub-checkbox-txt {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-left: 1.6rem;
+  margin-top: 0.15rem;
+}
+
+/* PASO 3: INSUMOS */
+.input-buscar-insumo {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.lista-checkbox-insumos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.item-insumo-check {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  transition: all 0.15s;
+}
+
+.item-insumo-check:hover {
+  background-color: #f8fafc;
+}
+
+.label-insumo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.nombre-insumo-label {
+  display: block;
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.sub-categoria-label {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* PASO 4: EPPs */
+.rejilla-epps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.card-epp-select {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.card-epp-select.seleccionado {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.card-epp-select.incluido {
+  background-color: #f8fafc;
+}
+
+.label-epp-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.icono-epp-emoji {
+  font-size: 1.35rem;
+}
+
+.info-epp-txt strong {
+  display: block;
+  font-size: 0.85rem;
+  color: #0f172a;
+}
+
+.info-epp-txt .gratis {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.info-epp-txt .costo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #d97706;
+}
+
+/* PASO 5: BOLETA */
+.recuadro-boleta-reserva {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.cabecera-boleta-azul {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecera-boleta-azul span {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.cabecera-boleta-azul strong {
+  font-size: 1.05rem;
+}
+
+.cuerpo-boleta-detalle {
+  padding: 1.25rem;
+  background-color: #ffffff;
+}
+
+.fila-meta-boleta {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.txt-lbl-boleta {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+
+.seccion-lista-boleta {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.lista-items-bullet {
+  padding-left: 1.25rem;
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+.tabla-totales-boleta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+}
+
+.fila-cobro {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.fila-cobro.total {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.5rem;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.caja-checkbox-terminos {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.txt-terminos-peq {
+  font-size: 0.8rem;
+  color: #334155;
+}
+
+.enlace-protocolos {
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.enlace-protocolos:hover {
+  color: #1d4ed8;
+}
+
+/* ==========================================================================
+   MODAL DE PAGO
+   ========================================================================== */
+.modal-pago-ancho {
+  max-width: 440px !important;
+  padding: 1.75rem !important;
+}
+
+.cabecera-pago-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.titulo-pago-txt {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sub-pago-txt {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.tarjeta-monto-azul {
+  background-color: #1a1d3b;
+  border-radius: 12px;
+  padding: 1.25rem;
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.lbl-total-pagar {
+  display: block;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.monto-total-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.icono-tarjeta-chip {
+  font-size: 1.5rem;
+}
+
+.rejilla-metodos-pago {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.opcion-metodo-pago {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  transition: all 0.15s;
+}
+
+.opcion-metodo-pago.seleccionado {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.icono-metodo {
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.btn-confirmar-pago-final {
+  width: 100%;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-confirmar-pago-final:hover {
+  background-color: #1d4ed8;
+}
+
+.encabezado-seccion-catalogo {
+  margin-bottom: 1.5rem;
+}
+
+.titulo-seccion-catalogo {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.subtitulo-seccion-catalogo {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+.fila-busqueda-catalogo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.caja-input-busqueda {
+  flex: 1;
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0.65rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.caja-input-busqueda .icono-lupa {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: #94a3b8;
+  margin-right: 0.75rem;
+}
+
+.caja-input-busqueda input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.badge-total-items {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.barra-filtros-catalogo {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-filtro-cat {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 0.45rem 1.15rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-filtro-cat.activo {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  border-color: #1a1d3b;
+}
+
+/* REJILLA DE 4 COLUMNAS IGUAL A FIGMA */
+.rejilla-catalogo {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.tarjeta-insumo-catalogo {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.tarjeta-insumo-catalogo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.06);
+}
+
+.contenedor-imagen-insumo {
+  position: relative;
+  height: 140px;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.etiqueta-flotante-categoria {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #e11d48;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.etiqueta-flotante-estado {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.etiqueta-flotante-estado.disp {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.etiqueta-flotante-estado.bajo {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.etiqueta-flotante-estado.agotado {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.placeholder-foto-producto span {
+  font-size: 3rem;
+}
+
+.cuerpo-tarjeta-insumo {
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.titulo-nombre-insumo {
+  font-size: 0.95rem;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.desc-corta-insumo {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.pie-tarjeta-insumo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  border-top: 1px solid #f8fafc;
+  padding-top: 0.5rem;
+}
+
+.unidad-medida-txt {
+  color: #94a3b8;
+}
+
+.stock-disponible-num.stock-disp {
+  color: #0d9488;
+  font-weight: 700;
+}
+
+.stock-disponible-num.stock-bajo {
+  color: #d97706;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   CATÁLOGO DE INSUMOS - ESTILOS VISUALES
+   ========================================================================== */
+.cabecera-catalogo-titulos {
+  margin-bottom: 1.5rem;
+}
+
+.titulo-seccion-catalogo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.subtitulo-seccion-catalogo {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.fila-busqueda-catalogo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.caja-input-busqueda {
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 0.65rem 1.4rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.caja-input-busqueda input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  color: #1e293b;
+  background: transparent;
+}
+
+.badge-total-items-pill {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  background-color: #f1f5f9;
+  padding: 0.4rem 0.95rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.barra-filtros-catalogo {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-filtro-cat {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 0.45rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-filtro-cat.activo {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  border-color: #1a1d3b;
+}
+
+.rejilla-catalogo {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.tarjeta-insumo-catalogo {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tarjeta-insumo-catalogo:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.07);
+}
+
+.contenedor-foto-insumo {
+  position: relative;
+  height: 145px;
+  width: 100%;
+}
+
+.fondo-imagen-laboratorio {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-cristal      { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+.img-herramienta  { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); }
+.img-metal        { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+.img-equipo       { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+.img-general      { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+
+.icono-simbolo-centro {
+  font-size: 3.2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
+.badge-cat-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: #e11d48;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.badge-estado-stock {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+}
+
+.badge-estado-stock.disp {
+  background-color: rgba(220, 252, 231, 0.95);
+  color: #15803d;
+}
+
+.badge-estado-stock.bajo {
+  background-color: rgba(254, 243, 199, 0.95);
+  color: #b45309;
+}
+
+.badge-estado-stock.agotado {
+  background-color: rgba(254, 226, 226, 0.95);
+  color: #b91c1c;
+}
+
+.cuerpo-info-insumo {
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.nombre-insumo-txt {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+  margin-bottom: 0.35rem;
+}
+
+.descripcion-insumo-txt {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+
+.pie-info-stock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 0.75rem;
+}
+
+.unidad-txt {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.cantidad-disponible-txt {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.cantidad-disponible-txt.color-disp {
+  color: #0d9488;
+}
+
+.cantidad-disponible-txt.color-bajo {
+  color: #d97706;
+}
+
+.foto-insumo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ==========================================================================
+   VISTA: PROTOCOLOS DE SEGURIDAD
+   ========================================================================== */
+.cabecera-protocolos-titulos {
+  margin-bottom: 1.75rem;
+}
+
+.titulo-seccion-protocolos {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.subtitulo-seccion-protocolos {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.contenedor-acordeones-protocolos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  max-width: 860px;
+}
+
+.acordeon-item {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease;
+}
+
+.acordeon-cabecera {
+  padding: 1.15rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background-color: #ffffff;
+}
+
+.acordeon-cabecera:hover {
+  background-color: #f8fafc;
+}
+
+.acordeon-titulo-flex {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+.icono-acordeon-azul {
+  font-size: 1.1rem;
+}
+
+.flecha-indicador {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.acordeon-contenido {
+  display: none;
+  padding: 0.5rem 1.5rem 1.25rem 3.25rem;
+  border-top: 1px solid #f1f5f9;
+  background-color: #ffffff;
+}
+
+.acordeon-item.abierto .acordeon-contenido {
+  display: block;
+}
+
+.lista-normas-bullet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: #334155;
+  font-size: 0.88rem;
+}
+
+.lista-normas-bullet li {
+  list-style-type: disc;
+}
+
+/* BANNER DE ALERTA AMARILLO (CONDICIONAL) */
+.banner-alerta-amarillo {
+  background-color: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 12px;
+  padding: 1.15rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 860px;
+}
+
+.icono-alerta-triangulo {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.texto-alerta-amarillo strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #854d0e;
+  margin-bottom: 0.15rem;
+}
+
+.texto-alerta-amarillo p {
+  font-size: 0.84rem;
+  color: #a16207;
+  margin: 0;
+}
+
+/* ==========================================================================
+   CHECK-IN PRESENCIAL ADMINISTRADOR
+   ========================================================================== */
+.encabezado-checkin-seccion {
+  margin-bottom: 2rem;
+}
+
+.lista-tarjetas-checkin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 980px;
+}
+
+.tarjeta-reserva-checkin-fila {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.icono-cuadro-checkin {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.icono-cuadro-checkin.bg-quimica { background-color: #ecfeff; }
+.icono-cuadro-checkin.bg-rayo    { background-color: #fef2f2; }
+
+.info-central-checkin {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fila-nombre-estado {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nombre-lab-checkin {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.badge-estado-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.badge-estado-pill.estado-confirmada {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-estado-pill.estado-pendiente {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.metadatos-horario-checkin {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.pills-integrantes-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.pill-integrante-nombre {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.accion-derecha-checkin {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.codigo-reserva-checkin {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.btn-verde-iniciar {
+  background-color: #0d9488;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-verde-iniciar:hover {
+  background-color: #0f766e;
+}
+
+/* ESTADO VACÍO (FIGMA) */
+.tarjeta-sin-checkins-vacia {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 5rem 2rem;
+  text-align: center;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.icono-fiesta-confeti {
+  font-size: 2.75rem;
+}
+
+.tarjeta-sin-checkins-vacia strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   MODAL CHECK-IN
+   ========================================================================== */
+.fondo-modal-oscuro {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-checkin-ancho {
+  width: 90%;
+  max-width: 540px;
+  background: #ffffff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.cabecera-modal-checkin {
+  background-color: #1e1b4b; /* Azul noche oscuro de Figma */
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cabecera-modal-checkin h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.cabecera-modal-checkin p {
+  font-size: 0.82rem;
+  color: #a5b4fc;
+  margin: 0.2rem 0 0 0;
+}
+
+.btn-cerrar-blanco {
+  background: transparent;
+  border: none;
+  color: #a5b4fc;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.cuerpo-modal-checkin {
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.subtitulo-seccion-modal {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.6rem;
+  display: block;
+}
+
+.lista-verif-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Tarjeta individual de validación */
+.tarjeta-check-item {
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tarjeta-check-item:hover {
+  background-color: #f1f5f9;
+}
+
+.check-oculto {
+  display: none;
+}
+
+.caja-checkbox-cuadro {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.avatar-circulo-verif {
+  width: 32px;
+  height: 32px;
+  background-color: #0f172a;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.emoji-epp-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.info-texto-verif {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.nombre-persona-verif, .nombre-item-verif {
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.sub-codigo-verif, .sub-unidad-verif {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.icono-check-verde {
+  color: #10b981;
+  font-weight: 900;
+  font-size: 1.05rem;
+  display: none;
+}
+
+/* Estado activo / marcado */
+.tarjeta-check-item.marcado {
+  border-color: #10b981;
+  background-color: #ffffff;
+}
+
+.tarjeta-check-item.marcado .caja-checkbox-cuadro {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.tarjeta-check-item.marcado .icono-check-verde {
+  display: block;
+}
+
+/* Pie del modal */
+.pie-modal-checkin {
+  border-top: 1px solid #f1f5f9;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.contador-verificados-txt {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.btn-confirmar-checkin-verde {
+  background-color: #0d9488;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-confirmar-checkin-verde:hover {
+  background-color: #0f766e;
+}

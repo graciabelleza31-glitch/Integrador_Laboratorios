@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Protocolos de Seguridad</title>
+  <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="contenedor-app">
+    
+    <!-- BARRA LATERAL -->
+    <aside class="barra-lateral">
+      <div class="logo-lateral">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+      </div>
+
+      <nav class="navegacion-menu">
+        <a href="#" class="item-menu">
+          <i data-lucide="user"></i>
+          <span>Cuenta</span>
+        </a>
+        <a th:href="@{/alumno/laboratorios}" class="item-menu">
+          <i data-lucide="flask-conical"></i>
+          <span>Laboratorios</span>
+        </a>
+        <a th:href="@{/alumno/catalogos}" class="item-menu">
+          <i data-lucide="box"></i>
+          <span>Catálogos</span>
+        </a>
+        <a th:href="@{/alumno/protocolos}" class="item-menu">
+            <i data-lucide="file-text"></i>
+            <span>Protocolos</span>
+        </a>
+        <a href="#" class="item-menu item-incidencias">
+          <i data-lucide="alert-triangle"></i>
+          <span>Incidencias</span>
+          <span th:if="${estaBloqueado}" class="badge-alerta-roja" th:text="${numIncidencias > 0 ? numIncidencias : 1}">1</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="area-principal">
+      <header class="cabecera-superior">
+        <div class="logo-cabecera">
+          <span class="insignia-utp">UTP</span>
+          <span class="texto-lab">+Lab</span>
+        </div>
+
+        <div class="perfil-acciones">
+          <div class="contenedor-campana">
+            <i data-lucide="bell"></i>
+            <span th:if="${estaBloqueado}" class="punto-alerta-campana" th:text="${numIncidencias > 0 ? numIncidencias : 1}">1</span>
+          </div>
+          <div class="datos-perfil">
+            <span class="titulo-saludo" th:text="'Hola, ' + ${alumno.nombre}">Hola, Mariafernanda</span>
+            <span class="subtitulo-rol">Estudiante</span>
+          </div>
+          <div class="circulo-avatar avatar-azul" th:text="${#strings.substring(alumno.nombre,0,1) + #strings.substring(alumno.apellido,0,1)}">MB</div>
+          <a th:href="@{/logout}" class="enlace-salir">
+            <i data-lucide="log-out"></i>
+            <span>Salir</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- SECCIÓN PROTOCOLOS -->
+      <section class="seccion-checkout">
+        
+        <div class="cabecera-protocolos-titulos">
+          <h1 class="titulo-seccion-protocolos">Protocolos de Seguridad</h1>
+          <p class="subtitulo-seccion-protocolos">Normas obligatorias para todos los usuarios</p>
+        </div>
+
+        <div class="contenedor-acordeones-protocolos">
+          
+          <!-- ACORDEÓN 1: NORMAS GENERALES -->
+          <div class="acordeon-item abierto" id="acordeon1">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon1')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">🛡️</span>
+                <strong>Normas generales</strong>
+              </div>
+              <span class="flecha-indicador">▲</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Usar bata en todo momento.</li>
+                <li>Prohibido consumir alimentos.</li>
+                <li>Reportar accidentes al instante.</li>
+                <li>No correr dentro del laboratorio.</li>
+                <li>Conocimiento de extintor, lavaojos y ducha.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN 2: MANEJO DE SUSTANCIAS -->
+          <div class="acordeon-item" id="acordeon2">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon2')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">🧪</span>
+                <strong>Manejo de sustancias</strong>
+              </div>
+              <span class="flecha-indicador">▼</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Consultar la ficha MSDS antes de usar reactivos.</li>
+                <li>Nunca pipetear con la boca.</li>
+                <li>Ácidos y bases en campana de extracción.</li>
+                <li>Agregar ácido al agua, nunca al revés.</li>
+                <li>Residuos en contenedores designados.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN 3: USO DE EQUIPOS -->
+          <div class="acordeon-item" id="acordeon3">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon3')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">🔬</span>
+                <strong>Uso de equipos</strong>
+              </div>
+              <span class="flecha-indicador">▼</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Verificar el estado del equipo antes de encenderlo.</li>
+                <li>No manipular equipos eléctricos con manos mojadas.</li>
+                <li>Reportar cualquier falla técnica al instructor de inmediato.</li>
+                <li>Apagar y desconectar al terminar la práctica.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN 4: RESIDUOS Y DISPOSICIÓN -->
+          <div class="acordeon-item" id="acordeon4">
+            <div class="acordeon-cabecera" onclick="toggleAcordeon('acordeon4')">
+              <div class="acordeon-titulo-flex">
+                <span class="icono-acordeon-azul">♻️</span>
+                <strong>Residuos y disposición</strong>
+              </div>
+              <span class="flecha-indicador">▼</span>
+            </div>
+            <div class="acordeon-contenido">
+              <ul class="lista-normas-bullet">
+                <li>Separar residuos por tipo.</li>
+                <li>No verter reactivos al desagüe.</li>
+                <li>Solventes en bidones especiales.</li>
+                <li>Cortopunzantes en guardianes.</li>
+                <li>Limpiar mesón con hipoclorito al final.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ALERTA AMARILLA INFERIOR: SOLO APARECE SI EL ESTUDIANTE ESTÁ BLOQUEADO POR DEUDA/INCIDENCIA -->
+        <div th:if="${estaBloqueado}" class="banner-alerta-amarillo">
+          <div class="icono-alerta-triangulo">⚠️</div>
+          <div class="texto-alerta-amarillo">
+            <strong>Emergencias: ext. 1234</strong>
+            <p>El incumplimiento puede derivar en suspensión del acceso al laboratorio.</p>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    function toggleAcordeon(idItem) {
+      const item = document.getElementById(idItem);
+      const estaAbierto = item.classList.contains('abierto');
+
+      // Cerrar todos los acordeones
+      document.querySelectorAll('.acordeon-item').forEach(acc => {
+        acc.classList.remove('abierto');
+        acc.querySelector('.flecha-indicador').innerText = '▼';
+      });
+
+      // Si no estaba abierto, lo abrimos
+      if (!estaAbierto) {
+        item.classList.add('abierto');
+        item.querySelector('.flecha-indicador').innerText = '▲';
+      }
+    }
+  </script>
+</body>
+</html>
