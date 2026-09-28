@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTP +Lab - Mis Incidencias</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; display: flex; min-height: 100vh; }
+
+    /* BARRA LATERAL */
+    .barra-lateral { width: 240px; background-color: #1e1b4b; color: #ffffff; display: flex; flex-direction: column; flex-shrink: 0; }
+    .logo-lateral { padding: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .insignia-utp { background-color: #000000; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 0.2rem 0.45rem; border-radius: 4px; }
+    .texto-lab { color: #94a3b8; font-weight: 600; font-size: 1rem; }
+    .navegacion-menu { display: flex; flex-direction: column; gap: 0.4rem; padding: 0 0.8rem; margin-top: 1rem; }
+    .item-menu { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 1rem; color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: 8px; transition: all 0.2s ease; }
+    .item-menu:hover { background-color: rgba(255, 255, 255, 0.06); color: #ffffff; }
+    .item-menu.activo { background-color: rgba(255, 255, 255, 0.12); color: #ffffff; font-weight: 600; }
+    .badge-menu-alerta { background-color: #ef4444; color: #ffffff; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; padding: 0.1rem 0.45rem; margin-left: auto; }
+
+    /* CONTENEDOR PRINCIPAL */
+    .area-principal { flex: 1; display: flex; flex-direction: column; }
+    .cabecera-superior { height: 70px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; border-bottom: 1px solid #e2e8f0; }
+    .logo-header { display: flex; align-items: center; gap: 0.5rem; }
+    .perfil-usuario { display: flex; align-items: center; gap: 1.2rem; }
+    .campana-notif { position: relative; cursor: pointer; color: #64748b; }
+    .campana-badge { position: absolute; top: -6px; right: -6px; background-color: #ef4444; color: white; font-size: 0.65rem; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .datos-usuario { text-align: right; }
+    .datos-usuario .nombre { display: block; font-size: 0.85rem; font-weight: 700; color: #0f172a; }
+    .datos-usuario .rol { font-size: 0.75rem; color: #64748b; }
+    .avatar-circulo { width: 36px; height: 36px; border-radius: 50%; background-color: #0f172a; color: #ffffff; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .btn-salir { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; color: #ef4444; font-size: 0.82rem; font-weight: 600; border: 1px solid #fecaca; border-radius: 6px; padding: 0.4rem 0.75rem; }
+
+    /* CONTENIDO */
+    .contenido-incidencias { padding: 2.5rem 3.5rem; max-width: 1050px; }
+    .header-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+    .titulo-seccion { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
+    .subtitulo-seccion { font-size: 0.9rem; color: #64748b; margin-top: 0.2rem; }
+    .badge-pendientes-rojo { background-color: #fee2e2; color: #dc2626; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; }
+
+    /* BANNER DE BLOQUEO */
+    .banner-bloqueo { background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 2rem; }
+    .icono-bloqueo-banner { color: #e11d48; font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
+    .titulo-banner { font-size: 0.95rem; font-weight: 700; color: #be123c; margin-bottom: 0.25rem; }
+    .desc-banner { font-size: 0.85rem; color: #e11d48; line-height: 1.4; }
+
+    /* TARJETA */
+    .card-incidencia-estudiante { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem 1.8rem; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; gap: 1.2rem; }
+    .fila-top-card { display: flex; justify-content: space-between; align-items: flex-start; }
+    .datos-item-danado { display: flex; gap: 1rem; align-items: flex-start; }
+    .icono-caja-morada { width: 38px; height: 38px; background-color: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid #e2e8f0; }
+    .nombre-item-titulo { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+    
+    .badge-notificada-amarillo { background-color: #fef3c7; color: #b45309; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 9999px; }
+    .badge-pagada-verde { background-color: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 9999px; }
+
+    .desc-rotura { font-size: 0.88rem; color: #475569; margin-top: 0.35rem; }
+    .codigo-inc-gris { font-size: 0.85rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; }
+
+    .grid-info-incidencia { display: grid; grid-template-columns: 1fr 1fr 1fr; padding-left: 3.4rem; gap: 1rem; }
+    .col-detalle { display: flex; flex-direction: column; gap: 0.2rem; }
+    .etiqueta-dim { font-size: 0.78rem; color: #94a3b8; }
+    .valor-fuerte { font-size: 0.88rem; font-weight: 600; color: #0f172a; }
+
+    .fila-bottom-card { display: flex; justify-content: space-between; align-items: flex-end; padding-left: 3.4rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; }
+    .seccion-costo-reposicion { display: flex; flex-direction: column; gap: 0.2rem; }
+    .monto-rojo-grande { font-size: 1.25rem; font-weight: 800; color: #ef4444; }
+    .texto-notificado-fecha { font-size: 0.78rem; color: #64748b; display: flex; align-items: center; gap: 0.4rem; margin-top: 0.25rem; }
+
+    .btn-pagar-ahora { background-color: #2563eb; color: #ffffff; border: none; padding: 0.65rem 1.4rem; font-size: 0.88rem; font-weight: 700; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s ease; }
+    .btn-pagar-ahora:hover { background-color: #1d4ed8; }
+
+    .texto-regularizado-verde { color: #059669; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; }
+
+    /* ========================================================
+       ESTILOS DEL MODAL DE PAGO EXACTO A FIGMA
+       ======================================================== */
+    .fondo-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .caja-modal-pago { background-color: #ffffff; border-radius: 18px; width: 92%; max-width: 440px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; }
+    .btn-cerrar-x { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94a3b8; }
+    .btn-cerrar-x:hover { color: #0f172a; }
+    .modal-titulo { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 0.15rem; }
+    .modal-subtitulo { font-size: 0.82rem; color: #64748b; margin-bottom: 1.25rem; }
+
+    /* Tarjeta azul oscura de Monto */
+    .tarjeta-monto-azul { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); color: #ffffff; border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .label-total-pagar { font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 0.25rem; }
+    .valor-total-pagar { font-size: 1.45rem; font-weight: 800; }
+
+    /* Métodos de Pago Tabs */
+    .grid-metodos-pago { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 1.2rem; }
+    .opcion-metodo { border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; transition: all 0.2s; background-color: #ffffff; }
+    .opcion-metodo.seleccionado { border-color: #10b981; background-color: #f0fdf4; }
+    .opcion-metodo .icono-metodo { font-size: 1.3rem; }
+    .opcion-metodo .label-metodo { font-size: 0.75rem; font-weight: 600; color: #334155; text-align: center; }
+
+    /* Vista de QR */
+    .contenedor-qr-pago { border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.2rem; text-align: center; margin-bottom: 1.2rem; }
+    .titulo-qr { font-size: 0.9rem; font-weight: 700; color: #059669; margin-bottom: 0.8rem; }
+    .imagen-qr { width: 155px; height: 155px; margin: 0 auto 0.8rem auto; display: block; border-radius: 8px; }
+    .subtexto-qr { font-size: 0.78rem; color: #64748b; margin-bottom: 0.2rem; }
+    .comercio-qr { font-size: 0.88rem; font-weight: 800; color: #0f172a; }
+
+    /* Botones de acción del Modal */
+    .btn-accion-modal { width: 100%; padding: 0.75rem; font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
+    .btn-deshabilitado { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    .btn-primario-azul { background-color: #2563eb; color: #ffffff; }
+    .btn-primario-azul:hover { background-color: #1d4ed8; }
+
+    /* Pantalla de Éxito */
+    .pantalla-exito { text-align: center; padding: 1rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
+    .icono-exito-verde { width: 64px; height: 64px; border-radius: 14px; background-color: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 0.5rem; }
+    .titulo-exito { font-size: 1.3rem; font-weight: 800; color: #0f172a; }
+    .monto-exito { font-size: 0.88rem; color: #475569; }
+    .codigo-txn { font-size: 0.78rem; color: #94a3b8; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA LATERAL ALUMNO -->
+  <aside class="barra-lateral">
+    <div class="logo-lateral">
+      <span class="insignia-utp">UTP</span>
+      <span class="texto-lab">+Lab</span>
+    </div>
+
+    <nav class="navegacion-menu">
+      <a th:href="@{/alumno/cuenta}" class="item-menu">
+        <i data-lucide="user"></i>
+        <span>Cuenta</span>
+      </a>
+      <a th:href="@{/alumno/laboratorios}" class="item-menu">
+        <i data-lucide="flask-conical"></i>
+        <span>Laboratorios</span>
+      </a>
+      <a th:href="@{/alumno/catalogos}" class="item-menu">
+        <i data-lucide="box"></i>
+        <span>Catálogos</span>
+      </a>
+      <a th:href="@{/alumno/protocolos}" class="item-menu">
+        <i data-lucide="file-text"></i>
+        <span>Protocolos</span>
+      </a>
+      <!-- ENLACE CORREGIDO: th:href="@{/alumno/incidencias}" -->
+      <a th:href="@{/alumno/incidencias}" class="item-menu activo">
+        <i data-lucide="alert-triangle"></i>
+        <span>Incidencias</span>
+        <span th:if="${numIncidencias > 0}" id="badgeMenuLateral" class="badge-menu-alerta" th:text="${numIncidencias}">1</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <main class="area-principal">
+    
+    <!-- CABECERA SUPERIOR -->
+    <header class="cabecera-superior">
+      <div class="logo-header">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+      </div>
+
+      <div class="perfil-usuario">
+        <div class="campana-notif">
+          <i data-lucide="bell"></i>
+          <span th:if="${pendientesCount > 0}" id="badgeCampana" class="campana-badge" th:text="${pendientesCount}">1</span>
+        </div>
+        <div class="datos-usuario">
+          <span class="nombre" th:text="${alumno != null ? alumno.nombre + ' ' + alumno.apellido : 'Mariafernanda Bruno Santos'}">Mariafernanda Bruno Santos</span>
+          <span class="rol">Estudiante</span>
+        </div>
+        <div class="avatar-circulo">MB</div>
+        <a th:href="@{/logout}" class="btn-salir">
+          <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+          <span>Salir</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- SECCIÓN CONTENIDO -->
+    <section class="contenido-incidencias">
+      
+      <!-- ENCABEZADO -->
+      <div class="header-seccion">
+        <div>
+          <h1 class="titulo-seccion">Mis Incidencias</h1>
+          <p class="subtitulo-seccion">Daños reportados y estados de pago</p>
+        </div>
+
+        <span th:if="${pendientesCount > 0}" id="badgeHeaderPendientes" class="badge-pendientes-rojo">
+          <i data-lucide="minus-circle" style="width: 14px; height: 14px;"></i>
+          <span th:text="${pendientesCount} + ' pendiente(s)'">1 pendiente(s)</span>
+        </span>
+      </div>
+
+      <!-- BANNER DE BLOQUEO -->
+      <div th:if="${estaBloqueado}" id="bannerBloqueoAlerta" class="banner-bloqueo">
+        <i data-lucide="minus-circle" class="icono-bloqueo-banner"></i>
+        <div>
+          <h4 class="titulo-banner">Reservas bloqueadas por incidencias pendientes</h4>
+          <p class="desc-banner">
+            Tienes <span th:text="${pendientesCount}">1</span> incidencia(s) sin resolver. Debes pagar el costo de reposición para poder realizar nuevas reservas o unirte a grupos.
+          </p>
+        </div>
+      </div>
+
+      <!-- LISTADO DE TARJETAS -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- AGREGAR AQUÍ: MENSAJE CUANDO NO HAY DEUDAS -->
+        <div th:if="${#lists.isEmpty(incidencias)}" style="text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1.5px dashed #cbd5e1; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background-color: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem auto; border: 2px solid #a7f3d0;">
+            ✓
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem;">¡Sin incidencias pendientes!</h3>
+          <p style="font-size: 0.88rem; color: #64748b; max-width: 420px; margin: 0 auto;">No tienes sanciones ni cargos pendientes de pago. Tu cuenta está habilitada para reservar laboratorios y materiales.</p>
+        </div>
+
+        <div th:each="inc : ${incidencias}" class="card-incidencia-estudiante" th:id="'tarjeta-inc-' + ${inc.idSancion}">
+          
+          <!-- PARTE SUPERIOR -->
+          <div class="fila-top-card">
+            <div class="datos-item-danado">
+              <div class="icono-caja-morada" th:id="'icono-box-' + ${inc.idSancion}">
+                <i th:if="${!inc.resuelto}" data-lucide="flask-conical" style="color: #6366f1; width: 20px; height: 20px;"></i>
+                <i th:if="${inc.resuelto}" data-lucide="check-square" style="color: #10b981; width: 20px; height: 20px;"></i>
+              </div>
+              <div>
+                <div class="nombre-item-titulo">
+                  <span th:text="${inc.item}">Erlenmeyer 250mL</span>
+                  <span th:id="'badge-estado-' + ${inc.idSancion}" 
+                        th:class="${inc.resuelto ? 'badge-pagada-verde' : 'badge-notificada-amarillo'}" 
+                        th:text="${inc.estado}">Notificada</span>
+                </div>
+                <p class="desc-rotura" th:text="${inc.motivo}">Frasco devuelto con fractura en el cuello del mismo.</p>
+              </div>
+            </div>
+
+            <span class="codigo-inc-gris" th:text="${inc.idSancion}">INC-003</span>
+          </div>
+
+          <!-- PARTE MEDIA (GRID) -->
+          <div class="grid-info-incidencia">
+            <div class="col-detalle">
+              <span class="etiqueta-dim">Laboratorio</span>
+              <strong class="valor-fuerte" th:text="${inc.laboratorio}">Lab. Química</strong>
+            </div>
+            <div class="col-detalle">
+              <span class="etiqueta-dim">Reserva</span>
+              <strong class="valor-fuerte" th:text="${inc.reserva}">R-001</strong>
+            </div>
+            <div class="col-detalle">
+              <span class="etiqueta-dim">Fecha</span>
+              <strong class="valor-fuerte" th:text="${inc.fecha}">2026-08-19</strong>
+            </div>
+          </div>
+
+          <!-- PARTE INFERIOR (COSTO + BOTÓN) -->
+          <div class="fila-bottom-card">
+            <div class="seccion-costo-reposicion">
+              <span class="etiqueta-dim">Costo de reposición</span>
+              <strong class="monto-rojo-grande" th:text="${inc.costo}">S/ 350.00</strong>
+              <span class="texto-notificado-fecha">
+                📧 Notificado el: <span th:text="${inc.fechaNotificado}">2026-08-19 11:30</span>
+              </span>
+            </div>
+
+            <!-- Botón Pagar o Regularizado -->
+            <div th:id="'contenedor-accion-' + ${inc.idSancion}">
+              <button th:if="${!inc.resuelto}" 
+                      type="button" 
+                      class="btn-pagar-ahora" 
+                      th:data-id="${inc.idSancion}" 
+                      th:data-item="${inc.item}" 
+                      th:data-monto="${inc.costo}" 
+                      onclick="abrirModalPago(this)">
+                <i data-lucide="credit-card" style="width: 16px; height: 16px;"></i>
+                Pagar ahora
+              </button>
+
+              <span th:if="${inc.resuelto}" class="texto-regularizado-verde">
+                ✓ Pagado y regularizado
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ========================================================
+       MODAL DE PAGO (Figma)
+       ======================================================== -->
+  <div id="modalPagoIncidencia" class="fondo-modal" style="display: none;">
+    <div class="caja-modal-pago">
+      <button class="btn-cerrar-x" onclick="cerrarModalPago()">&times;</button>
+      
+      <!-- PASO 1: SELECCIONAR MÉTODO Y CONFIRMAR -->
+      <div id="pasoPagoSeleccion">
+        <h3 id="modalTituloInc" class="modal-titulo">Pago de Incidencia · Erlenmeyer 250mL</h3>
+        <p class="modal-subtitulo">Selecciona cómo pagar</p>
+
+        <!-- Tarjeta de Monto -->
+        <div class="tarjeta-monto-azul">
+          <div>
+            <span class="label-total-pagar">TOTAL A PAGAR</span>
+            <span id="modalMontoPagar" class="valor-total-pagar">S/ 350.00</span>
+          </div>
+          <i data-lucide="credit-card" style="width: 28px; height: 28px; opacity: 0.8;"></i>
+        </div>
+
+        <!-- Opciones de pago (Yape / Plin / Transferencia) -->
+        <div class="grid-metodos-pago">
+          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'yape')">
+            <span class="icono-metodo">📱</span>
+            <span class="label-metodo">Yape</span>
+          </div>
+          <div class="opcion-metodo seleccionado" id="metodoPlinDefault" onclick="seleccionarMetodo(this, 'plin')">
+            <span class="icono-metodo">💚</span>
+            <span class="label-metodo">Plin</span>
+          </div>
+          <div class="opcion-metodo" onclick="seleccionarMetodo(this, 'banco')">
+            <span class="icono-metodo">🏦</span>
+            <span class="label-metodo">Cuenta Interbancaria</span>
+          </div>
+        </div>
+
+        <!-- Caja de QR (Estado Plin como en Figma) -->
+        <div id="cajaDetalleMetodo" class="contenedor-qr-pago">
+          <h4 id="tituloQrMetodo" class="titulo-qr">Pagar con Plin</h4>
+          <!-- QR Dinámico en SVG / Imagen -->
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTP-LAB-PAGO-350&color=059669" 
+               alt="QR Plin" class="imagen-qr" />
+          <p class="subtexto-qr">Escanea con la app Plin</p>
+          <p id="labelComercioQr" class="comercio-qr">UTP Lab · S/ 350.00</p>
+        </div>
+
+        <!-- Botón de Confirmación -->
+        <button id="btnConfirmarPago" type="button" class="btn-accion-modal btn-primario-azul" onclick="ejecutarPagoBackend()">
+          Confirmar pago · S/ 350.00
+        </button>
+      </div>
+
+      <!-- PASO 2: ¡PAGO EXITOSO! (Figma) -->
+      <div id="pasoPagoExitoso" class="pantalla-exito" style="display: none;">
+        <div class="icono-exito-verde">
+          <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h3 class="titulo-exito">¡Pago exitoso!</h3>
+        <p id="subtextoExitoMonto" class="monto-exito">S/ 350.00 procesados correctamente</p>
+        <span id="textoTxnCode" class="codigo-txn">TXN-0560042900</span>
+
+        <button type="button" class="btn-accion-modal btn-primario-azul" style="margin-top: 1rem;" onclick="finalizarPagoYRecargar()">
+          Listo
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let idSancionActual = '';
+    let montoActual = 'S/ 350.00';
+
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
+    function abrirModalPago(btn) {
+      idSancionActual = btn.getAttribute('data-id');
+      const item = btn.getAttribute('data-item') || 'Material de Lab';
+      montoActual = btn.getAttribute('data-monto') || 'S/ 350.00';
+
+      document.getElementById('modalTituloInc').innerText = `Pago de Incidencia · ${item}`;
+      document.getElementById('modalMontoPagar').innerText = montoActual;
+      document.getElementById('labelComercioQr').innerText = `UTP Lab · ${montoActual}`;
+      document.getElementById('btnConfirmarPago').innerText = `Confirmar pago · ${montoActual}`;
+
+      // Mostrar paso 1, ocultar paso 2
+      document.getElementById('pasoPagoSeleccion').style.display = 'block';
+      document.getElementById('pasoPagoExitoso').style.display = 'none';
+      document.getElementById('modalPagoIncidencia').style.display = 'flex';
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function cerrarModalPago() {
+      document.getElementById('modalPagoIncidencia').style.display = 'none';
+    }
+
+    function seleccionarMetodo(elem, metodo) {
+      document.querySelectorAll('.opcion-metodo').forEach(el => el.classList.remove('seleccionado'));
+      elem.classList.add('seleccionado');
+
+      const tituloQr = document.getElementById('tituloQrMetodo');
+      if (metodo === 'yape') {
+        tituloQr.innerText = 'Pagar con Yape';
+        tituloQr.style.color = '#7c3aed';
+      } else if (metodo === 'plin') {
+        tituloQr.innerText = 'Pagar con Plin';
+        tituloQr.style.color = '#059669';
+      } else {
+        tituloQr.innerText = 'Transferencia BCP / Interbank';
+        tituloQr.style.color = '#0284c7';
+      }
+    }
+
+    function ejecutarPagoBackend() {
+      const btn = document.getElementById('btnConfirmarPago');
+      btn.innerText = "Procesando pago...";
+      btn.disabled = true;
+
+      fetch(`/alumno/incidencias/pagar/${idSancionActual}`, {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Pasar a pantalla de ¡Pago Exitoso! (Figma)
+        document.getElementById('pasoPagoSeleccion').style.display = 'none';
+        document.getElementById('subtextoExitoMonto').innerText = `${montoActual} procesados correctamente`;
+        document.getElementById('textoTxnCode').innerText = data.transaccion || 'TXN-0560042900';
+        document.getElementById('pasoPagoExitoso').style.display = 'flex';
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      })
+      .catch(() => {
+        alert("Error al procesar el pago. Por favor intenta de nuevo.");
+        btn.innerText = `Confirmar pago · ${montoActual}`;
+        btn.disabled = false;
+      });
+    }
+
+    function finalizarPagoYRecargar() {
+      // 1. Ocultar modal
+      cerrarModalPago();
+
+      // 2. Ocultar banner de bloqueo rojo
+      const banner = document.getElementById('bannerBloqueoAlerta');
+      if (banner) banner.style.display = 'none';
+
+      // 3. Ocultar badges de alerta
+      const badgeHeader = document.getElementById('badgeHeaderPendientes');
+      if (badgeHeader) badgeHeader.style.display = 'none';
+      const badgeCampana = document.getElementById('badgeCampana');
+      if (badgeCampana) badgeCampana.style.display = 'none';
+      const badgeMenu = document.getElementById('badgeMenuLateral');
+      if (badgeMenu) badgeMenu.style.display = 'none';
+
+      // 4. Cambiar tarjeta a "Pagada" y "✓ Pagado y regularizado"
+      const badgeEstado = document.getElementById(`badge-estado-${idSancionActual}`);
+      if (badgeEstado) {
+        badgeEstado.className = 'badge-pagada-verde';
+        badgeEstado.innerText = 'Pagada';
+      }
+
+      const iconoBox = document.getElementById(`icono-box-${idSancionActual}`);
+      if (iconoBox) {
+        iconoBox.innerHTML = '<i data-lucide="check-square" style="color: #10b981; width: 20px; height: 20px;"></i>';
+      }
+
+      const contenedorAccion = document.getElementById(`contenedor-accion-${idSancionActual}`);
+      if (contenedorAccion) {
+        contenedorAccion.innerHTML = '<span class="texto-regularizado-verde">✓ Pagado y regularizado</span>';
+      }
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

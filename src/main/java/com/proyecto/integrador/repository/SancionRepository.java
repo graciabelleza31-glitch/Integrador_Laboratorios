@@ -10,9 +10,16 @@ import com.proyecto.integrador.modelo.Sancion;
 @Repository
 public interface SancionRepository extends JpaRepository<Sancion, String> {
 
-    // Devuelve las sanciones de un alumno según su estado (ej: "PENDIENTE")
     List<Sancion> findByAlumno_IdEstudAndEstado(String idEstud, String estado);
 
-    // Consulta rápida si tiene alguna sanción pendiente (true/false)
     boolean existsByAlumno_IdEstudAndEstado(String idEstud, String estado);
+
+    List<Sancion> findByEstado(String estado);
+
+    // Búsqueda por estado para el Dashboard y el listado de Incidencias
+    List<Sancion> findByAlumno_IdEstud(String idEstud);
+
+    long countByAlumno_IdEstudAndEstadoNotIn(String idEstud, List<String> estados);
+
+    
 }

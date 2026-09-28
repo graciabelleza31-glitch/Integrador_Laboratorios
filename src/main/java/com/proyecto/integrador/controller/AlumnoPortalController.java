@@ -90,7 +90,7 @@ public class AlumnoPortalController {
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
         boolean estaBloqueado = incidenciasPendientes > 0
                 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
-                || estadoCuenta.contains("BLOQUEADO");
+                || estadoCuenta.contains("BLOQUEADO_POR_DUEUDA");
 
         // Listar laboratorios
         List<Laboratorio> labs = laboratorioRepositorio.findAll();
@@ -167,7 +167,7 @@ public class AlumnoPortalController {
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
         boolean estaBloqueado = incidenciasPendientes > 0
                 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
-                || estadoCuenta.contains("BLOQUEADO");
+                || estadoCuenta.contains("BLOQUEADO_POR_DEUDA");
 
         // Obtener todos los insumos de la base de datos
         List<Producto> todosLosProductos = productoRepositorio.findAll();
@@ -331,7 +331,7 @@ public class AlumnoPortalController {
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
         boolean estaBloqueado = incidenciasPendientes > 0
                 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
-                || estadoCuenta.contains("BLOQUEADO");
+                || estadoCuenta.contains("BLOQUEADO_POR_DEUDA");
 
         modelo.addAttribute("alumno", alumno);
         modelo.addAttribute("estaBloqueado", estaBloqueado);

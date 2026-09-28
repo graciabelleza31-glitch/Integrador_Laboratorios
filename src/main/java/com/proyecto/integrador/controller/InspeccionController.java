@@ -2,25 +2,35 @@ package com.proyecto.integrador.controller;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.proyecto.integrador.modelo.Alumno;
+import com.proyecto.integrador.modelo.Laboratorio;
 import com.proyecto.integrador.modelo.Producto;
 import com.proyecto.integrador.modelo.Reserva;
+import com.proyecto.integrador.modelo.ReservaIntegrante;
 import com.proyecto.integrador.modelo.ReservaItem;
 import com.proyecto.integrador.modelo.Sancion;
+import com.proyecto.integrador.repository.AlumnoRepository;
+import com.proyecto.integrador.repository.LaboratorioRepository;
 import com.proyecto.integrador.repository.ProductoRepository;
+import com.proyecto.integrador.repository.ReservaIntegranteRepository;
 import com.proyecto.integrador.repository.ReservaItemRepository;
 import com.proyecto.integrador.repository.ReservaRepository;
 import com.proyecto.integrador.repository.SancionRepository;
@@ -35,6 +45,9 @@ public class InspeccionController {
     private ReservaRepository reservaRepositorio;
 
     @Autowired
+    private ReservaIntegranteRepository reservaIntegranteRepositorio;
+
+    @Autowired
     private ReservaItemRepository reservaItemRepositorio;
 
     @Autowired
@@ -43,213 +56,287 @@ public class InspeccionController {
     @Autowired
     private SancionRepository sancionRepositorio;
 
+    @Autowired
+    private LaboratorioRepository laboratorioRepositorio;
+
+    @Autowired
+    private AlumnoRepository alumnoRepositorio;
+
+    // 1. SOLO SE LISTAN LAS RESERVAS EN ESTADO 'DEVUELTA' (PROVENIENTES DEL CHECK-OUT)
     @GetMapping
     @Transactional(readOnly = true)
-    public String verInspecciones(HttpSession sesion, Model modelo) {
-        Object usuario = sesion.getAttribute("usuarioLogueado");
-        if (usuario == null) {
-            return "redirect:/login";
+    public String verInspeccion(HttpSession sesion, Model modelo) {
+        List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
+        
+        // Si no hubiera reservas en DEVUELTA, buscar opcionalmente EN_USO para pruebas
+        if (devueltas == null || devueltas.isEmpty()) {
+            devueltas = reservaRepositorio.findByEstado("EN_USO");
         }
 
-        // Busca reservas devueltas pendientes de inspeccionar
-        List<Reserva> pendientes = reservaRepositorio.findByEstado("DEVUELTA");
-        List<TarjetaInspeccionDto> lista = new ArrayList<>();
+        List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
 
-        for (Reserva r : pendientes) {
-            int integrantesCount = (r.getIntegrantes() != null) ? r.getIntegrantes().size() : 0;
+        if (devueltas != null) {
+            for (Reserva r : devueltas) {
+                List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
+                List<String> nombresIntegrantes = new ArrayList<>();
+                for (ReservaIntegrante ri : integrantes) {
+                    if (ri.getAlumno() != null) {
+                        nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                    }
+                }
 
-            List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(r.getIdReserva());
-            int totalItems = 0;
-            List<ItemDetalleDto> itemsDto = new ArrayList<>();
+                String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+                String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
+                        ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+                String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
+                        ? r.getLaboratorio().getTipo() : "General";
 
-            if (items != null) {
-                for (ReservaItem it : items) {
-                    totalItems += (it.getCantidad() != null) ? it.getCantidad() : 1;
-                    Producto p = it.getProducto();
-                    BigDecimal costo = (p.getCostoReposicion() != null) ? p.getCostoReposicion() : BigDecimal.ZERO;
+                String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                        ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
 
-                    itemsDto.add(new ItemDetalleDto(
+                listaInspeccion.add(new InspeccionCardDto(
+                        r.getIdReserva(),
+                        labNombre,
+                        tipoLab,
+                        cubiculo,
+                        (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
+                        horario,
+                        r.getEstado(),
+                        nombresIntegrantes
+                ));
+            }
+        }
+
+        long cantIncidencias = sancionRepositorio.count();
+
+        modelo.addAttribute("inspecciones", listaInspeccion);
+        modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
+
+        return "admin-inspeccion";
+    }
+
+    // 2. MODAL: SOLO MATERIALES PRESTADOS Y EPPS SIN COSTO OBLIGATORIOS
+    @GetMapping("/api/{idReserva}")
+    @ResponseBody
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> obtenerDetalleInspeccion(@PathVariable("idReserva") String idReserva) {
+        Optional<Reserva> resOpt = reservaRepositorio.findById(idReserva);
+        if (resOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Reserva r = resOpt.get();
+        List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(idReserva);
+
+        List<ItemInspeccionDto> listaInsumosPrestados = new ArrayList<>();
+        List<ItemInspeccionDto> listaEppsSinCosto = new ArrayList<>();
+
+        boolean tieneBata = false;
+        boolean tieneGafas = false;
+
+        for (ReservaItem it : items) {
+            Producto p = it.getProducto();
+            if (p != null) {
+                String cat = (p.getCategoria() != null) ? p.getCategoria().trim().toUpperCase() : "";
+                BigDecimal reposicion = (p.getCostoReposicion() != null) ? p.getCostoReposicion() : BigDecimal.ZERO;
+
+                // Si es EPP: solo se inspeccionan los que NO tienen costo de venta (los adquiridos son del alumno)
+                if (cat.contains("EPP")) {
+                    String nombreMin = p.getNombre().toLowerCase();
+                    if (nombreMin.contains("bata")) tieneBata = true;
+                    if (nombreMin.contains("gafa") || nombreMin.contains("lente")) tieneGafas = true;
+
+                    listaEppsSinCosto.add(new ItemInspeccionDto(
                             p.getIdProducto(),
                             p.getNombre(),
-                            p.getCategoria(),
-                            costo,
-                            it.getCantidad()
+                            reposicion,
+                            nombreMin.contains("bata") ? "🥼" : "🥽"
+                    ));
+                } else {
+                    // Cristalería, instrumentos, equipos
+                    listaInsumosPrestados.add(new ItemInspeccionDto(
+                            p.getIdProducto(),
+                            p.getNombre(),
+                            reposicion,
+                            "📦"
                     ));
                 }
             }
-
-            String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-            String cubiculo = (r.getLaboratorio() != null) ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-            String horario = r.getHoraInicio() + "–" + r.getHoraFin();
-
-            lista.add(new TarjetaInspeccionDto(
-                    r.getIdReserva(),
-                    labNombre,
-                    cubiculo,
-                    horario,
-                    integrantesCount,
-                    totalItems,
-                    itemsDto
-            ));
         }
 
-        modelo.addAttribute("reservas", lista);
-        return "inspeccion";
+        // Siempre se valida la devolución de los dos EPPs obligatorios prestados por el lab
+        if (!tieneBata) {
+            listaEppsSinCosto.add(new ItemInspeccionDto("EPP-OBL-BATA", "Bata de laboratorio", new BigDecimal("50.00"), "🥼"));
+        }
+        if (!tieneGafas) {
+            listaEppsSinCosto.add(new ItemInspeccionDto("EPP-OBL-GAFAS", "Gafas de seguridad", new BigDecimal("25.00"), "🥽"));
+        }
+
+        String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+        String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
+
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("idReserva", r.getIdReserva());
+        respuesta.put("laboratorio", labNombre);
+        respuesta.put("horario", horario);
+        respuesta.put("insumos", listaInsumosPrestados);
+        respuesta.put("epps", listaEppsSinCosto);
+
+        return ResponseEntity.ok(respuesta);
     }
 
-    @PostMapping("/finalizar")
+    // 3. FINALIZAR INSPECCIÓN:
+    //    - SIN DAÑOS -> ESTADO 'INSPECCIONADA' Y QUEDA EN HISTORIAL
+    //    - CON DAÑOS -> CREA LA SANCIÓN PENDIENTE Y PASA A INCIDENCIAS
+    @PostMapping("/finalizar/{idReserva}")
+    @ResponseBody
     @Transactional
-    public String finalizarInspeccion(
-            @RequestParam("idReserva") String idReserva,
-            @RequestParam Map<String, String> parametros) {
+    public ResponseEntity<?> finalizarInspeccion(
+            @PathVariable("idReserva") String idReserva,
+            @RequestBody FinalizarInspeccionRequest req) {
 
-        Optional<Reserva> reservaOpt = reservaRepositorio.findById(idReserva);
-        if (reservaOpt.isEmpty()) {
-            return "redirect:/admin/inspeccion";
+        Optional<Reserva> resOpt = reservaRepositorio.findById(idReserva);
+        if (resOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Reserva no encontrada"));
         }
 
-        Reserva reserva = reservaOpt.get();
-        List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(idReserva);
+        Reserva r = resOpt.get();
+        List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
+        boolean huboDanios = (req.getDanados() != null && !req.getDanados().isEmpty());
 
-        Alumno responsable = null;
-        if (reserva.getIntegrantes() != null && !reserva.getIntegrantes().isEmpty()) {
-            responsable = reserva.getIntegrantes().get(0).getAlumno();
-        }
+        if (huboDanios) {
+    // 1. Recorrer los integrantes de la reserva y bloquearlos a todos
+    for (ReservaIntegrante ri : integrantes) {
+        Alumno alumno = ri.getAlumno();
+        if (alumno != null) {
+            // A. Cambiar estado del alumno a BLOQUEADO
+            alumno.setEstadoCuenta("BLOQUEADO_POR_DEUDA"); // o setHabilitado(false) según tu modelo
+            alumnoRepositorio.save(alumno);
 
-        for (ReservaItem item : items) {
-            String idProd = item.getProducto().getIdProducto();
-            String estado = parametros.get("estado_" + idProd);
-
-            if ("CONFORME".equalsIgnoreCase(estado)) {
-                item.setDevuelto(true);
-                // Si está en buen estado: SE SUMA A LA BASE DE DATOS
-                Producto prod = item.getProducto();
-                prod.setStockActual(prod.getStockActual() + item.getCantidad());
-                productoRepositorio.save(prod);
-            } else if ("DANADO".equalsIgnoreCase(estado)) {
-                item.setDevuelto(false);
-                // Si está dañado: NO SE SUMA AL STOCK Y PASA A INCIDENCIAS / SANCIÓN
-                Producto prod = item.getProducto();
-                String motivo = parametros.get("descripcion_" + idProd);
-                if (motivo == null || motivo.trim().isEmpty()) {
-                    motivo = "Material entregado dañado durante la práctica";
+            // B. Registrar la sanción individual con el ID de 4 caracteres
+            for (DanioItemDto d : req.getDanados()) {
+                Producto prodDanado = null;
+                if (d.getIdProducto() != null && !d.getIdProducto().startsWith("EPP-OBL")) {
+                    prodDanado = productoRepositorio.findById(d.getIdProducto()).orElse(null);
                 }
 
-                String costoStr = parametros.get("costo_" + idProd);
-                BigDecimal monto = (prod.getCostoReposicion() != null) ? prod.getCostoReposicion() : BigDecimal.ZERO;
-                try {
-                    if (costoStr != null && !costoStr.trim().isEmpty()) {
-                        monto = new BigDecimal(costoStr.trim());
-                    }
-                } catch (Exception ignored) {
-                }
+                BigDecimal costoSancion = (d.getCostoReposicion() != null && d.getCostoReposicion().compareTo(BigDecimal.ZERO) > 0)
+                        ? d.getCostoReposicion()
+                        : (prodDanado != null && prodDanado.getCostoReposicion() != null ? prodDanado.getCostoReposicion() : new BigDecimal("50.00"));
 
-                String idSancion = "S" + (System.currentTimeMillis() % 10000);
+                String motivo = (d.getMotivo() != null && !d.getMotivo().isBlank())
+                        ? d.getMotivo()
+                        : "Daño en " + d.getNombre() + " en inspección";
+
+                // ID de 4 caracteres exactos (ej. S123)
+                int randomTresDigitos = (int) (Math.random() * 900) + 100;
+                String idSancion = "S" + randomTresDigitos;
+
                 Sancion sancion = new Sancion(
                         idSancion,
-                        reserva,
-                        responsable,
-                        prod,
+                        r,
+                        alumno,
+                        prodDanado,
                         motivo,
-                        monto,
+                        costoSancion,
                         "PENDIENTE"
                 );
                 sancionRepositorio.save(sancion);
             }
-            reservaItemRepositorio.save(item);
+        }
+    }
+
+    r.setEstado("CON_INCIDENCIA");
+        } else {
+            // Sin daños: finaliza limpiamente
+            r.setEstado("INSPECCIONADA");
         }
 
-        // Termina la inspección
-        reserva.setEstado("INSPECCIONADA");
-        reservaRepositorio.save(reserva);
+        reservaRepositorio.save(r);
 
-        return "redirect:/admin/inspeccion";
+        // Dejar el laboratorio liberado
+        Laboratorio lab = r.getLaboratorio();
+        if (lab != null) {
+            laboratorioRepositorio.save(lab);
+        }
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("status", "ok");
+        resp.put("huboDanios", huboDanios);
+        return ResponseEntity.ok(resp);
     }
 
     // DTOs auxiliares
-    public static class TarjetaInspeccionDto {
-
+    public static class InspeccionCardDto {
         private String idReserva;
         private String laboratorio;
+        private String tipoLab;
         private String cubiculo;
+        private String fecha;
         private String horario;
-        private int integrantes;
-        private int totalItems;
-        private List<ItemDetalleDto> items;
+        private String estado;
+        private List<String> integrantes;
 
-        public TarjetaInspeccionDto(String idReserva, String laboratorio, String cubiculo, String horario, int integrantes, int totalItems, List<ItemDetalleDto> items) {
+        public InspeccionCardDto(String idReserva, String laboratorio, String tipoLab, String cubiculo, String fecha, String horario, String estado, List<String> integrantes) {
             this.idReserva = idReserva;
             this.laboratorio = laboratorio;
+            this.tipoLab = tipoLab;
             this.cubiculo = cubiculo;
+            this.fecha = fecha;
             this.horario = horario;
+            this.estado = estado;
             this.integrantes = integrantes;
-            this.totalItems = totalItems;
-            this.items = items;
         }
 
-        public String getIdReserva() {
-            return idReserva;
-        }
-
-        public String getLaboratorio() {
-            return laboratorio;
-        }
-
-        public String getCubiculo() {
-            return cubiculo;
-        }
-
-        public String getHorario() {
-            return horario;
-        }
-
-        public int getIntegrantes() {
-            return integrantes;
-        }
-
-        public int getTotalItems() {
-            return totalItems;
-        }
-
-        public List<ItemDetalleDto> getItems() {
-            return items;
-        }
+        public String getIdReserva() { return idReserva; }
+        public String getLaboratorio() { return laboratorio; }
+        public String getTipoLab() { return tipoLab; }
+        public String getCubiculo() { return cubiculo; }
+        public String getFecha() { return fecha; }
+        public String getHorario() { return horario; }
+        public String getEstado() { return estado; }
+        public List<String> getIntegrantes() { return integrantes; }
     }
 
-    public static class ItemDetalleDto {
+    public static class ItemInspeccionDto {
+        private String id;
+        private String nombre;
+        private BigDecimal costoReposicion;
+        private String emoji;
 
+        public ItemInspeccionDto(String id, String nombre, BigDecimal costoReposicion, String emoji) {
+            this.id = id;
+            this.nombre = nombre;
+            this.costoReposicion = costoReposicion;
+            this.emoji = emoji;
+        }
+
+        public String getId() { return id; }
+        public String getNombre() { return nombre; }
+        public BigDecimal getCostoReposicion() { return costoReposicion; }
+        public String getEmoji() { return emoji; }
+    }
+
+    public static class FinalizarInspeccionRequest {
+        private List<DanioItemDto> danados;
+        public List<DanioItemDto> getDanados() { return danados; }
+        public void setDanados(List<DanioItemDto> danados) { this.danados = danados; }
+    }
+
+    public static class DanioItemDto {
         private String idProducto;
         private String nombre;
-        private String categoria;
         private BigDecimal costoReposicion;
-        private int cantidad;
+        private String motivo;
 
-        public ItemDetalleDto(String idProducto, String nombre, String categoria, BigDecimal costoReposicion, int cantidad) {
-            this.idProducto = idProducto;
-            this.nombre = nombre;
-            this.categoria = categoria;
-            this.costoReposicion = costoReposicion;
-            this.cantidad = cantidad;
-        }
-
-        public String getIdProducto() {
-            return idProducto;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public String getCategoria() {
-            return categoria;
-        }
-
-        public BigDecimal getCostoReposicion() {
-            return costoReposicion;
-        }
-
-        public int getCantidad() {
-            return cantidad;
-        }
+        public String getIdProducto() { return idProducto; }
+        public void setIdProducto(String idProducto) { this.idProducto = idProducto; }
+        public String getNombre() { return nombre; }
+        public void setNombre(String nombre) { this.nombre = nombre; }
+        public BigDecimal getCostoReposicion() { return costoReposicion; }
+        public void setCostoReposicion(BigDecimal costoReposicion) { this.costoReposicion = costoReposicion; }
+        public String getMotivo() { return motivo; }
+        public void setMotivo(String motivo) { this.motivo = motivo; }
     }
 }

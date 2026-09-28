@@ -72,8 +72,4 @@ public class ReservaItem {
         this.devuelto = devuelto;
     }
 
-    public void setEntregado(boolean b) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

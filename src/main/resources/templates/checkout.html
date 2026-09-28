@@ -21,16 +21,16 @@
       </div>
 
       <nav class="navegacion-menu">
-        <a th:href="@{/dashboardAdmin}" class="item-menu">
+        <a th:href="@{/admin/dashboard}" class="item-menu">
           <i data-lucide="layout-dashboard"></i>
           <span>Dashboard</span>
         </a>
-        <a href="#" class="item-menu">
+        <a th:href="@{/admin/checkin}" class="item-menu">
           <i data-lucide="check-square"></i>
           <span>Check-in</span>
         </a>
-        <a href="@{/admin/checkin}" class="item-menu">
-          <i data-lucide="box"></i>
+        <a th:href="@{/admin/inventario}" class="item-menu ">
+          <i data-lucide="package"></i>
           <span>Inventario</span>
         </a>
         <a th:href="@{/admin/checkout}" class="item-menu activo">
@@ -38,12 +38,13 @@
           <span>Check-out</span>
         </a>
         <a th:href="@{/admin/inspeccion}" class="item-menu">
-          <i data-lucide="microscope"></i>
+          <i data-lucide="search"></i>
           <span>Inspección</span>
         </a>
-        <a href="#" class="item-menu">
+        <a th:href="@{/admin/incidencias}" class="item-menu item-incidencias">
           <i data-lucide="alert-triangle"></i>
           <span>Incidencias</span>
+          <span class="badge-alerta-roja" th:text="${totalIncidencias}">1</span>
         </a>
       </nav>
     </aside>
