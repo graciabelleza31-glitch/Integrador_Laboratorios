@@ -1,6 +1,7 @@
 package com.proyecto.integrador.modelo;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "sancion")
@@ -27,7 +29,7 @@ public class Sancion {
     private Alumno alumno;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_producto", nullable = false)
+    @JoinColumn(name = "id_producto", nullable = true)
     private Producto producto;
 
     @Column(nullable = false, length = 255)
@@ -37,7 +39,11 @@ public class Sancion {
     private BigDecimal montoDeuda;
 
     @Column(length = 20)
-    private String estado;
+    private String estado; // "PENDIENTE", "NOTIFICADO", "RESUELTO"
+
+    // @Transient le dice a JPA que NO busque esta columna en PostgreSQL
+    @Transient
+    private LocalDateTime fechaSancion = LocalDateTime.now();
 
     public Sancion() {
     }
@@ -100,11 +106,29 @@ public class Sancion {
         this.montoDeuda = montoDeuda;
     }
 
+    // Alias compatible para llamadas getMonto()
+    public BigDecimal getMonto() {
+        return montoDeuda;
+    }
+
     public String getEstado() {
         return estado;
     }
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    // Determina si ya fue notificado evaluando el estado
+    public boolean isNotificado() {
+        return "NOTIFICADO".equalsIgnoreCase(this.estado);
+    }
+
+    public LocalDateTime getFechaSancion() {
+        return fechaSancion;
+    }
+
+    public void setFechaSancion(LocalDateTime fechaSancion) {
+        this.fechaSancion = fechaSancion;
     }
 }

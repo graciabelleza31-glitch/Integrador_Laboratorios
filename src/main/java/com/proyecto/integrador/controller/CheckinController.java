@@ -1,6 +1,7 @@
 package com.proyecto.integrador.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,12 +16,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.proyecto.integrador.modelo.Producto;
 import com.proyecto.integrador.modelo.Reserva;
 import com.proyecto.integrador.modelo.ReservaIntegrante;
 import com.proyecto.integrador.modelo.ReservaItem;
+import com.proyecto.integrador.repository.ProductoRepository;
 import com.proyecto.integrador.repository.ReservaIntegranteRepository;
 import com.proyecto.integrador.repository.ReservaItemRepository;
 import com.proyecto.integrador.repository.ReservaRepository;
+import com.proyecto.integrador.repository.SancionRepository;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin/checkin")
@@ -35,20 +41,25 @@ public class CheckinController {
     @Autowired
     private ReservaItemRepository reservaItemRepositorio;
 
-    // 1. Vista principal de Check-in
+    @Autowired
+    private ProductoRepository productoRepositorio;
+
+    @Autowired
+    private SancionRepository sancionRepositorio;
+
+    // 1. VISTA PRINCIPAL DE CHECK-IN
     @GetMapping
     @Transactional(readOnly = true)
-    public String verCheckin(Model modelo) {
-        // Obtenemos reservas CONFIRMADA o PENDIENTE
-        List<Reserva> reservasConfirmadas = reservaRepositorio.findByEstado("CONFIRMADA");
-        List<Reserva> reservasPendientes = reservaRepositorio.findByEstado("PENDIENTE");
+    public String verCheckin(HttpSession sesion, Model modelo) {
+        List<Reserva> confirmadas = reservaRepositorio.findByEstado("CONFIRMADA");
+        List<Reserva> pendientes = reservaRepositorio.findByEstado("PENDIENTE");
 
         List<Reserva> todas = new ArrayList<>();
-        if (reservasConfirmadas != null) {
-            todas.addAll(reservasConfirmadas);
+        if (confirmadas != null) {
+            todas.addAll(confirmadas);
         }
-        if (reservasPendientes != null) {
-            todas.addAll(reservasPendientes);
+        if (pendientes != null) {
+            todas.addAll(pendientes);
         }
 
         List<CheckinReservaDto> listaCheckin = new ArrayList<>();
@@ -63,8 +74,13 @@ public class CheckinController {
             }
 
             String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-            String cubiculo = (r.getLaboratorio() != null) ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-            String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null) ? r.getLaboratorio().getTipo() : "Química";
+            String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
+                    ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+            String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
+                    ? r.getLaboratorio().getTipo() : "Química";
+
+            String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                    ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
 
             listaCheckin.add(new CheckinReservaDto(
                     r.getIdReserva(),
@@ -72,17 +88,21 @@ public class CheckinController {
                     tipoLab,
                     cubiculo,
                     (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
-                    r.getHoraInicio() + "–" + r.getHoraFin(),
+                    horario,
                     r.getEstado(),
                     nombresIntegrantes
             ));
         }
 
+        long incidenciasAbiertas = sancionRepositorio.count();
+
         modelo.addAttribute("reservas", listaCheckin);
+        modelo.addAttribute("totalIncidencias", incidenciasAbiertas > 0 ? incidenciasAbiertas : 1);
+
         return "admin-checkin";
     }
 
-    // 2. Endpoint API JSON para cargar datos de la reserva al abrir el modal
+    // 2. ENDPOINT JSON PARA CARGAR EL MODAL CON INTEGRANTES, INSUMOS Y EPPS (COMPRADOS + SIN COSTO)
     @GetMapping("/api/{idReserva}")
     @ResponseBody
     @Transactional(readOnly = true)
@@ -96,22 +116,34 @@ public class CheckinController {
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
         List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(idReserva);
 
+        // A. Integrantes
         List<IntegranteDetalleDto> listaEstudiantes = new ArrayList<>();
         for (ReservaIntegrante ri : integrantes) {
             if (ri.getAlumno() != null) {
-                String nombreCompleto = ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido();
-                String iniciales = ri.getAlumno().getNombre().substring(0, 1) + ri.getAlumno().getApellido().substring(0, 1);
-                listaEstudiantes.add(new IntegranteDetalleDto(ri.getAlumno().getIdEstud(), nombreCompleto, iniciales.toUpperCase()));
+                String nom = ri.getAlumno().getNombre();
+                String ape = ri.getAlumno().getApellido();
+                String iniciales = (nom.length() > 0 ? nom.substring(0, 1) : "")
+                        + (ape.length() > 0 ? ape.substring(0, 1) : "");
+                listaEstudiantes.add(new IntegranteDetalleDto(
+                        ri.getAlumno().getIdEstud(),
+                        nom + " " + ape,
+                        iniciales.toUpperCase()
+                ));
             }
         }
 
+        // B. Insumos y EPPs
         List<ItemDetalleDto> listaInsumos = new ArrayList<>();
         List<ItemDetalleDto> listaEpps = new ArrayList<>();
 
+        boolean tieneBata = false;
+        boolean tieneGafas = false;
+
         for (ReservaItem it : items) {
-            if (it.getProducto() != null) {
-                String cat = (it.getProducto().getCategoria() != null) ? it.getProducto().getCategoria().trim().toUpperCase() : "";
-                String nombre = it.getProducto().getNombre();
+            Producto p = it.getProducto();
+            if (p != null) {
+                String cat = (p.getCategoria() != null) ? p.getCategoria().trim().toUpperCase() : "";
+                String nom = p.getNombre();
                 String unidad = "und";
                 if (cat.contains("SOLVENTE") || cat.contains("REACTIVO")) {
                     unidad = "mL";
@@ -120,65 +152,77 @@ public class CheckinController {
                 }
 
                 if (cat.contains("EPP")) {
-                    listaEpps.add(new ItemDetalleDto(it.getProducto().getIdProducto(), nombre, "und", "🥼"));
+                    String emoji = "🥽";
+                    if (nom.toLowerCase().contains("bata")) {
+                        emoji = "🥼";
+                        tieneBata = true;
+                    }
+                    if (nom.toLowerCase().contains("gafa") || nom.toLowerCase().contains("lente")) {
+                        tieneGafas = true;
+                    }
+                    listaEpps.add(new ItemDetalleDto(p.getIdProducto(), nom, unidad, emoji));
                 } else {
-                    listaInsumos.add(new ItemDetalleDto(it.getProducto().getIdProducto(), nombre, unidad, "📦"));
+                    listaInsumos.add(new ItemDetalleDto(p.getIdProducto(), nom, unidad, "📦"));
                 }
             }
         }
 
-        // Si no seleccionó EPPs de costo, la bata y gafas básicas siempre van por protocolo
-        if (listaEpps.isEmpty()) {
-            listaEpps.add(new ItemDetalleDto("EPP-DEF-1", "Bata de laboratorio", "und", "🥼"));
-            listaEpps.add(new ItemDetalleDto("EPP-DEF-2", "Gafas de seguridad", "und", "🥽"));
+        // REGLA: Los EPPs sin costo obligatorios (Bata y Gafas) se incluyen para ingresar
+        if (!tieneBata) {
+            listaEpps.add(new ItemDetalleDto("EPP-OBL-1", "Bata de laboratorio", "und", "🥼"));
+        }
+        if (!tieneGafas) {
+            listaEpps.add(new ItemDetalleDto("EPP-OBL-2", "Gafas de seguridad", "und", "🥽"));
         }
 
-        DetalleModalCheckinDto response = new DetalleModalCheckinDto(
+        String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
+        String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+
+        DetalleModalCheckinDto dto = new DetalleModalCheckinDto(
                 r.getIdReserva(),
-                (r.getLaboratorio() != null ? r.getLaboratorio().getNombre() : "Laboratorio"),
-                r.getHoraInicio() + "–" + r.getHoraFin(),
+                labNombre,
+                horario,
                 listaEstudiantes,
                 listaInsumos,
                 listaEpps
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(dto);
     }
 
-    // 3. Confirmar Check-in: Responde JSON para no recargar la página
+    // 3. CONFIRMAR CHECK-IN VÍA ASÍNCRONA (CAMBIO A "EN_USO")
     @PostMapping("/confirmar/{idReserva}")
     @ResponseBody
     @Transactional
     public ResponseEntity<?> confirmarCheckin(@PathVariable("idReserva") String idReserva) {
         Optional<Reserva> resOpt = reservaRepositorio.findById(idReserva);
         if (resOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Reserva no encontrada");
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Reserva no encontrada"));
         }
 
         Reserva r = resOpt.get();
         r.setEstado("EN_USO");
         reservaRepositorio.save(r);
 
-        // Marcamos a todos como asistidos
+        // Integrantes marcados como asistidos
         List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
         for (ReservaIntegrante ri : integrantes) {
             ri.setAsistio(true);
             reservaIntegranteRepositorio.save(ri);
         }
 
-        // Marcamos los ítems como entregados
+        // Ítems marcados como entregados
         List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(idReserva);
         for (ReservaItem it : items) {
-            it.setEntregado(true);
+            it.setDevuelto(true);
             reservaItemRepositorio.save(it);
         }
 
-        return ResponseEntity.ok().body("{\"status\":\"ok\"}");
+        return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
-    // ==========================================
-    // DTOs auxiliares
-    // ==========================================
+    // DTOs Auxiliares
     public static class CheckinReservaDto {
 
         private String idReserva;

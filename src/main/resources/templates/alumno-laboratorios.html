@@ -38,7 +38,7 @@
           <i data-lucide="file-text"></i>
           <span>Protocolos</span>
         </a>
-        <a href="#" class="item-menu">
+        <a th:href="@{/alumno/incidencias}" class="item-menu">
           <i data-lucide="alert-triangle"></i>
           <span>Incidencias</span>
           <span th:if="${numIncidencias > 0}" class="contador-alerta" th:text="${numIncidencias}">1</span>

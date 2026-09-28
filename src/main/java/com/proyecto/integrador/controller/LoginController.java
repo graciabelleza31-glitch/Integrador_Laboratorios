@@ -28,7 +28,7 @@ public class LoginController {
         Object usuarioActivo = sesion.getAttribute("usuarioLogueado");
         if (usuarioActivo != null) {
             String rol = (String) sesion.getAttribute("rol");
-            return "ADMIN".equalsIgnoreCase(rol) ? "redirect:/dashboardAdmin" : "redirect:/alumno/laboratorios";
+            return "ADMIN".equalsIgnoreCase(rol) ? "redirect:/admin/dashboard" : "redirect:/alumno/laboratorios";
         }
         return "login";
     }
@@ -47,7 +47,7 @@ public class LoginController {
 
             if (resultado.esAdmin()) {
                 sesion.setAttribute("usuarioLogueado", resultado);
-                return "redirect:/dashboardAdmin";
+                return "redirect:/admin/dashboard";
             } else {
                 // Guarda la entidad Alumno completa en sesión para AlumnoPortalController
                 Alumno alumno = alumnoRepositorio.findById(resultado.getCodigo()).orElse(null);
@@ -69,19 +69,7 @@ public class LoginController {
         return "redirect:/login";
     }
 
-    @GetMapping("/dashboardAdmin")
-    public String panelAdministrador(HttpSession sesion, Model modelo) {
-        Object usuario = sesion.getAttribute("usuarioLogueado");
-        String rol = (String) sesion.getAttribute("rol");
-        if (usuario == null || !"ADMIN".equalsIgnoreCase(rol)) {
-            return "redirect:/login";
-        }
-        modelo.addAttribute("usuario", usuario);
-        return "dashboard-admin";
-    }
-
-    // Si alguien entra o recarga /dashboardAlum, lo mandamos a laboratorios
-    @GetMapping("/dashboardAlum")
+    @GetMapping("/alumno/panel")
     public String panelAlumno(HttpSession sesion) {
         return "redirect:/alumno/laboratorios";
     }

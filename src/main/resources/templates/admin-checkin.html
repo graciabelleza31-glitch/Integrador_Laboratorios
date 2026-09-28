@@ -45,12 +45,12 @@
         <a th:href="@{/admin/incidencias}" class="item-menu item-incidencias">
           <i data-lucide="alert-triangle"></i>
           <span>Incidencias</span>
-          <span class="badge-alerta-roja">1</span>
+          <span class="badge-alerta-roja" th:text="${totalIncidencias}">1</span>
         </a>
       </nav>
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL -->
+    <!-- ÁREA PRINCIPAL -->
     <main class="area-principal">
       <header class="cabecera-superior">
         <div class="logo-cabecera">
@@ -61,7 +61,7 @@
         <div class="perfil-acciones">
           <div class="contenedor-campana">
             <i data-lucide="bell"></i>
-            <span class="punto-alerta-campana">1</span>
+            <span class="punto-alerta-campana" th:text="${totalIncidencias}">1</span>
           </div>
           <div class="datos-perfil">
             <span class="titulo-saludo">Hola, Dr.</span>
@@ -76,22 +76,28 @@
       </header>
 
       <section class="seccion-checkout">
+        
         <div class="encabezado-checkin-seccion">
           <h1 class="titulo-seccion-catalogo">Check-in Presencial</h1>
           <p class="subtitulo-seccion-catalogo">Validación de identidad y entrega de insumos</p>
         </div>
 
-        <!-- CONTENEDOR DE TARJETAS -->
-        <div id="contenedorListaCheckin" th:if="${not #lists.isEmpty(reservas)}" class="lista-tarjetas-checkin">
+        <!-- 1. LISTADO DE RESERVAS POR VALIDAR -->
+        <div id="contenedorListaCheckin" 
+             class="lista-tarjetas-checkin" 
+             th:style="${#lists.isEmpty(reservas)} ? 'display:none;' : 'display:flex;'">
+          
           <div th:each="r : ${reservas}" 
                class="tarjeta-reserva-checkin-fila" 
                th:id="'tarjeta-reserva-' + ${r.idReserva}">
             
-            <div class="icono-cuadro-checkin" th:classappend="${r.tipoLab == 'Física' ? 'bg-rayo' : 'bg-quimica'}">
-              <span th:if="${r.tipoLab == 'Física'}">⚡</span>
-              <span th:unless="${r.tipoLab == 'Física'}">⚗️</span>
+            <!-- Icono dinámico según especialidad -->
+            <div class="icono-cuadro-checkin" th:classappend="${#strings.containsIgnoreCase(r.laboratorio, 'Física') ? 'bg-rayo' : 'bg-quimica'}">
+              <span th:if="${#strings.containsIgnoreCase(r.laboratorio, 'Física')}">⚡</span>
+              <span th:unless="${#strings.containsIgnoreCase(r.laboratorio, 'Física')}">⚗️</span>
             </div>
 
+            <!-- Detalles centrales -->
             <div class="info-central-checkin">
               <div class="fila-nombre-estado">
                 <strong class="nombre-lab-checkin" th:text="${r.laboratorio}">Lab. Química</strong>
@@ -101,10 +107,12 @@
                   Confirmada
                 </span>
               </div>
+              
               <div class="metadatos-horario-checkin">
                 <span th:text="${r.cubiculo + ' · ' + r.fecha + ' · ' + r.horario}">A-101 · 2026-08-21 · 09:00–11:00</span>
               </div>
               
+              <!-- Pastillas de integrantes -->
               <div class="pills-integrantes-flex">
                 <span th:each="integ : ${r.integrantes}" class="pill-integrante-nombre" th:text="${integ}">
                   Mariafernanda Bruno Santos
@@ -112,6 +120,7 @@
               </div>
             </div>
 
+            <!-- Acción lateral derecha -->
             <div class="accion-derecha-checkin">
               <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
               <button type="button" 
@@ -125,21 +134,7 @@
           </div>
         </div>
 
-            <!-- Código de reserva a la derecha -->
-            <div class="accion-derecha-checkin">
-              <span class="codigo-reserva-checkin" th:text="${r.idReserva}">R-001</span>
-              <button type="button" 
-                      class="btn-verde-iniciar" 
-                      th:data-id="${r.idReserva}"
-                      onclick="abrirModalCheckin(this.getAttribute('data-id'))">
-                <i data-lucide="check-square"></i> Iniciar
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- CASO 2: NO HAY RESERVAS PENDIENTES (IGUAL A FIGMA) -->
+        <!-- 2. ESTADO VACÍO (FIGMA) -->
         <div id="tarjetaSinCheckins" 
              class="tarjeta-sin-checkins-vacia" 
              th:style="${#lists.isEmpty(reservas)} ? 'display:flex;' : 'display:none;'">
@@ -151,12 +146,12 @@
     </main>
 
     <!-- ========================================================
-         MODAL DE CHECK-IN PRESENCIAL (FIGMA)
+         MODAL DE CHECK-IN PRESENCIAL CON VALIDACIONES
          ======================================================== -->
     <div id="modalCheckin" class="fondo-modal-oscuro" style="display: none;">
       <div class="tarjeta-modal modal-checkin-ancho">
         
-        <!-- CABECERA AZUL OSCURA -->
+        <!-- CABECERA AZUL NOCHE -->
         <div class="cabecera-modal-checkin">
           <div>
             <h3 id="modalLabTitulo">Lab. Química</h3>
@@ -168,41 +163,33 @@
         <!-- CUERPO CON LAS 3 SECCIONES DE CHECKS -->
         <div class="cuerpo-modal-checkin">
           
-          <!-- 1. VERIFICAR IDENTIDAD -->
+          <!-- 1. IDENTIDAD -->
           <div class="bloque-verif-seccion">
             <span class="subtitulo-seccion-modal">1. VERIFICAR IDENTIDAD</span>
-            <div class="lista-verif-items" id="listaCheckIntegrantes">
-              <!-- Se inyecta por JS -->
-            </div>
+            <div class="lista-verif-items" id="listaCheckIntegrantes"></div>
           </div>
 
-          <!-- 2. ENTREGAR INSUMOS -->
+          <!-- 2. INSUMOS -->
           <div class="bloque-verif-seccion">
             <span class="subtitulo-seccion-modal">2. ENTREGAR INSUMOS</span>
-            <div class="lista-verif-items" id="listaCheckInsumos">
-              <!-- Se inyecta por JS -->
-            </div>
+            <div class="lista-verif-items" id="listaCheckInsumos"></div>
           </div>
 
-          <!-- 3. ENTREGAR EPPS -->
+          <!-- 3. EPPS (OBLIGATORIOS Y COMPRADOS) -->
           <div class="bloque-verif-seccion">
             <span class="subtitulo-seccion-modal">3. ENTREGAR EPPS</span>
-            <div class="lista-verif-items" id="listaCheckEpps">
-              <!-- Se inyecta por JS -->
-            </div>
+            <div class="lista-verif-items" id="listaCheckEpps"></div>
           </div>
 
         </div>
 
-        <!-- PIE DEL MODAL CON CONTADOR DINÁMICO -->
-        <form id="formConfirmarCheckin" method="post" action="">
-          <div class="pie-modal-checkin">
-            <span class="contador-verificados-txt" id="txtContadorVerificados">0/0 verificados</span>
-            <button type="button" class="btn-confirmar-checkin-verde" id="btnConfirmarCheckin" onclick="enviarConfirmacionCheckin()">
-                Confirmar check-in →
-            </button>
-            </div>
-        </form>
+        <!-- PIE DEL MODAL CON CONTADOR DINÁMICO Y BOTÓN SIN RECARGA -->
+        <div class="pie-modal-checkin">
+          <span class="contador-verificados-txt" id="txtContadorVerificados">0/0 verificados</span>
+          <button type="button" class="btn-confirmar-checkin-verde" id="btnConfirmarCheckin" onclick="enviarConfirmacionCheckin()">
+            Confirmar check-in →
+          </button>
+        </div>
 
       </div>
     </div>
@@ -210,6 +197,10 @@
   </div>
 
   <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+
     let reservaActualId = null;
     let totalItemsVerificar = 0;
     let itemsVerificados = 0;
@@ -257,7 +248,7 @@
           // 2. Insumos
           contInsum.innerHTML = '';
           if (!data.insumos || data.insumos.length === 0) {
-            contInsum.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">No se solicitaron insumos extra.</span>';
+            contInsum.innerHTML = '<span style="color:#94a3b8; font-size:0.85rem;">No se solicitaron reactivos o insumos extra.</span>';
           } else {
             data.insumos.forEach(ins => {
               totalItemsVerificar++;
@@ -322,7 +313,7 @@
       document.getElementById('txtContadorVerificados').innerText = `${itemsVerificados}/${totalItemsVerificar} verificados`;
     }
 
-    // CONFIRMACIÓN ASÍNCRONA (SIN RECARGA NI REDIRECCIÓN)
+    // CONFIRMACIÓN ASÍNCRONA (AJAX) - SIN REDIRECCIÓN
     function enviarConfirmacionCheckin() {
       if (!reservaActualId) return;
 
@@ -341,21 +332,22 @@
         // 1. Cerrar el modal
         cerrarModalCheckin();
 
-        // 2. Remover la tarjeta de la vista
+        // 2. Retirar la tarjeta del DOM de inmediato
         const tarjeta = document.getElementById(`tarjeta-reserva-${reservaActualId}`);
         if (tarjeta) {
           tarjeta.remove();
         }
 
-        // 3. Si no quedan tarjetas, mostrar el aviso de "Sin check-ins pendientes"
+        // 3. Evaluar si ya no quedan reservas pendientes
         const contenedor = document.getElementById('contenedorListaCheckin');
         const restantes = contenedor ? contenedor.querySelectorAll('.tarjeta-reserva-checkin-fila').length : 0;
         
         if (restantes === 0) {
+          if (contenedor) contenedor.style.display = 'none';
           document.getElementById('tarjetaSinCheckins').style.display = 'flex';
         }
       })
-      .catch(err => {
+      .catch(() => {
         alert("Ocurrió un error al procesar el check-in.");
       })
       .finally(() => {

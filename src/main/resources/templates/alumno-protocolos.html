@@ -38,7 +38,7 @@
             <i data-lucide="file-text"></i>
             <span>Protocolos</span>
         </a>
-        <a href="#" class="item-menu item-incidencias">
+        <a th:href="@{/alumno/incidencias}" class="item-menu item-incidencias">
           <i data-lucide="alert-triangle"></i>
           <span>Incidencias</span>
           <span th:if="${estaBloqueado}" class="badge-alerta-roja" th:text="${numIncidencias > 0 ? numIncidencias : 1}">1</span>
@@ -162,6 +162,17 @@
 
         </div>
 
+        <div class="bloque-terminos">
+          <h2 class="subtitulo-terminos">Términos y Condiciones</h2>
+          <p class="descripcion-terminos">
+            Reglamento aplicable para el acceso y uso de los portales, herramientas digitales y servicios en línea del Grupo UTP. Conoce las disposiciones operativas, responsabilidades y normativas sobre derechos de autor y protección de credenciales institucionales.
+          </p>
+          
+          <button type="button" class="btn-descarga-estilo" onclick="descargarTerminos()">
+            Descargar Términos y Condiciones
+          </button>
+        </div>
+
         <!-- ALERTA AMARILLA INFERIOR: SOLO APARECE SI EL ESTUDIANTE ESTÁ BLOQUEADO POR DEUDA/INCIDENCIA -->
         <div th:if="${estaBloqueado}" class="banner-alerta-amarillo">
           <div class="icono-alerta-triangulo">⚠️</div>
@@ -194,6 +205,16 @@
       if (!estaAbierto) {
         item.classList.add('abierto');
         item.querySelector('.flecha-indicador').innerText = '▲';
+      }
+
+      function descargarTerminos() {
+      const enlace = document.createElement('a');
+      enlace.href = /*[[@{/docs/Terminos_y_Condiciones_UTP.pdf}]]*/ '/docs/Terminos_y_Condiciones_UTP.pdf';
+      enlace.download = 'Terminos_y_Condiciones_UTP.pdf';
+      enlace.target = '_blank';
+      document.body.appendChild(enlace);
+      enlace.click();
+      document.body.removeChild(enlace);
       }
     }
   </script>
