@@ -3245,4 +3245,404 @@ body {
 .btn-cerrar-azul:hover { 
   background: #1d4ed8; }
 
+  /* Cabecera del historial con filtro de mes */
+.cabecera-historial-con-filtro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+}
+
+.cabecera-historial-con-filtro .subtitulo-seccion-gris {
+    margin-bottom: 0;
+}
+
+.selector-mes-historial {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ffffff;
+    padding: 0.35rem 0.65rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.btn-mes-nav {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    background: #f8fafc;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+}
+
+.btn-mes-nav:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-mes-nav i,
+.btn-mes-nav svg {
+    width: 15px;
+    height: 15px;
+}
+
+.input-mes-historial {
+    border: none;
+    font-size: 0.85rem;
+    color: #0f172a;
+    font-weight: 700;
+    background: transparent;
+    outline: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    padding: 0.2rem 0.3rem;
+}
+
+.btn-mes-actual {
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.btn-mes-actual:hover {
+    background: #1d4ed8;
+}
+
+/* Fila clickeable */
+.fila-historial-reserva.clickeable {
+    cursor: pointer;
+}
+
+.fila-historial-reserva.clickeable:hover {
+    background: #fafbfc;
+    border-color: #cbd5e1;
+    transform: translateX(2px);
+}
+
+/* ==========================================================================
+   MODAL DE RECIBO DE RESERVA
+   ========================================================================== */
+.modal-recibo-contenedor {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.cabecera-modal-recibo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.titulo-modal-recibo {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.subtitulo-modal-recibo {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0.2rem 0 0 0;
+}
+
+.btn-cerrar-recibo {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.btn-cerrar-recibo:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.cuerpo-modal-recibo {
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.cabecera-azul-recibo {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.lbl-recibo {
+    font-size: 0.7rem;
+    color: #a5b4fc;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.nombre-lab-recibo {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.cubiculo-recibo {
+    font-size: 0.85rem;
+    color: #c7d2fe;
+}
+
+.fila-meta-recibo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 0.85rem;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.col-meta-recibo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.lbl-meta-recibo {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.col-meta-recibo strong {
+    font-size: 0.85rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.badge-estado-recibo {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.badge-estado-recibo.confirmada { background: #dbeafe; color: #1d4ed8; }
+.badge-estado-recibo.enuso { background: #dcfce7; color: #15803d; }
+.badge-estado-recibo.devuelta { background: #f3e8ff; color: #7e22ce; }
+.badge-estado-recibo.cancelada { background: #fee2e2; color: #dc2626; }
+
+.seccion-recibo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.titulo-seccion-recibo {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #475569;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.lista-integrantes-recibo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.item-integrante-recibo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.85rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.avatar-mini-recibo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1e1b4b;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.item-integrante-recibo strong {
+    display: block;
+    font-size: 0.85rem;
+    color: #0f172a;
+}
+
+.item-integrante-recibo span {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.lista-items-recibo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.item-recibo {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.55rem 0.85rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.nombre-item-recibo {
+    color: #334155;
+    font-weight: 500;
+}
+
+.cantidad-item-recibo {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.fila-total-recibo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 10px;
+    border: 1px solid #fcd34d;
+}
+
+.lbl-total-recibo {
+    display: block;
+    font-size: 0.7rem;
+    color: #92400e;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.metodo-pago-recibo {
+    font-size: 0.85rem;
+    color: #78350f;
+    font-weight: 600;
+}
+
+.monto-total-recibo {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #78350f;
+}
+
+.pie-modal-recibo {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-cerrar-modal-recibo {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    padding: 0.7rem 1.75rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-cerrar-modal-recibo:hover {
+    background: #1e293b;
+}
+
+.modal-grafico-contenedor {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 680px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.cabecera-modal-grafico {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.titulo-modal-grafico {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.subtitulo-modal-grafico {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0.2rem 0 0 0;
+}
+
+.cuerpo-modal-grafico {
+    padding: 1.5rem;
+    height: 380px;
+}
+
+/* Slots bloqueados y ocupados más claros */
+.btn-slot-select.bloqueado {
+    background-color: #f1f5f9 !important;
+    color: #cbd5e1 !important;
+    text-decoration: line-through !important;
+    cursor: not-allowed !important;
+    border-color: #e2e8f0 !important;
+    opacity: 0.6;
+}
+
+.btn-hora-slot.ocupado {
+    background-color: #f8fafc !important;
+    color: #cbd5e1 !important;
+    text-decoration: line-through;
+    border: 1px solid #f1f5f9;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 

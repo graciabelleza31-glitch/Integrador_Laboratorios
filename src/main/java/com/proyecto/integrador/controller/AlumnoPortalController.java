@@ -7,16 +7,20 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.proyecto.integrador.repository.ReservaItemRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.proyecto.integrador.controller.AlumnoPortalController.HistorialReservaDto;
+import com.proyecto.integrador.controller.AlumnoPortalController.ReservaActivaDto;
 import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.modelo.Boleta;
 import com.proyecto.integrador.modelo.Laboratorio;
@@ -63,6 +67,7 @@ public class AlumnoPortalController {
 
     @Autowired
     private SancionRepository sancionRepositorio;
+
 
     // =========================================================================
     // 1. PANTALLA PRINCIPAL: LABORATORIOS Y GESTIÓN DE RESERVAS
@@ -340,6 +345,285 @@ public class AlumnoPortalController {
         return "alumno-protocolos";
     }
 
+    // =========================================================================
+// 5. VISTA: MI CUENTA (DASHBOARD DEL ESTUDIANTE)
+// =========================================================================
+@GetMapping("/cuenta")
+@Transactional(readOnly = true)
+public String verCuenta(
+        @RequestParam(required = false) String mes,
+        HttpSession sesion, 
+        Model modelo) {
+    
+    Object usuario = sesion.getAttribute("usuarioLogueado");
+    if (usuario == null) return "redirect:/login";
+
+    Alumno alumno = null;
+    if (usuario instanceof Alumno) {
+        alumno = (Alumno) usuario;
+    } else {
+        return "redirect:/login";
+    }
+
+    // ============ FECHA DE CONSULTA (mes seleccionado) ============
+    LocalDate fechaConsulta;
+    try {
+        fechaConsulta = (mes != null && !mes.isEmpty()) 
+                ? LocalDate.parse(mes + "-01") 
+                : LocalDate.now();
+    } catch (Exception e) {
+        fechaConsulta = LocalDate.now();
+    }
+    
+    LocalDate hoy = LocalDate.now();
+    LocalDate mesAnterior = fechaConsulta.minusMonths(1);
+    LocalDate mesSiguiente = fechaConsulta.plusMonths(1);
+    
+    java.util.Locale espLocale = new java.util.Locale("es", "PE");
+    String nombreMes = fechaConsulta.getMonth().getDisplayName(java.time.format.TextStyle.FULL, espLocale);
+    nombreMes = nombreMes.substring(0, 1).toUpperCase() + nombreMes.substring(1);
+    String mesFormateado = nombreMes + " " + fechaConsulta.getYear();
+    
+    // Formato para el input type="month" (YYYY-MM)
+    String mesInput = String.format("%04d-%02d", fechaConsulta.getYear(), fechaConsulta.getMonthValue());
+
+    // ============ SANCIONES ============
+    List<Sancion> sancionesPendientes = sancionRepositorio.findByAlumno_IdEstudAndEstado(alumno.getIdEstud(), "PENDIENTE");
+    long incidenciasPendientes = sancionesPendientes.size();
+
+    String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
+    boolean estaBloqueado = incidenciasPendientes > 0
+            || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
+            || estadoCuenta.contains("BLOQUEADO_POR_DEUDA");
+
+    // ============ HISTORIAL Y ESTADÍSTICAS ============
+    List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
+    List<HistorialReservaDto> historial = new ArrayList<>();
+    
+    int reservasDelMes = 0;
+    int horasTotales = 0;
+    int materialesTotales = 0;
+
+    for (ReservaIntegrante ri : participaciones) {
+        Reserva r = ri.getReserva();
+        if (r == null || r.getFechaReserva() == null) continue;
+
+        // Formatear fecha: "18 Ago 2026 · 09:00–11:00"
+        String dia = String.valueOf(r.getFechaReserva().getDayOfMonth());
+        String mesAbrev = r.getFechaReserva().getMonth().getDisplayName(java.time.format.TextStyle.SHORT, espLocale);
+        mesAbrev = mesAbrev.substring(0, 1).toUpperCase() + mesAbrev.substring(1).replace(".", "");
+        String fechaFormato = dia + " " + mesAbrev + " " + r.getFechaReserva().getYear();
+        
+        String horario = "";
+        if (r.getHoraInicio() != null && r.getHoraFin() != null) {
+            horario = r.getHoraInicio() + "–" + r.getHoraFin();
+        }
+
+        // Filtrar por mes seleccionado
+        boolean esDelMes = r.getFechaReserva().getMonth() == fechaConsulta.getMonth() 
+                        && r.getFechaReserva().getYear() == fechaConsulta.getYear();
+
+        // Contar solo las del mes seleccionado
+        if (esDelMes) {
+            reservasDelMes++;
+            if (r.getHoraInicio() != null && r.getHoraFin() != null) {
+                long horas = java.time.Duration.between(r.getHoraInicio(), r.getHoraFin()).toHours();
+                horasTotales += (int) horas;
+            }
+            List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(r.getIdReserva());
+            materialesTotales += items.size();
+        }
+
+        // Solo agregar al historial si es del mes seleccionado
+        if (esDelMes) {
+            String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+            historial.add(new HistorialReservaDto(
+                    r.getIdReserva(),
+                    labNombre,
+                    fechaFormato,
+                    horario,
+                    r.getEstado()
+            ));
+        }
+    }
+
+    // Ordenar historial descendente por fecha
+    historial.sort((a, b) -> b.getIdReserva().compareTo(a.getIdReserva()));
+
+    modelo.addAttribute("alumno", alumno);
+    modelo.addAttribute("estaBloqueado", estaBloqueado);
+    modelo.addAttribute("numIncidencias", incidenciasPendientes);
+    modelo.addAttribute("reservasDelMes", reservasDelMes);
+    modelo.addAttribute("horasTotales", horasTotales);
+    modelo.addAttribute("materialesTotales", materialesTotales);
+    modelo.addAttribute("historial", historial);
+    
+    // Datos de fecha
+    modelo.addAttribute("mesFormateado", mesFormateado);
+    modelo.addAttribute("mesInput", mesInput);
+    modelo.addAttribute("mesAnterior", String.format("%04d-%02d", mesAnterior.getYear(), mesAnterior.getMonthValue()));
+    modelo.addAttribute("mesSiguiente", String.format("%04d-%02d", mesSiguiente.getYear(), mesSiguiente.getMonthValue()));
+    modelo.addAttribute("esMesActual", fechaConsulta.getMonth() == hoy.getMonth() && fechaConsulta.getYear() == hoy.getYear());
+
+    return "alumno-cuenta";
+}
+
+@GetMapping("/api/recibo/{idReserva}")
+@org.springframework.web.bind.annotation.ResponseBody
+@Transactional(readOnly = true)
+public java.util.Map<String, Object> obtenerRecibo(@PathVariable("idReserva") String idReserva) {
+    java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    
+    Optional<Reserva> reservaOpt = reservaRepositorio.findById(idReserva);
+    if (reservaOpt.isEmpty()) {
+        resp.put("encontrado", false);
+        return resp;
+    }
+    
+    Reserva r = reservaOpt.get();
+    
+    // Datos básicos
+    resp.put("encontrado", true);
+    resp.put("idReserva", r.getIdReserva());
+    resp.put("laboratorio", r.getLaboratorio() != null ? r.getLaboratorio().getNombre() : "Laboratorio");
+    resp.put("cubiculo", r.getLaboratorio() != null ? r.getLaboratorio().getUbicacionCubiculo() : "S/C");
+    resp.put("fecha", r.getFechaReserva() != null ? r.getFechaReserva().toString() : "");
+    resp.put("horaInicio", r.getHoraInicio() != null ? r.getHoraInicio().toString() : "");
+    resp.put("horaFin", r.getHoraFin() != null ? r.getHoraFin().toString() : "");
+    resp.put("estado", r.getEstado());
+    
+    // Integrantes
+    List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(idReserva);
+    List<java.util.Map<String, String>> listaIntegrantes = new ArrayList<>();
+    for (ReservaIntegrante ri : integrantes) {
+        if (ri.getAlumno() != null) {
+            java.util.Map<String, String> m = new java.util.HashMap<>();
+            m.put("nombre", ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+            m.put("codigo", ri.getAlumno().getIdEstud());
+            listaIntegrantes.add(m);
+        }
+    }
+    resp.put("integrantes", listaIntegrantes);
+    
+    // Insumos y EPPs
+    List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(idReserva);
+    List<java.util.Map<String, String>> listaItems = new ArrayList<>();
+    for (ReservaItem item : items) {
+        if (item.getProducto() != null) {
+            java.util.Map<String, String> m = new java.util.HashMap<>();
+            m.put("nombre", item.getProducto().getNombre());
+            m.put("categoria", item.getProducto().getCategoria() != null ? item.getProducto().getCategoria() : "");
+            m.put("cantidad", String.valueOf(item.getCantidad()));
+            listaItems.add(m);
+        }
+    }
+    resp.put("items", listaItems);
+    
+    // Boleta
+    List<Boleta> boletas = boletaRepositorio.findAll().stream()
+            .filter(b -> b.getReserva() != null && b.getReserva().getIdReserva().equals(idReserva))
+            .toList();
+    
+    if (!boletas.isEmpty()) {
+        Boleta b = boletas.get(0);
+        resp.put("boletaId", b.getIdBoleta());
+        resp.put("montoTotal", b.getTotal() != null ? b.getTotal().toString() : "0.00");
+        resp.put("metodoPago", b.getTipoOperacion() != null ? b.getTipoOperacion() : "GRATUITO");
+        resp.put("fechaEmision", b.getFechaEmision() != null ? b.getFechaEmision().toString() : "");
+    } else {
+        resp.put("boletaId", "—");
+        resp.put("montoTotal", "0.00");
+        resp.put("metodoPago", "GRATUITO");
+        resp.put("fechaEmision", "—");
+    }
+    
+    return resp;
+}
+
+@GetMapping("/api/estadisticas")
+@org.springframework.web.bind.annotation.ResponseBody
+@Transactional(readOnly = true)
+public java.util.Map<String, Object> obtenerEstadisticas(HttpSession sesion) {
+    java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    
+    Object usuario = sesion.getAttribute("usuarioLogueado");
+    if (!(usuario instanceof Alumno)) return resp;
+    
+    Alumno alumno = (Alumno) usuario;
+    List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
+    
+    // Últimos 6 meses
+    java.util.Map<String, Integer> reservasPorMes = new java.util.LinkedHashMap<>();
+    java.util.Map<String, Integer> horasPorMes = new java.util.LinkedHashMap<>();
+    java.util.Map<String, Integer> materialesPorMes = new java.util.LinkedHashMap<>();
+    
+    java.time.LocalDate hoy = java.time.LocalDate.now();
+    java.util.Locale espLocale = new java.util.Locale("es", "PE");
+    
+    for (int i = 5; i >= 0; i--) {
+        java.time.LocalDate mes = hoy.minusMonths(i);
+        String key = mes.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, espLocale) + " " + mes.getYear();
+        key = key.substring(0, 1).toUpperCase() + key.substring(1).replace(".", "");
+        reservasPorMes.put(key, 0);
+        horasPorMes.put(key, 0);
+        materialesPorMes.put(key, 0);
+    }
+    
+    for (ReservaIntegrante ri : participaciones) {
+        Reserva r = ri.getReserva();
+        if (r == null || r.getFechaReserva() == null) continue;
+        
+        for (int i = 5; i >= 0; i--) {
+            java.time.LocalDate mes = hoy.minusMonths(i);
+            if (r.getFechaReserva().getMonth() == mes.getMonth() && r.getFechaReserva().getYear() == mes.getYear()) {
+                String key = mes.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, espLocale) + " " + mes.getYear();
+                key = key.substring(0, 1).toUpperCase() + key.substring(1).replace(".", "");
+                
+                reservasPorMes.put(key, reservasPorMes.get(key) + 1);
+                
+                if (r.getHoraInicio() != null && r.getHoraFin() != null) {
+                    long horas = java.time.Duration.between(r.getHoraInicio(), r.getHoraFin()).toHours();
+                    horasPorMes.put(key, horasPorMes.get(key) + (int) horas);
+                }
+                
+                List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(r.getIdReserva());
+                materialesPorMes.put(key, materialesPorMes.get(key) + items.size());
+            }
+        }
+    }
+    
+    resp.put("labels", new ArrayList<>(reservasPorMes.keySet()));
+    resp.put("reservas", new ArrayList<>(reservasPorMes.values()));
+    resp.put("horas", new ArrayList<>(horasPorMes.values()));
+    resp.put("materiales", new ArrayList<>(materialesPorMes.values()));
+    
+    return resp;
+}
+
+// =========================================================================
+// DTO AUXILIAR PARA EL HISTORIAL DE RESERVAS
+// =========================================================================
+public static class HistorialReservaDto {
+    private String idReserva;
+    private String laboratorio;
+    private String fecha;
+    private String horario;
+    private String estado;
+
+    public HistorialReservaDto(String idReserva, String laboratorio, String fecha, String horario, String estado) {
+        this.idReserva = idReserva;
+        this.laboratorio = laboratorio;
+        this.fecha = fecha;
+        this.horario = horario;
+        this.estado = estado;
+    }
+
+    public String getIdReserva() { return idReserva; }
+    public String getLaboratorio() { return laboratorio; }
+    public String getFecha() { return fecha; }
+    public String getHorario() { return horario; }
+    public String getEstado() { return estado; }
+}
     // =========================================================================
     // DTO AUXILIAR PARA ENVÍO A THYMELEAF
     // =========================================================================

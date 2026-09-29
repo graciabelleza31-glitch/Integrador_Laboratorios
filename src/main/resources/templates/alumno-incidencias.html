@@ -4,53 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UTP +Lab - Mis Incidencias</title>
+  <link rel="stylesheet" th:href="@{/css/checkout.css}" />
+  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Estilos específicos de Incidencias -->
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: #f8fafc; color: #1e293b; display: flex; min-height: 100vh; }
-
-    /* BARRA LATERAL */
-    .barra-lateral { width: 240px; background-color: #1e1b4b; color: #ffffff; display: flex; flex-direction: column; flex-shrink: 0; }
-    .logo-lateral { padding: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
-    .insignia-utp { background-color: #000000; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 0.2rem 0.45rem; border-radius: 4px; }
-    .texto-lab { color: #94a3b8; font-weight: 600; font-size: 1rem; }
-    .navegacion-menu { display: flex; flex-direction: column; gap: 0.4rem; padding: 0 0.8rem; margin-top: 1rem; }
-    .item-menu { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 1rem; color: #94a3b8; text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: 8px; transition: all 0.2s ease; }
-    .item-menu:hover { background-color: rgba(255, 255, 255, 0.06); color: #ffffff; }
-    .item-menu.activo { background-color: rgba(255, 255, 255, 0.12); color: #ffffff; font-weight: 600; }
-    .badge-menu-alerta { background-color: #ef4444; color: #ffffff; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; padding: 0.1rem 0.45rem; margin-left: auto; }
-
-    /* CONTENEDOR PRINCIPAL */
-    .area-principal { flex: 1; display: flex; flex-direction: column; }
-    .cabecera-superior { height: 70px; background-color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; border-bottom: 1px solid #e2e8f0; }
-    .logo-header { display: flex; align-items: center; gap: 0.5rem; }
-    .perfil-usuario { display: flex; align-items: center; gap: 1.2rem; }
-    .campana-notif { position: relative; cursor: pointer; color: #64748b; }
-    .campana-badge { position: absolute; top: -6px; right: -6px; background-color: #ef4444; color: white; font-size: 0.65rem; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .datos-usuario { text-align: right; }
-    .datos-usuario .nombre { display: block; font-size: 0.85rem; font-weight: 700; color: #0f172a; }
-    .datos-usuario .rol { font-size: 0.75rem; color: #64748b; }
-    .avatar-circulo { width: 36px; height: 36px; border-radius: 50%; background-color: #0f172a; color: #ffffff; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-    .btn-salir { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; color: #ef4444; font-size: 0.82rem; font-weight: 600; border: 1px solid #fecaca; border-radius: 6px; padding: 0.4rem 0.75rem; }
-
-    /* CONTENIDO */
     .contenido-incidencias { padding: 2.5rem 3.5rem; max-width: 1050px; }
     .header-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
     .titulo-seccion { font-size: 1.5rem; font-weight: 800; color: #0f172a; }
     .subtitulo-seccion { font-size: 0.9rem; color: #64748b; margin-top: 0.2rem; }
     .badge-pendientes-rojo { background-color: #fee2e2; color: #dc2626; font-size: 0.82rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; }
 
-    /* BANNER DE BLOQUEO */
     .banner-bloqueo { background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 2rem; }
     .icono-bloqueo-banner { color: #e11d48; font-size: 1.25rem; flex-shrink: 0; margin-top: 2px; }
     .titulo-banner { font-size: 0.95rem; font-weight: 700; color: #be123c; margin-bottom: 0.25rem; }
     .desc-banner { font-size: 0.85rem; color: #e11d48; line-height: 1.4; }
 
-    /* TARJETA */
     .card-incidencia-estudiante { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem 1.8rem; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; gap: 1.2rem; }
     .fila-top-card { display: flex; justify-content: space-between; align-items: flex-start; }
     .datos-item-danado { display: flex; gap: 1rem; align-items: flex-start; }
@@ -78,9 +51,7 @@
 
     .texto-regularizado-verde { color: #059669; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem; }
 
-    /* ========================================================
-       ESTILOS DEL MODAL DE PAGO EXACTO A FIGMA
-       ======================================================== */
+    /* MODAL DE PAGO */
     .fondo-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; }
     .caja-modal-pago { background-color: #ffffff; border-radius: 18px; width: 92%; max-width: 440px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; }
     .btn-cerrar-x { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94a3b8; }
@@ -88,32 +59,27 @@
     .modal-titulo { font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 0.15rem; }
     .modal-subtitulo { font-size: 0.82rem; color: #64748b; margin-bottom: 1.25rem; }
 
-    /* Tarjeta azul oscura de Monto */
     .tarjeta-monto-azul { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); color: #ffffff; border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
     .label-total-pagar { font-size: 0.72rem; letter-spacing: 0.5px; text-transform: uppercase; color: #94a3b8; font-weight: 700; display: block; margin-bottom: 0.25rem; }
     .valor-total-pagar { font-size: 1.45rem; font-weight: 800; }
 
-    /* Métodos de Pago Tabs */
     .grid-metodos-pago { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 1.2rem; }
     .opcion-metodo { border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 0.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; transition: all 0.2s; background-color: #ffffff; }
     .opcion-metodo.seleccionado { border-color: #10b981; background-color: #f0fdf4; }
     .opcion-metodo .icono-metodo { font-size: 1.3rem; }
     .opcion-metodo .label-metodo { font-size: 0.75rem; font-weight: 600; color: #334155; text-align: center; }
 
-    /* Vista de QR */
     .contenedor-qr-pago { border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.2rem; text-align: center; margin-bottom: 1.2rem; }
     .titulo-qr { font-size: 0.9rem; font-weight: 700; color: #059669; margin-bottom: 0.8rem; }
     .imagen-qr { width: 155px; height: 155px; margin: 0 auto 0.8rem auto; display: block; border-radius: 8px; }
     .subtexto-qr { font-size: 0.78rem; color: #64748b; margin-bottom: 0.2rem; }
     .comercio-qr { font-size: 0.88rem; font-weight: 800; color: #0f172a; }
 
-    /* Botones de acción del Modal */
     .btn-accion-modal { width: 100%; padding: 0.75rem; font-size: 0.9rem; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; }
     .btn-deshabilitado { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
     .btn-primario-azul { background-color: #2563eb; color: #ffffff; }
     .btn-primario-azul:hover { background-color: #1d4ed8; }
 
-    /* Pantalla de Éxito */
     .pantalla-exito { text-align: center; padding: 1rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; }
     .icono-exito-verde { width: 64px; height: 64px; border-radius: 14px; background-color: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 0.5rem; }
     .titulo-exito { font-size: 1.3rem; font-weight: 800; color: #0f172a; }
@@ -122,66 +88,11 @@
   </style>
 </head>
 <body>
+<div class="contenedor-app">
+  <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('incidencias')}"></aside>
 
-  <!-- BARRA LATERAL ALUMNO -->
-  <aside class="barra-lateral">
-    <div class="logo-lateral">
-      <span class="insignia-utp">UTP</span>
-      <span class="texto-lab">+Lab</span>
-    </div>
-
-    <nav class="navegacion-menu">
-      <a th:href="@{/alumno/cuenta}" class="item-menu">
-        <i data-lucide="user"></i>
-        <span>Cuenta</span>
-      </a>
-      <a th:href="@{/alumno/laboratorios}" class="item-menu">
-        <i data-lucide="flask-conical"></i>
-        <span>Laboratorios</span>
-      </a>
-      <a th:href="@{/alumno/catalogos}" class="item-menu">
-        <i data-lucide="box"></i>
-        <span>Catálogos</span>
-      </a>
-      <a th:href="@{/alumno/protocolos}" class="item-menu">
-        <i data-lucide="file-text"></i>
-        <span>Protocolos</span>
-      </a>
-      <!-- ENLACE CORREGIDO: th:href="@{/alumno/incidencias}" -->
-      <a th:href="@{/alumno/incidencias}" class="item-menu activo">
-        <i data-lucide="alert-triangle"></i>
-        <span>Incidencias</span>
-        <span th:if="${numIncidencias > 0}" id="badgeMenuLateral" class="badge-menu-alerta" th:text="${numIncidencias}">1</span>
-      </a>
-    </nav>
-  </aside>
-
-  <!-- ÁREA PRINCIPAL -->
   <main class="area-principal">
-    
-    <!-- CABECERA SUPERIOR -->
-    <header class="cabecera-superior">
-      <div class="logo-header">
-        <span class="insignia-utp">UTP</span>
-        <span class="texto-lab">+Lab</span>
-      </div>
-
-      <div class="perfil-usuario">
-        <div class="campana-notif">
-          <i data-lucide="bell"></i>
-          <span th:if="${pendientesCount > 0}" id="badgeCampana" class="campana-badge" th:text="${pendientesCount}">1</span>
-        </div>
-        <div class="datos-usuario">
-          <span class="nombre" th:text="${alumno != null ? alumno.nombre + ' ' + alumno.apellido : 'Mariafernanda Bruno Santos'}">Mariafernanda Bruno Santos</span>
-          <span class="rol">Estudiante</span>
-        </div>
-        <div class="avatar-circulo">MB</div>
-        <a th:href="@{/logout}" class="btn-salir">
-          <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
-          <span>Salir</span>
-        </a>
-      </div>
-    </header>
+    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
 
     <!-- SECCIÓN CONTENIDO -->
     <section class="contenido-incidencias">
@@ -365,6 +276,7 @@
 
     </div>
   </div>
+  <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
 
   <script>
     let idSancionActual = '';

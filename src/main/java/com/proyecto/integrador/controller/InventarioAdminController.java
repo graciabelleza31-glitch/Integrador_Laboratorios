@@ -5,6 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.proyecto.integrador.service.ReporteService;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,6 +35,9 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/admin/inventario")
 public class InventarioAdminController {
+
+    @Autowired
+    private ReporteService reporteService;
 
     @Autowired
     private ProductoRepository productoRepositorio;
@@ -129,5 +139,25 @@ public class InventarioAdminController {
         productoRepositorio.save(nuevo);
 
         return "redirect:/admin/inventario";
+    }
+
+    @GetMapping("/alertas/pdf")
+    @Transactional(readOnly = true)
+    public ResponseEntity<InputStreamResource> descargarAlertasPdf() {
+    // Productos con stock menor a 11 (agotados, críticos y bajos)
+        List<Producto> productosStockBajo = productoRepositorio.findAll().stream()
+            .filter(p -> p.getStockActual() != null && p.getStockActual() <= 10)
+            .toList();
+
+        ByteArrayInputStream pdf = reporteService.generarPdfAlertasStock(productosStockBajo);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=alertas_stock_" + LocalDate.now() + ".pdf");
+
+        return ResponseEntity
+            .ok()
+            .headers(headers)
+            .contentType(MediaType.APPLICATION_PDF)
+            .body(new InputStreamResource(pdf));
     }
 }

@@ -454,3 +454,651 @@ body {
 .btn-morado-confirmar:hover {
   background-color: #6d28d9;
 }
+
+/* ==========================================================================
+   BOTÓN DE REPORTE PDF EN INVENTARIO
+   ========================================================================== */
+.acciones-header-inventario {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btn-pdf-inventario {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #dc2626;
+  color: #ffffff;
+  padding: 0.65rem 1.35rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-pdf-inventario:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.btn-pdf-inventario svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ==========================================================================
+   SELECTOR DE FECHA EN DASHBOARD
+   ========================================================================== */
+.acciones-header-dashboard {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.selector-fecha-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.4rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.btn-fecha-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  background: #f8fafc;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+}
+
+.btn-fecha-nav:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-fecha-nav i {
+  width: 16px;
+  height: 16px;
+}
+
+.input-fecha-dashboard {
+  border: none;
+  font-size: 0.88rem;
+  color: #0f172a;
+  font-weight: 700;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  padding: 0.25rem 0.4rem;
+}
+
+.input-fecha-dashboard::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.input-fecha-dashboard::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.btn-hoy-dash {
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-hoy-dash:hover {
+  background: #1d4ed8;
+}
+
+/* ==========================================================================
+   CAMPANITA DE NOTIFICACIONES CON BURBUJA
+   ========================================================================== */
+
+/* Contenedor que mantiene la campanita y la burbuja juntas */
+.contenedor-campana-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Botón de campana con círculo amarillo */
+.boton-campana-amarilla {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.boton-campana-amarilla:hover {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.55);
+}
+
+.boton-campana-amarilla i,
+.boton-campana-amarilla svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.5;
+}
+
+/* Badge de contador rojo */
+.badge-campana {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Burbuja de notificaciones */
+.burbuja-notificaciones {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: -8px;
+  width: 380px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.15),
+    0 10px 10px -5px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  z-index: 9999;
+  overflow: hidden;
+  animation: fadeInBurbuja 0.2s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes fadeInBurbuja {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+/* Flechita de la burbuja */
+.burbuja-notificaciones::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 22px;
+  width: 14px;
+  height: 14px;
+  background: #fafbfc;
+  border-left: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+  transform: rotate(45deg);
+  z-index: 1;
+}
+
+/* Cabecera de la burbuja */
+.cabecera-burbuja {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.35rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafbfc;
+}
+
+.cabecera-burbuja strong {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.btn-cerrar-burbuja {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.btn-cerrar-burbuja:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Lista de notificaciones */
+.lista-notificaciones {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+}
+
+.item-notificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.35rem;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.item-notificacion:hover {
+  background: #f8fafc;
+  border-left-color: #f59e0b;
+}
+
+/* Iconos de las notificaciones */
+.icono-notif {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icono-notif i,
+.icono-notif svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+.icono-notif-rojo {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.icono-notif-amarillo {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.icono-notif-azul {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+/* Texto de la notificación */
+.info-notif {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.info-notif strong {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.info-notif span {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+/* Estado vacío */
+.sin-notificaciones {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #94a3b8;
+}
+
+.sin-notificaciones i,
+.sin-notificaciones svg {
+  width: 40px;
+  height: 40px;
+  color: #10b981;
+  margin-bottom: 0.75rem;
+  stroke-width: 2;
+}
+
+.sin-notificaciones p {
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+/* Scroll personalizado */
+.lista-notificaciones::-webkit-scrollbar {
+  width: 6px;
+}
+
+.lista-notificaciones::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lista-notificaciones::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.lista-notificaciones::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Punto rojo pequeño cuando no hay número pero sí estado */
+.punto-rojo-sin-numero {
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  margin-left: auto;
+  display: inline-block;
+  animation: pulse-punto 2s infinite;
+}
+
+@keyframes pulse-punto {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.2); 
+    opacity: 0.7;
+  }
+}
+
+/* ==========================================================================
+   DASHBOARD DEL ESTUDIANTE - MI CUENTA
+   ========================================================================== */
+
+/* Tarjeta de perfil */
+.tarjeta-perfil-alumno {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.avatar-grande-alumno {
+  width: 90px;
+  height: 90px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-perfil-alumno {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.nombre-completo-perfil {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.carrera-perfil {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.fila-badges-perfil {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.badge-codigo-perfil {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.badge-estado-perfil {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.badge-estado-perfil.activo {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-estado-perfil.bloqueado {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.fila-contacto-perfil {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.fila-contacto-perfil i,
+.fila-contacto-perfil svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Grid de 3 estadísticas */
+.grid-tres-estadisticas-alumno {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.card-estadistica-alumno {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.card-estadistica-alumno:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.num-estadistica {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.num-estadistica.azul { color: #2563eb; }
+.num-estadistica.morado { color: #8b5cf6; }
+.num-estadistica.naranja { color: #f59e0b; }
+
+.label-estadistica {
+  font-size: 0.9rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.link-estadistica {
+  font-size: 0.78rem;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.link-estadistica:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* Historial de reservas */
+.lista-historial-reservas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fila-historial-reserva {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  transition: box-shadow 0.15s;
+}
+
+.fila-historial-reserva:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.info-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nombre-lab-historial {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.detalle-historial {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.accion-historial {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.codigo-historial {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.badge-estado-historial {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.badge-estado-historial.confirmada {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-estado-historial.enuso {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-estado-historial.devuelta {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.badge-estado-historial.cancelada {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.estado-vacio-historial {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+  background: #ffffff;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+}
+
+.estado-vacio-historial i,
+.estado-vacio-historial svg {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.75rem;
+  color: #cbd5e1;
+}
+
+.estado-vacio-historial p {
+  font-size: 0.9rem;
+}

@@ -28,8 +28,8 @@ public class PasswordResetToken {
     @Column(name = "fecha_vencimiento", nullable = false)
     private LocalDateTime fechaVencimiento;
 
-    @Column
-    private Boolean usado;
+    @Column(nullable = false)
+    private Boolean usado=false;
 
     public PasswordResetToken() {
     }

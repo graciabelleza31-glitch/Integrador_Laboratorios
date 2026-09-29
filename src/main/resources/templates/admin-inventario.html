@@ -1,80 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UTP +Lab - Inventario y Suministros</title>
-  <link rel="stylesheet" th:href="@{/css/checkout.css}" />
-  <link rel="stylesheet" th:href="@{/css/alumno.css}" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-</head>
+<head th:replace="~{fragments/head :: head('UTP +Lab - Inventario')}"></head>
 <body>
   <div class="contenedor-app">
     
-    <!-- BARRA LATERAL ADMINISTRADOR -->
-    <aside class="barra-lateral">
-      <div class="logo-lateral">
-        <span class="insignia-utp">UTP</span>
-        <span class="texto-lab">+Lab</span>
-      </div>
+    <aside th:replace="~{fragments/sidebar :: sidebar('inventario')}"></aside>
 
-      <nav class="navegacion-menu">
-        <a th:href="@{/admin/dashboard}" class="item-menu">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard</span>
-        </a>
-        <a th:href="@{/admin/checkin}" class="item-menu">
-          <i data-lucide="check-square"></i>
-          <span>Check-in</span>
-        </a>
-        <a th:href="@{/admin/inventario}" class="item-menu activo">
-          <i data-lucide="package"></i>
-          <span>Inventario</span>
-        </a>
-        <a th:href="@{/admin/checkout}" class="item-menu">
-          <i data-lucide="corner-down-left"></i>
-          <span>Check-out</span>
-        </a>
-        <a th:href="@{/admin/inspeccion}" class="item-menu">
-          <i data-lucide="search"></i>
-          <span>Inspección</span>
-        </a>
-        <a th:href="@{/admin/incidencias}" class="item-menu item-incidencias">
-          <i data-lucide="alert-triangle"></i>
-          <span>Incidencias</span>
-          <span class="badge-alerta-roja" th:text="${totalIncidencias}">1</span>
-        </a>
-      </nav>
-    </aside>
-
-    <!-- ÁREA PRINCIPAL -->
     <main class="area-principal">
-      <header class="cabecera-superior">
-        <div class="logo-cabecera">
-          <span class="insignia-utp">UTP</span>
-          <span class="texto-lab">+Lab</span>
-        </div>
-
-        <div class="perfil-acciones">
-          <div class="contenedor-campana">
-            <i data-lucide="bell"></i>
-            <span class="punto-alerta-campana" th:text="${totalIncidencias}">1</span>
-          </div>
-          <div class="datos-perfil">
-            <span class="titulo-saludo">Hola, Dr.</span>
-            <span class="subtitulo-rol">Administrador</span>
-          </div>
-          <div class="circulo-avatar avatar-naranja">CH</div>
-          <a th:href="@{/logout}" class="enlace-salir">
-            <i data-lucide="log-out"></i>
-            <span>Salir</span>
-          </a>
-        </div>
-      </header>
+      <header th:replace="~{fragments/topbar :: topbar}"></header>
 
       <section class="seccion-checkout">
         
@@ -84,10 +17,16 @@
             <h1 class="titulo-seccion-catalogo">Gestión de Inventario</h1>
             <p class="subtitulo-seccion-catalogo">Control general de insumos, reactivos, herramientas y EPPs</p>
           </div>
-          <button type="button" class="btn-nuevo-insumo-admin" onclick="abrirModalNuevoProducto()">
+          <div class="acciones-header-inventario">
+            <a th:href="@{/admin/inventario/alertas/pdf}" target="_blank" class="btn-pdf-inventario">
+              <i data-lucide="file-down"></i>
+              <span>Reporte PDF</span>
+            </a>
+            <button type="button" class="btn-nuevo-insumo-admin" onclick="abrirModalNuevoProducto()">
             <i data-lucide="plus-circle" class="icono-btn-nuevo"></i>
             <span>Nuevo Insumo</span>
-          </button>
+            </button>
+          </div>
         </div>
 
         <!-- BÚSQUEDA Y CONTADORES -->
@@ -274,10 +213,8 @@
 
   </div>
 
+  <div th:replace="~{fragments/topbar :: scripts}"></div>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    });
 
     let catFiltro = 'TODOS';
 

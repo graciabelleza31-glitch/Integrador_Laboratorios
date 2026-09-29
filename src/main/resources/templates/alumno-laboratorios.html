@@ -14,62 +14,9 @@
 <body>
   <div class="contenedor-app">
     
-    <!-- BARRA LATERAL -->
-    <aside class="barra-lateral">
-      <div class="logo-lateral">
-        <span class="insignia-utp">UTP</span>
-        <span class="texto-lab">+Lab</span>
-      </div>
-
-      <nav class="navegacion-menu">
-        <a href="#" class="item-menu">
-          <i data-lucide="user"></i>
-          <span>Cuenta</span>
-        </a>
-        <a th:href="@{/alumno/laboratorios}" class="item-menu activo">
-          <i data-lucide="flask-conical"></i>
-          <span>Laboratorios</span>
-        </a>
-        <a th:href="@{/alumno/catalogos}" class="item-menu">
-          <i data-lucide="box"></i>
-          <span>Catálogos</span>
-        </a>
-        <a th:href="@{/alumno/protocolos}" class="item-menu">
-          <i data-lucide="file-text"></i>
-          <span>Protocolos</span>
-        </a>
-        <a th:href="@{/alumno/incidencias}" class="item-menu">
-          <i data-lucide="alert-triangle"></i>
-          <span>Incidencias</span>
-          <span th:if="${numIncidencias > 0}" class="contador-alerta" th:text="${numIncidencias}">1</span>
-        </a>
-      </nav>
-    </aside>
-
-    <!-- ÁREA PRINCIPAL -->
+    <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('laboratorios')}"></aside>
     <main class="area-principal">
-      <header class="cabecera-superior">
-        <div class="logo-cabecera">
-          <span class="insignia-utp">UTP</span>
-          <span class="texto-lab">+Lab</span>
-        </div>
-
-        <div class="perfil-acciones">
-          <div class="icono-campana">
-            <i data-lucide="bell"></i>
-            <span th:if="${numIncidencias > 0}" class="punto-alerta" th:text="${numIncidencias}">1</span>
-          </div>
-          <div class="datos-perfil">
-            <span class="titulo-saludo" th:text="'Hola, ' + ${alumno.nombre}">Hola, Estudiante</span>
-            <span class="subtitulo-rol">Estudiante</span>
-          </div>
-          <div class="circulo-avatar avatar-azul" th:text="${#strings.substring(alumno.nombre,0,1) + #strings.substring(alumno.apellido,0,1)}">MB</div>
-          <a th:href="@{/logout}" class="enlace-salir">
-            <i data-lucide="log-out"></i>
-            <span>Salir</span>
-          </a>
-        </div>
-      </header>
+    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
 
       <section class="seccion-checkout">
         
@@ -182,7 +129,7 @@
         <div class="cuerpo-modal-horarios">
           <div class="fila-selector-fecha">
             <span class="txt-horarios-disp">Horarios disponibles</span>
-            <input type="date" id="inputFechaConsulta" class="input-fecha-box" value="2026-09-25" onchange="actualizarHorariosModalConsulta()" />
+            <input type="date" id="inputFechaConsulta" class="input-fecha-box" onchange="actualizarHorariosModalConsulta()" />
           </div>
 
           <div class="matriz-horas-grid" id="gridHorariosConsulta"></div>
@@ -217,7 +164,7 @@
         <form th:action="@{/alumno/reservas/confirmar-pago}" method="post" id="formReservaCompleta">
           
           <input type="hidden" name="idLab" id="wizardIdLab" required />
-          <input type="hidden" name="fecha" id="wizardFechaEnvio" value="2026-09-25" />
+          <input type="hidden" name="fecha" id="wizardFechaEnvio" />
           <input type="hidden" name="horaInicio" id="wizardHoraInicio" />
           <input type="hidden" name="horaFin" id="wizardHoraFin" />
           <input type="hidden" name="montoTotal" id="inputMontoTotalFinal" value="0.00" />
@@ -226,7 +173,7 @@
           <!-- ================= PASO A: LAB Y HORARIOS ================= -->
           <div id="seccionPasoLab" class="cuerpo-paso-wizard">
             <label class="etiqueta-form-wizard">Fecha</label>
-            <input type="date" id="wizardFechaInput" class="input-fecha-wizard" value="2026-09-25" onchange="cambiarFechaWizard(this.value)" />
+            <input type="date" id="wizardFechaInput" class="input-fecha-wizard" onchange="validarFechaNoPasada(this); cambiarFechaWizard(this.value);" />
 
             <label class="etiqueta-form-wizard">Tipo de laboratorio</label>
             <div class="barra-filtros mini">
@@ -545,6 +492,8 @@
 
   </div>
 
+  <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
+
   <!-- SCRIPT CON LIMPIEZA TOTAL AL SALIR -->
   <script>
     const BLOQUES_HORARIOS = [
@@ -554,9 +503,36 @@
       { h: "16:00", f: "17:00" }, { h: "17:00", f: "18:00" }, { h: "18:00", f: "19:00" }
     ];
 
-    document.addEventListener("DOMContentLoaded", function () {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    });
+  
+
+    // ========== INICIALIZAR FECHA ACTUAL Y BLOQUEAR DÍAS PASADOS ==========
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Obtener la fecha de HOY en formato YYYY-MM-DD
+    const hoy = new Date();
+    const año = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    const fechaHoy = `${año}-${mes}-${dia}`;
+    
+    // Configurar ambos inputs con la fecha de hoy
+    const inputConsulta = document.getElementById('inputFechaConsulta');
+    const inputWizard = document.getElementById('wizardFechaInput');
+    const inputHidden = document.getElementById('wizardFechaEnvio');
+    
+    if (inputConsulta) {
+        inputConsulta.value = fechaHoy;
+        inputConsulta.min = fechaHoy;  // Bloquear días anteriores
+    }
+    if (inputWizard) {
+        inputWizard.value = fechaHoy;
+        inputWizard.min = fechaHoy;
+    }
+    if (inputHidden) {
+        inputHidden.value = fechaHoy;
+    }
+});
 
     function filtrarLabs(tipo, btn) {
       document.querySelectorAll('.barra-filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
@@ -591,37 +567,66 @@
     }
 
     function actualizarHorariosModalConsulta() {
-      if (!labSeleccionadoActual) return;
-      const fecha = document.getElementById('inputFechaConsulta').value;
-      const grid = document.getElementById('gridHorariosConsulta');
-      grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Cargando horarios...</span>';
+    if (!labSeleccionadoActual) return;
+    const fecha = document.getElementById('inputFechaConsulta').value;
+    const grid = document.getElementById('gridHorariosConsulta');
+    grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Cargando horarios...</span>';
 
-      fetch(`/api/laboratorios/${labSeleccionadoActual.id}/horarios-ocupados?fecha=${fecha}`)
+    // ===== FECHA Y HORA LOCALES =====
+    const ahora = new Date();
+    const horaActual = ahora.getHours();
+    const minutoActual = ahora.getMinutes();
+    const año = ahora.getFullYear();
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const hoyStr = `${año}-${mes}-${dia}`;
+    const esHoy = (fecha === hoyStr);
+
+    fetch(`/api/laboratorios/${labSeleccionadoActual.id}/horarios-ocupados?fecha=${fecha}`)
         .then(res => res.json())
         .then(ocupados => {
-          grid.innerHTML = '';
-          let cDisp = 0, cOcup = 0;
-          BLOQUES_HORARIOS.forEach(b => {
-            const estaOcupado = ocupados.includes(b.h);
-            const slot = document.createElement('div');
-            slot.className = `btn-hora-slot ${estaOcupado ? 'ocupado' : 'disponible'}`;
-            slot.innerText = b.h;
-            grid.appendChild(slot);
-            if (estaOcupado) cOcup++; else cDisp++;
-          });
-          document.getElementById('txtCantDisp').innerText = cDisp;
-          document.getElementById('txtCantOcup').innerText = cOcup;
+            grid.innerHTML = '';
+            let cDisp = 0, cOcup = 0;
+            BLOQUES_HORARIOS.forEach(b => {
+                const horaBloque = parseInt(b.h.split(':')[0], 10);
+                
+                let yaPaso = false;
+                if (esHoy) {
+                    if (horaBloque < horaActual) yaPaso = true;
+                    else if (horaBloque === horaActual && minutoActual >= 30) yaPaso = true;
+                }
+                
+                const estaOcupado = ocupados.includes(b.h);
+                const estaBloqueado = estaOcupado || yaPaso;
+                
+                const slot = document.createElement('div');
+                slot.className = `btn-hora-slot ${estaBloqueado ? 'ocupado' : 'disponible'}`;
+                slot.innerText = b.h;
+                grid.appendChild(slot);
+                
+                if (estaBloqueado) cOcup++; else cDisp++;
+            });
+            document.getElementById('txtCantDisp').innerText = cDisp;
+            document.getElementById('txtCantOcup').innerText = cOcup;
         })
         .catch(() => {
-          grid.innerHTML = '';
-          BLOQUES_HORARIOS.forEach(b => {
-            const slot = document.createElement('div');
-            slot.className = 'btn-hora-slot disponible';
-            slot.innerText = b.h;
-            grid.appendChild(slot);
-          });
+            grid.innerHTML = '';
+            BLOQUES_HORARIOS.forEach(b => {
+                const slot = document.createElement('div');
+                slot.className = 'btn-hora-slot disponible';
+                slot.innerText = b.h;
+                grid.appendChild(slot);
+            });
         });
+}
+
+function validarFechaNoPasada(input) {
+    const hoy = new Date().toISOString().split('T')[0];
+    if (input.value < hoy) {
+        input.value = hoy;
+        alert('No puedes seleccionar una fecha anterior a hoy.');
     }
+}
 
     function pasarDeHorariosAWizard() {
       cerrarModalHorarios();
@@ -737,43 +742,78 @@
     }
 
     function cargarHorariosWizard() {
-      const idLab = document.getElementById('wizardIdLab').value;
-      const fecha = document.getElementById('wizardFechaEnvio').value;
-      const grid = document.getElementById('gridHorasWizard');
-      horasSeleccionadas = [];
-      document.getElementById('tagMax2Horas').style.display = 'none';
+    const idLab = document.getElementById('wizardIdLab').value;
+    const fecha = document.getElementById('wizardFechaEnvio').value;
+    const grid = document.getElementById('gridHorasWizard');
+    horasSeleccionadas = [];
+    document.getElementById('tagMax2Horas').style.display = 'none';
 
-      if (!idLab) {
+    if (!idLab) {
         grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Selecciona un laboratorio arriba para ver horarios</span>';
         return;
-      }
+    }
 
-      fetch(`/api/laboratorios/${idLab}/horarios-ocupados?fecha=${fecha}`)
+    // ===== OBTENER FECHA Y HORA LOCALES (NO UTC) =====
+    const ahora = new Date();
+    const horaActual = ahora.getHours();
+    const minutoActual = ahora.getMinutes();
+    
+    // Formato de hoy en LOCAL: YYYY-MM-DD
+    const año = ahora.getFullYear();
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+    const dia = String(ahora.getDate()).padStart(2, '0');
+    const hoyStr = `${año}-${mes}-${dia}`;
+    
+    // Comparar como strings
+    const fechaSeleccionada = fecha; // "YYYY-MM-DD"
+    const esHoy = (fechaSeleccionada === hoyStr);
+    const esFuturo = (fechaSeleccionada > hoyStr);  // Fechas posteriores a hoy
+
+    fetch(`/api/laboratorios/${idLab}/horarios-ocupados?fecha=${fecha}`)
         .then(res => res.json())
         .then(ocupados => {
-          grid.innerHTML = '';
-          BLOQUES_HORARIOS.forEach(b => {
-            const estaOcupado = ocupados.includes(b.h);
-            const slot = document.createElement('div');
-            slot.className = `btn-slot-select ${estaOcupado ? 'bloqueado' : ''}`;
-            slot.innerText = b.h;
-            if (!estaOcupado) {
-              slot.onclick = () => seleccionarHora(slot, b.h, b.f);
-            }
-            grid.appendChild(slot);
-          });
+            grid.innerHTML = '';
+            BLOQUES_HORARIOS.forEach(b => {
+                const horaBloque = parseInt(b.h.split(':')[0], 10);
+                
+                // Solo bloquear por hora pasada si ES HOY
+                let yaPaso = false;
+                if (esHoy) {
+                    if (horaBloque < horaActual) {
+                        yaPaso = true;
+                    } else if (horaBloque === horaActual && minutoActual >= 30) {
+                        yaPaso = true;
+                    }
+                }
+                // Si esFuturo → nunca bloquear por hora pasada
+                
+                const estaOcupado = ocupados.includes(b.h);
+                const estaBloqueado = estaOcupado || yaPaso;
+                
+                const slot = document.createElement('div');
+                slot.className = `btn-slot-select ${estaBloqueado ? 'bloqueado' : ''}`;
+                slot.innerText = b.h;
+                
+                if (yaPaso) slot.title = 'Esta hora ya pasó';
+                else if (estaOcupado) slot.title = 'Horario ocupado';
+                
+                if (!estaBloqueado) {
+                    slot.onclick = () => seleccionarHora(slot, b.h, b.f);
+                }
+                grid.appendChild(slot);
+            });
         })
         .catch(() => {
-          grid.innerHTML = '';
-          BLOQUES_HORARIOS.forEach(b => {
-            const slot = document.createElement('div');
-            slot.className = 'btn-slot-select';
-            slot.innerText = b.h;
-            slot.onclick = () => seleccionarHora(slot, b.h, b.f);
-            grid.appendChild(slot);
-          });
+            grid.innerHTML = '';
+            BLOQUES_HORARIOS.forEach(b => {
+                const slot = document.createElement('div');
+                slot.className = 'btn-slot-select';
+                slot.innerText = b.h;
+                slot.onclick = () => seleccionarHora(slot, b.h, b.f);
+                grid.appendChild(slot);
+            });
         });
-    }
+}
 
     let horasSeleccionadas = [];
     function seleccionarHora(btn, inicio, fin) {
