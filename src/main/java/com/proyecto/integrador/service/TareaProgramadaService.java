@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -17,6 +18,9 @@ public class TareaProgramadaService {
 
     @Autowired
     private ReservaRepository reservaRepository;
+
+    // 🔑 Zona horaria de Perú (UTC-5)
+    private static final ZoneId ZONA_PERU = ZoneId.of("America/Lima");
 
     // Tiempo de tolerancia en minutos después de la hora de inicio
     private static final int MINUTOS_TOLERANCIA = 10;
@@ -27,17 +31,23 @@ public class TareaProgramadaService {
      * Lógica:
      * - Cancela reservas CONFIRMADAS que no fueron atendidas (pasaron X min de tolerancia).
      * - NO toca reservas EN_USO (espera a que el admin haga check-out manual).
+     * 
+     * ⚠️ IMPORTANTE: Se usa la zona horaria de Perú (America/Lima),
+     * no la del servidor (que está en UTC).
      */
     @Scheduled(fixedRate = 60000, initialDelay = 10000)
     @Transactional
     public void cancelarReservasNoAsistidas() {
-        LocalDate hoy = LocalDate.now();
-        LocalTime ahora = LocalTime.now();
+        // 🔑 Usar zona horaria de Perú en lugar de UTC
+        LocalDate hoy = LocalDate.now(ZONA_PERU);
+        LocalTime ahora = LocalTime.now(ZONA_PERU);
+        LocalDateTime ahoraCompleto = LocalDateTime.now(ZONA_PERU);
 
-        // Solo buscar reservas CONFIRMADAS (no EN_USO, no DEVUELTA, etc.)
+        // Solo buscar reservas CONFIRMADAS
         List<Reserva> reservasConfirmadas = reservaRepository.findByEstado("CONFIRMADA");
 
-        System.out.println("⏰ [JOB] " + LocalDateTime.now() + 
+        System.out.println("⏰ [JOB] " + ahoraCompleto + 
+                " (Perú: " + ahora + ")" +
                 " - Reservas CONFIRMADAS encontradas: " + reservasConfirmadas.size());
 
         int canceladas = 0;
@@ -59,7 +69,7 @@ public class TareaProgramadaService {
             }
 
             if (noAsistio) {
-                r.setEstado("NO_ASISTIO");  // O "CANCELADA" si prefieres no agregar el estado nuevo
+                r.setEstado("NO_ASISTIO");
                 reservaRepository.save(r);
                 canceladas++;
                 System.out.println("   ❌ " + r.getIdReserva() + 
@@ -69,7 +79,7 @@ public class TareaProgramadaService {
         }
 
         if (canceladas > 0) {
-            System.out.println("[" + LocalDateTime.now() + "] Total canceladas: " + canceladas);
+            System.out.println("[" + LocalDateTime.now(ZONA_PERU) + "] Total canceladas: " + canceladas);
         }
     }
 }
