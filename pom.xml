@@ -8,6 +8,7 @@
 		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+	
 	<groupId>com.proyecto</groupId>
 	<artifactId>integrador</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
