@@ -18,6 +18,9 @@ public class RecuperarPasswordController {
     // ============ PASO 1: Ingresar código UTP ============
     @GetMapping("/recuperar/restablecer")
     public String mostrarRestablecer() {
+        System.out.println("🔵 [DEBUG] Entrando a /recuperar/restablecer");
+    String resultado = "recuperar/restablecer";
+    System.out.println("🔵 [DEBUG] Retornando vista: " + resultado);
         return "recuperar/restablecer";
     }
 
