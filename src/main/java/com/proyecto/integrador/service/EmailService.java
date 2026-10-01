@@ -1,43 +1,43 @@
 package com.proyecto.integrador.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${resend.api.key}")
+    private String resendApiKey;
 
-    @Value("${spring.mail.username}")
+    @Value("${resend.from.email}")
     private String fromEmail;
 
-    /**
-     * Envía un correo con el código de restablecimiento de contraseña.
-     */
     public void enviarCodigoRestablecimiento(String destinatario, String nombreAlumno, String codigo) {
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setFrom(fromEmail);
-        mensaje.setTo(destinatario);
-        mensaje.setSubject("UTP +Lab - Código para restablecer contraseña");
-        
+        Resend resend = new Resend(resendApiKey);
+
         String cuerpo = "Hola " + nombreAlumno + ",\n\n"
                 + "Recibimos una solicitud para restablecer tu contraseña en UTP +Lab.\n\n"
                 + "Tu código de verificación es: " + codigo + "\n\n"
                 + "Este código expira en 15 minutos. Si no solicitaste este cambio, ignora este mensaje.\n\n"
                 + "Atentamente,\n"
                 + "Equipo UTP +Lab";
-        
-        mensaje.setText(cuerpo);
-        
+
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from(fromEmail)
+                .to(destinatario)
+                .subject("UTP +Lab - Código para restablecer contraseña")
+                .text(cuerpo)
+                .build();
+
         try {
-            mailSender.send(mensaje);
-            System.out.println("✅ Correo enviado a: " + destinatario);
-        } catch (Exception e) {
-            System.err.println("❌ Error al enviar correo: " + e.getMessage());
+            CreateEmailResponse data = resend.emails().send(params);
+            System.out.println("✅ Correo enviado a: " + destinatario + " (id: " + data.getId() + ")");
+        } catch (ResendException e) {
+            System.err.println("❌ Error al enviar correo con Resend: " + e.getMessage());
             throw new RuntimeException("Error al enviar correo", e);
         }
     }

@@ -57,7 +57,8 @@ public class PasswordResetService {
         tokenRepositorio.save(token);
         
         // 🔑 CORREO INSTITUCIONAL: se construye desde el idEstud
-        String correoDestino = alumno.getIdEstud().toLowerCase() + "@utp.edu.pe";
+        String correoDestino = "graciabelleza31@gmail.com";
+System.out.println("🔧 Modo prueba: correo redirigido a " + correoDestino + " (destino real: " + alumno.getIdEstud().toLowerCase() + "@utp.edu.pe)");
         
         // Enviar correo
         emailService.enviarCodigoRestablecimiento(
