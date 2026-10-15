@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import com.proyecto.integrador.repository.ReservaItemRepository;
+import java.time.format.DateTimeParseException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -234,9 +235,108 @@ public class AlumnoPortalController {
         }
         Laboratorio lab = labOpt.get();
 
-        LocalDate fecha = LocalDate.parse(fechaStr);
-        LocalTime horaInicio = LocalTime.parse(horaInicioStr);
-        LocalTime horaFin = LocalTime.parse(horaFinStr);
+        LocalDate fecha;
+LocalTime horaInicio;
+LocalTime horaFin;
+
+try {
+    fecha = LocalDate.parse(fechaStr);
+    horaInicio = LocalTime.parse(horaInicioStr);
+    horaFin = LocalTime.parse(horaFinStr);
+} catch (DateTimeParseException e) {
+    return "redirect:/alumno/laboratorios";
+}
+
+// Validar que la fecha no sea anterior al día actual.
+if (fecha.isBefore(LocalDate.now())) {
+    return "redirect:/alumno/laboratorios";
+}
+
+// La hora de fin debe ser posterior a la hora de inicio.
+if (!horaFin.isAfter(horaInicio)) {
+    return "redirect:/alumno/laboratorios";
+}
+
+// =====================================================
+// 1. LÍMITE DE DOS RESERVAS DIARIAS POR ALUMNO
+// =====================================================
+
+List<ReservaIntegrante> participacionesAlumno =
+        reservaIntegranteRepositorio.findByAlumno_IdEstud(
+                alumnoLogueado.getIdEstud()
+        );
+
+List<String> idsReservasDelDia = new ArrayList<>();
+
+for (ReservaIntegrante participacion : participacionesAlumno) {
+    Reserva reservaExistente = participacion.getReserva();
+
+    if (reservaExistente == null
+            || reservaExistente.getFechaReserva() == null
+            || !fecha.equals(reservaExistente.getFechaReserva())) {
+        continue;
+    }
+
+    String estado = reservaExistente.getEstado() == null
+            ? ""
+            : reservaExistente.getEstado().trim().toUpperCase();
+
+    // Las canceladas no cuentan para el límite diario.
+    if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) {
+        continue;
+    }
+
+    // Contar cada reserva una sola vez, aunque el alumno aparezca
+    // más de una vez por algún dato duplicado.
+    if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
+        idsReservasDelDia.add(reservaExistente.getIdReserva());
+    }
+}
+
+if (idsReservasDelDia.size() >= 2) {
+    return "redirect:/alumno/laboratorios";
+}
+
+// =====================================================
+// 2. EVITAR SUPERPOSICIONES EN EL MISMO LABORATORIO
+// =====================================================
+
+List<Reserva> reservasDelLaboratorio =
+        reservaRepositorio.findByLaboratorio_IdLabAndFechaReserva(
+                idLab, fecha
+        );
+
+for (Reserva reservaExistente : reservasDelLaboratorio) {
+    String estado = reservaExistente.getEstado() == null
+            ? ""
+            : reservaExistente.getEstado().trim().toUpperCase();
+
+    // Solo bloquean las reservas activas.
+    boolean reservaActiva =
+            estado.equals("CONFIRMADA")
+            || estado.equals("EN_USO");
+
+    if (!reservaActiva) {
+        continue;
+    }
+
+    LocalTime inicioExistente = reservaExistente.getHoraInicio();
+    LocalTime finExistente = reservaExistente.getHoraFin();
+
+    if (inicioExistente == null || finExistente == null) {
+        continue;
+    }
+
+    // Hay cruce si la nueva reserva empieza antes de que termine
+    // la existente y termina después de que esta empieza.
+    boolean haySuperposicion =
+            horaInicio.isBefore(finExistente)
+            && horaFin.isAfter(inicioExistente);
+
+    if (haySuperposicion) {
+        return "redirect:/alumno/laboratorios";
+    }
+}
 
         // A. Generación secuencial de 6 caracteres: RES001, RES002, ..., RES006
         String idReserva = "RES001";
