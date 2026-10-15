@@ -51,6 +51,32 @@
           </div>
         </div>
 
+        <!-- Aviso del límite diario -->
+<div th:if="${limiteDiarioAlcanzado}"
+     class="alert alert-warning"
+     role="alert">
+    <strong>¡Límite diario alcanzado!</strong>
+    Ya has utilizado tus dos reservas permitidas para hoy.
+    Las reservas canceladas no cuentan para este límite.
+</div>
+
+<div th:unless="${limiteDiarioAlcanzado}"
+     class="alert alert-info"
+     role="status">
+    Hoy llevas
+    <strong th:text="${reservasHoy}">0</strong>
+    de 2 reservas permitidas.
+    Te quedan
+    <strong th:text="${reservasRestantes}">2</strong>.
+</div>
+
+<!-- Mensaje de error después de intentar reservar -->
+<div th:if="${errorReserva != null}"
+     class="alert alert-danger"
+     role="alert"
+     th:text="${errorReserva}">
+</div>
+
         <!-- MIS RESERVAS ACTIVAS -->
         <div th:if="${not #lists.isEmpty(misReservas)}" class="bloque-mis-reservas">
           <span class="subtitulo-seccion-gris">MIS RESERVAS ACTIVAS</span>
@@ -1085,19 +1111,86 @@ function validarFechaNoPasada(input) {
       }
     }
 
-    function procesarBotonFinalBoleta() {
-      if (!document.getElementById('checkAceptoTerminos').checked) {
-        alert('Debes aceptar los términos y condiciones para continuar.');
-        return;
-      }
+    
+let enviandoReserva = false;
 
-      if (costoEppsTotal > 0) {
-        document.getElementById('modalPagoReserva').style.display = 'flex';
-      } else {
-        document.getElementById('inputMetodoPagoSeleccionado').value = "GRATUITO";
-        document.getElementById('formReservaCompleta').submit();
-      }
+async function validarYEnviarReserva() {
+  if (enviandoReserva) return;
+
+  const idLab = document.getElementById('wizardIdLab').value;
+  const fecha = document.getElementById('wizardFechaEnvio').value;
+  const inicio = document.getElementById('wizardHoraInicio').value;
+  const fin = document.getElementById('wizardHoraFin').value;
+
+  if (!idLab || !fecha || !inicio || !fin) {
+    alert('Selecciona el laboratorio, la fecha y el horario.');
+    return;
+  }
+
+  try {
+    const respuesta = await fetch(
+      `/api/laboratorios/${encodeURIComponent(idLab)}/horarios-ocupados?fecha=${encodeURIComponent(fecha)}`
+    );
+
+    if (!respuesta.ok) {
+      throw new Error('No se pudieron consultar los horarios.');
     }
+
+    const ocupados = await respuesta.json();
+
+    // Detectar cualquier bloque ocupado dentro del intervalo elegido.
+    const bloquesDelIntervalo = BLOQUES_HORARIOS.filter(
+      b => b.h >= inicio && b.h < fin
+    );
+
+    const bloquesEnConflicto = bloquesDelIntervalo.filter(
+      b => ocupados.includes(b.h)
+    );
+
+    if (bloquesEnConflicto.length > 0) {
+      alert(
+        '¡Cruce de horario!\n\n' +
+        'El laboratorio ya tiene una reserva activa en el horario seleccionado. ' +
+        'Elige otro horario antes de continuar.'
+      );
+
+      // Actualizar los horarios disponibles del laboratorio.
+      cargarHorariosWizard();
+      return;
+    }
+
+    // La validación definitiva del límite diario y del cruce
+    // también debe hacerse en el servidor Java.
+    enviandoReserva = true;
+    document.getElementById('formReservaCompleta').submit();
+
+  } catch (error) {
+    console.error(error);
+    alert(
+      'No pudimos verificar la disponibilidad del laboratorio. ' +
+      'Por seguridad, la reserva no se ha enviado. Inténtalo nuevamente.'
+    );
+  }
+}
+
+function procesarBotonFinalBoleta() {
+  if (!document.getElementById('checkAceptoTerminos').checked) {
+    alert('Debes aceptar los términos y condiciones para continuar.');
+    return;
+  }
+
+  if (costoEppsTotal > 0) {
+    document.getElementById('modalPagoReserva').style.display = 'flex';
+  } else {
+    document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
+    validarYEnviarReserva();
+  }
+}
+
+function enviarFormularioFinal() {
+  validarYEnviarReserva();
+}
+
 
     function cerrarModalPago() {
       document.getElementById('modalPagoReserva').style.display = 'none';
@@ -1109,9 +1202,7 @@ function validarFechaNoPasada(input) {
       document.getElementById('inputMetodoPagoSeleccionado').value = met;
     }
 
-    function enviarFormularioFinal() {
-      document.getElementById('formReservaCompleta').submit();
-    }
+    
   </script>
 </body>
 </html>

@@ -27,6 +27,12 @@
           <p class="subtitulo-seccion-catalogo">Perfil e historial del estudiante</p>
         </div>
 
+        <div th:if="${mensajeCancelacion != null}"
+     class="alert alert-info"
+     role="status"
+     th:text="${mensajeCancelacion}">
+</div>
+
         <!-- TARJETA DE PERFIL -->
         <div class="tarjeta-perfil-alumno">
           <div class="avatar-grande-alumno" 

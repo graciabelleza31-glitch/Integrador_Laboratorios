@@ -38,7 +38,7 @@ import com.proyecto.integrador.repository.ReservaIntegranteRepository;
 import com.proyecto.integrador.repository.ReservaItemRepository;
 import com.proyecto.integrador.repository.ReservaRepository;
 import com.proyecto.integrador.repository.SancionRepository;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -116,6 +116,36 @@ public class AlumnoPortalController {
 
         // Obtener reservas activas en las que participa el alumno
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
+        LocalDate hoy = LocalDate.now();
+List<String> idsReservasHoy = new ArrayList<>();
+
+for (ReservaIntegrante ri : participaciones) {
+    Reserva r = ri.getReserva();
+
+    if (r == null || r.getFechaReserva() == null
+            || !hoy.equals(r.getFechaReserva())) {
+        continue;
+    }
+
+    String estado = r.getEstado() == null
+            ? ""
+            : r.getEstado().trim().toUpperCase();
+
+    if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) {
+        continue;
+    }
+
+    if (!idsReservasHoy.contains(r.getIdReserva())) {
+        idsReservasHoy.add(r.getIdReserva());
+    }
+}
+
+int reservasHoy = idsReservasHoy.size();
+
+modelo.addAttribute("reservasHoy", reservasHoy);
+modelo.addAttribute("reservasRestantes", Math.max(0, 2 - reservasHoy));
+modelo.addAttribute("limiteDiarioAlcanzado", reservasHoy >= 2);
+
         List<ReservaActivaDto> misReservas = new ArrayList<>();
 
         for (ReservaIntegrante ri : participaciones) {
@@ -212,7 +242,7 @@ public class AlumnoPortalController {
             @RequestParam(value = "eppsIds", required = false) List<String> eppsIds,
             @RequestParam("montoTotal") BigDecimal montoTotal,
             @RequestParam(value = "metodoPago", defaultValue = "GRATUITO") String metodoPago,
-            HttpSession sesion) {
+            HttpSession sesion, RedirectAttributes redirectAttributes) {
 
         Object usuario = sesion.getAttribute("usuarioLogueado");
         if (usuario == null) {
@@ -294,6 +324,10 @@ for (ReservaIntegrante participacion : participacionesAlumno) {
 }
 
 if (idsReservasDelDia.size() >= 2) {
+    redirectAttributes.addFlashAttribute(
+        "errorReserva",
+        "Ya alcanzaste el límite de dos reservas para este día. Las reservas canceladas no cuentan."
+    );
     return "redirect:/alumno/laboratorios";
 }
 
@@ -334,8 +368,12 @@ for (Reserva reservaExistente : reservasDelLaboratorio) {
             && horaFin.isAfter(inicioExistente);
 
     if (haySuperposicion) {
-        return "redirect:/alumno/laboratorios";
-    }
+    redirectAttributes.addFlashAttribute(
+        "errorReserva",
+        "¡Cruce de horario! El laboratorio ya tiene una reserva activa durante el horario seleccionado. Elige otra hora."
+    );
+    return "redirect:/alumno/laboratorios";
+}
 }
 
         // A. Generación secuencial de 6 caracteres: RES001, RES002, ..., RES006
@@ -769,4 +807,91 @@ public static class HistorialReservaDto {
             return estado;
         }
     }
+
+    
+@PostMapping("/reservas/{idReserva}/cancelar")
+@Transactional
+public String cancelarReserva(
+        @PathVariable String idReserva,
+        HttpSession sesion,
+        RedirectAttributes redirectAttributes) {
+
+    Object usuario = sesion.getAttribute("usuarioLogueado");
+
+    if (!(usuario instanceof Alumno)) {
+        return "redirect:/login";
+    }
+
+    Alumno alumno = (Alumno) usuario;
+
+    Optional<Reserva> reservaOpt =
+            reservaRepositorio.findById(idReserva);
+
+    if (reservaOpt.isEmpty()) {
+        redirectAttributes.addFlashAttribute(
+                "mensajeCancelacion",
+                "No se encontró la reserva."
+        );
+        return "redirect:/alumno/cuenta";
+    }
+
+    Reserva reserva = reservaOpt.get();
+
+    // Comprobar que el alumno participa en esta reserva.
+    List<ReservaIntegrante> integrantes =
+            reservaIntegranteRepositorio
+                    .findByReserva_IdReserva(idReserva);
+
+    boolean participa = integrantes.stream()
+            .anyMatch(ri -> ri.getAlumno() != null
+                    && alumno.getIdEstud().equals(
+                            ri.getAlumno().getIdEstud()));
+
+    if (!participa) {
+        redirectAttributes.addFlashAttribute(
+                "mensajeCancelacion",
+                "No tienes permiso para cancelar esta reserva."
+        );
+        return "redirect:/alumno/cuenta";
+    }
+
+    String estado = reserva.getEstado() == null
+            ? ""
+            : reserva.getEstado().trim().toUpperCase();
+
+    if (!estado.equals("CONFIRMADA")) {
+        redirectAttributes.addFlashAttribute(
+                "mensajeCancelacion",
+                "Solo se pueden cancelar reservas confirmadas."
+        );
+        return "redirect:/alumno/cuenta";
+    }
+
+    // Evitar cancelar una reserva cuya hora ya comenzó.
+    LocalDateTime inicioReserva = LocalDateTime.of(
+            reserva.getFechaReserva(),
+            reserva.getHoraInicio()
+    );
+
+    if (!inicioReserva.isAfter(LocalDateTime.now())) {
+        redirectAttributes.addFlashAttribute(
+                "mensajeCancelacion",
+                "No puedes cancelar una reserva cuya hora de inicio ya llegó."
+        );
+        return "redirect:/alumno/cuenta";
+    }
+
+    reserva.setEstado("CANCELADA");
+    reservaRepositorio.save(reserva);
+
+    redirectAttributes.addFlashAttribute(
+            "mensajeCancelacion",
+            "La reserva " + idReserva + " fue cancelada correctamente."
+    );
+
+    return "redirect:/alumno/cuenta";
+}
+
+
+
 }
