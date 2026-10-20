@@ -3,8 +3,12 @@ package com.proyecto.integrador.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder; // NUEVO
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // NUEVO
 
+import com.proyecto.integrador.dto.CambioPasswordDTO; // NUEVO (asegúrate de tenerlo creado)
+import com.proyecto.integrador.exception.CambioPasswordException; // NUEVO (asegúrate de tenerlo creado)
 import com.proyecto.integrador.modelo.Administrador;
 import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.repository.AdministradorRepository;
@@ -18,6 +22,9 @@ public class UsuarioService {
 
     @Autowired
     private AdministradorRepository administradorRepositorio;
+
+    @Autowired // NUEVO: Inyectamos el encriptador
+    private PasswordEncoder passwordEncoder;
 
     public ResultadoLogin validarCredenciales(String identificador, String password) {
         if (identificador == null || identificador.trim().isEmpty()
@@ -36,7 +43,8 @@ public class UsuarioService {
         if (alumnoOpcional.isPresent()) {
             Alumno alumno = alumnoOpcional.get();
 
-            if (!alumno.getPassword().equals(clave)) {
+            // MODIFICADO: Ahora usamos passwordEncoder.matches() en vez de .equals()
+            if (!passwordEncoder.matches(clave, alumno.getPassword())) {
                 throw new RuntimeException("Código UTP o contraseña incorrectos.");
             }
 
@@ -66,7 +74,8 @@ public class UsuarioService {
         if (adminOpcional.isPresent()) {
             Administrador admin = adminOpcional.get();
 
-            if (!admin.getPassword().equals(clave)) {
+            // MODIFICADO: Ahora usamos passwordEncoder.matches() en vez de .equals()
+            if (!passwordEncoder.matches(clave, admin.getPassword())) {
                 throw new RuntimeException("Código o contraseña incorrectos.");
             }
 
@@ -83,8 +92,66 @@ public class UsuarioService {
         throw new RuntimeException("Código UTP o usuario no encontrado en el sistema.");
     }
 
-    public static class ResultadoLogin {
+        // NUEVO MÉTODO: Para restablecer contraseña desde el Login (Olvidé mi contraseña)
+    @Transactional
+    public void restablecerPasswordAlumno(String idAlumno, String nuevaPassword, String confirmacionPassword) {
+        // 1. Buscar al alumno
+        Alumno alumno = alumnoRepositorio.findById(idAlumno)
+                .orElseThrow(() -> new CambioPasswordException("Alumno no encontrado"));
 
+        // 2. Validar que la nueva y la confirmación coincidan
+        if (!nuevaPassword.equals(confirmacionPassword)) {
+            throw new CambioPasswordException("La nueva contraseña y su confirmación no coinciden.");
+        }
+
+        // 3. VALIDACIÓN CLAVE: que la nueva NO sea igual a la actual
+        if (passwordEncoder.matches(nuevaPassword, alumno.getPassword())) {
+            throw new CambioPasswordException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+
+        // 4. Validar longitud mínima
+        if (nuevaPassword.length() < 8) {
+            throw new CambioPasswordException("La nueva contraseña debe tener al menos 8 caracteres.");
+        }
+
+        // 5. Encriptar y guardar
+        alumno.setPassword(passwordEncoder.encode(nuevaPassword));
+        alumnoRepositorio.save(alumno);
+    }
+
+    // ==============================================================
+    // NUEVO MÉTODO: Para cambiar la contraseña del Alumno
+    // ==============================================================
+    @Transactional
+    public void cambiarPasswordAlumno(String idAlumno, CambioPasswordDTO dto) {
+        Alumno alumno = alumnoRepositorio.findById(idAlumno)
+                .orElseThrow(() -> new CambioPasswordException("Alumno no encontrado"));
+
+        // ⚠️ TEMPORAL: Validamos en texto plano (solo para tu prueba)
+        if (!dto.getPasswordActual().equals(alumno.getPassword())) {
+            throw new CambioPasswordException("La contraseña actual es incorrecta.");
+        }
+
+        if (!dto.getPasswordNueva().equals(dto.getPasswordConfirmacion())) {
+            throw new CambioPasswordException("La nueva contraseña y su confirmación no coinciden.");
+        }
+
+        // ⚠️ TEMPORAL: Validación clave en texto plano
+        if (dto.getPasswordNueva().equals(alumno.getPassword())) {
+            throw new CambioPasswordException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+
+        // ⚠️ TEMPORAL: Guardamos en texto plano
+        alumno.setPassword(dto.getPasswordNueva());
+        alumnoRepositorio.save(alumno);
+    }
+
+
+    // ==============================================================
+    // MÉTODOS EXISTENTES
+    // ==============================================================
+    public static class ResultadoLogin {
+        // ... (deja tu clase ResultadoLogin exactamente igual que como la tienes)
         private final String rol;
         private final String codigo;
         private final String nombre;
@@ -101,40 +168,14 @@ public class UsuarioService {
             this.carrera = carrera;
         }
 
-        public String getRol() {
-            return rol;
-        }
-
-        public String getCodigo() {
-            return codigo;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public String getApellido() {
-            return apellido;
-        }
-
-        public String getEstadoCuenta() {
-            return estadoCuenta;
-        }
-
-        public String getCarrera() {
-            return carrera;
-        }
-
-        public String getNombreCompleto() {
-            return nombre + " " + apellido;
-        }
-
-        public boolean esAdmin() {
-            return "ADMIN".equalsIgnoreCase(rol);
-        }
-
-        public boolean esAlumno() {
-            return "ALUMNO".equalsIgnoreCase(rol);
-        }
+        public String getRol() { return rol; }
+        public String getCodigo() { return codigo; }
+        public String getNombre() { return nombre; }
+        public String getApellido() { return apellido; }
+        public String getEstadoCuenta() { return estadoCuenta; }
+        public String getCarrera() { return carrera; }
+        public String getNombreCompleto() { return nombre + " " + apellido; }
+        public boolean esAdmin() { return "ADMIN".equalsIgnoreCase(rol); }
+        public boolean esAlumno() { return "ALUMNO".equalsIgnoreCase(rol); }
     }
 }

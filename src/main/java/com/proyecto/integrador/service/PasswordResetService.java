@@ -5,6 +5,7 @@ import com.proyecto.integrador.modelo.PasswordResetToken;
 import com.proyecto.integrador.repository.AlumnoRepository;
 import com.proyecto.integrador.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,9 @@ public class PasswordResetService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; // NUEVO
 
     /**
      * Paso 1: Genera un código, lo guarda en la BD y lo envía por correo.
@@ -58,7 +62,7 @@ public class PasswordResetService {
         
         // 🔑 CORREO INSTITUCIONAL: se construye desde el idEstud
         String correoDestino = alumno.getIdEstud().toLowerCase() + "@utp.edu.pe";
-System.out.println("📧 Enviando correo a: " + correoDestino);
+        System.out.println("📧 Enviando correo a: " + correoDestino);
         
         // Enviar correo
         emailService.enviarCodigoRestablecimiento(
@@ -94,22 +98,38 @@ System.out.println("📧 Enviando correo a: " + correoDestino);
     /**
      * Paso 3: Cambia la contraseña del alumno y marca el token como usado.
      */
+    /**
+     * ⚠️ VERSIÓN TEMPORAL PARA PRUEBAS (Texto Plano)
+     */
     @Transactional
     public boolean cambiarPassword(String idToken, String nuevaPassword) {
         Optional<PasswordResetToken> tokenOpt = tokenRepositorio.findById(idToken);
         
         if (tokenOpt.isEmpty()) {
+            System.out.println("❌ Servicio: Token no encontrado en la BD con id: " + idToken);
             return false;
         }
         
         PasswordResetToken token = tokenOpt.get();
         
         if (token.getUsado() || token.getFechaVencimiento().isBefore(LocalDateTime.now())) {
+            System.out.println("❌ Servicio: Token usado o expirado");
             return false;
         }
         
         Alumno alumno = token.getAlumno();
-        alumno.setPassword(nuevaPassword);
+
+        System.out.println("✅ Servicio: Alumno encontrado: " + alumno.getIdEstud());
+        System.out.println("   -> Nueva ingresada: [" + nuevaPassword + "]");
+        System.out.println("   -> En la BD:        [" + alumno.getPassword() + "]");
+
+        // LA VALIDACIÓN
+        if (nuevaPassword.equals(alumno.getPassword())) {
+            System.out.println("🛑 Servicio: ¡SON IGUALES! Lanzando error.");
+            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+
+        alumno.setPassword(nuevaPassword); 
         alumnoRepositorio.save(alumno);
         
         token.setUsado(true);
