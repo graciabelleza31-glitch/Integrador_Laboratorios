@@ -93,6 +93,27 @@
     </div>
 </div>
 
+<h3 class="subtitulo-seccion-gris" style="margin-top: 2rem;">HISTORIAL DE INCIDENCIAS</h3>
+
+<div class="tarjeta-perfil-alumno" th:if="${historialIncidencias.isEmpty()}" style="text-align: center; padding: 2rem;">
+    <p style="color: #64748b;">No tienes incidencias registradas. ¡Sigue así! 🎉</p>
+</div>
+
+<div class="lista-historial-reservas" th:unless="${historialIncidencias.isEmpty()}">
+    <div class="fila-historial-reserva" th:each="incidencia : ${historialIncidencias}">
+        <div class="info-historial">
+            <span class="nombre-lab-historial" th:text="${incidencia.motivo}">Motivo de incidencia</span>
+            <span class="detalle-historial">Monto: S/ <span th:text="${incidencia.monto}">0.00</span></span>
+            <span class="detalle-historial" th:text="'Fecha: ' + ${incidencia.fechaSancion}">Fecha</span>
+        </div>
+        <div class="accion-historial">
+            <!-- Badge de Estado (Pagado o Pendiente) -->
+            <span class="badge-estado-historial confirmada" th:if="${incidencia.estado == 'PAGADA'}" th:text="${incidencia.estado}">PAGADA</span>
+            <span class="badge-estado-historial cancelada" th:if="${incidencia.estado == 'PENDIENTE'}" th:text="${incidencia.estado}">PENDIENTE</span>
+        </div>
+    </div>
+</div>
+
 <div class="lista-historial-reservas">
     <div th:each="h : ${historial}" 
          class="fila-historial-reserva clickeable"

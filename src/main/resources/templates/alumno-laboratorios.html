@@ -19,7 +19,17 @@
     <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
 
       <section class="seccion-checkout">
-        
+        <!-- Botón de pago (solo aparece si hay incidencias) -->
+<div th:if="${numIncidencias > 0}" class="banner-incidencias-bloqueo" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="texto-bloqueo-contenido">
+        <strong>⚠️ Tienes incidencias pendientes de pago</strong>
+        <p>Para poder reservar un laboratorio, primero debes regularizar tu situación.</p>
+    </div>
+    <a th:href="@{/alumno/incidencias}" class="btn-nueva-reserva" style="background-color: #ef4444; text-decoration: none;">
+        Pagar ahora
+    </a>
+</div>
+
         <!-- BIENVENIDA -->
         <div class="fila-bienvenida">
           <div>

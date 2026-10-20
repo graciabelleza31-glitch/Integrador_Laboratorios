@@ -624,6 +624,13 @@ public String verCuenta(
     modelo.addAttribute("mesSiguiente", String.format("%04d-%02d", mesSiguiente.getYear(), mesSiguiente.getMonthValue()));
     modelo.addAttribute("esMesActual", fechaConsulta.getMonth() == hoy.getMonth() && fechaConsulta.getYear() == hoy.getYear());
 
+    // Traer TODAS las incidencias del alumno (no solo las pendientes)
+    List<Sancion> todasLasIncidencias = sancionRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
+    
+    // Ordenarlas de la más reciente a la más antigua (opcional pero recomendado)
+    todasLasIncidencias.sort((a, b) -> b.getIdSancion().compareTo(a.getIdSancion()));
+
+    modelo.addAttribute("historialIncidencias", todasLasIncidencias);
     return "alumno-cuenta";
 }
 
