@@ -148,22 +148,29 @@ modelo.addAttribute("limiteDiarioAlcanzado", reservasHoy >= 2);
 
         List<ReservaActivaDto> misReservas = new ArrayList<>();
 
-        for (ReservaIntegrante ri : participaciones) {
+                for (ReservaIntegrante ri : participaciones) {
             Reserva r = ri.getReserva();
-            if (r != null && ("CONFIRMADA".equalsIgnoreCase(r.getEstado()) || "EN_USO".equalsIgnoreCase(r.getEstado()))) {
-                String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-                String cubiculo = (r.getLaboratorio() != null) ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-                String fechaFormato = (r.getFechaReserva() != null) ? r.getFechaReserva().toString() : "";
-                String horario = r.getHoraInicio() + "–" + r.getHoraFin();
+            
+            // ⭐ NUEVO: Solo mostrar si es de HOY o del FUTURO
+            if (r != null && r.getFechaReserva() != null && !r.getFechaReserva().isBefore(LocalDate.now())) {
+                
+                String estado = r.getEstado() != null ? r.getEstado().toUpperCase() : "";
+                
+                if ("CONFIRMADA".equals(estado) || "EN_USO".equals(estado)) {
+                    String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+                    String cubiculo = (r.getLaboratorio() != null) ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+                    String fechaFormato = (r.getFechaReserva() != null) ? r.getFechaReserva().toString() : "";
+                    String horario = r.getHoraInicio() + "–" + r.getHoraFin();
 
-                misReservas.add(new ReservaActivaDto(
-                        r.getIdReserva(),
-                        labNombre,
-                        cubiculo,
-                        fechaFormato,
-                        horario,
-                        r.getEstado()
-                ));
+                    misReservas.add(new ReservaActivaDto(
+                            r.getIdReserva(),
+                            labNombre,
+                            cubiculo,
+                            fechaFormato,
+                            horario,
+                            r.getEstado()
+                    ));
+                }
             }
         }
 

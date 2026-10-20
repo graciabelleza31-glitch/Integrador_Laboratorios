@@ -23,26 +23,23 @@ public class ReservaSchedulerService {
         LocalDate hoy = LocalDate.now();
         LocalTime horaActual = LocalTime.now();
         
-        // 1. Buscamos todas las reservas "EN USO" de hoy o días pasados
-        // ⚠️ Cambia "EN USO" por el estado exacto que tengas en tu BD (ej. "En Uso", "ACTIVA")
+        // Buscamos con el guion bajo tal cual está en tu BD
         List<Reserva> candidatas = reservaRepository.findByEstadoAndFechaReservaLessThanEqual("EN_USO", hoy);
 
         int contador = 0;
         for (Reserva reserva : candidatas) {
-            // 2. Verificamos si la hora de fin ya pasó
             boolean esDeDiasPasados = reserva.getFechaReserva().isBefore(hoy);
             boolean esDeHoyPeroYaTermino = reserva.getFechaReserva().isEqual(hoy) && reserva.getHoraFin().isBefore(horaActual);
 
             if (esDeDiasPasados || esDeHoyPeroYaTermino) {
-                // 3. Si ya terminó, la cerramos
-                reserva.setEstado("DEVUELTA"); // ⚠️ Cambia "DEVUELTA" por el estado final que uses
+                reserva.setEstado("DEVUELTA"); // O "FINALIZADA", como uses
                 reservaRepository.save(reserva);
                 contador++;
             }
         }
 
         if (contador > 0) {
-            System.out.println("⏰ [SCHEDULER] Se cerraron " + contador + " reservas que ya habían expirado.");
+            System.out.println("⏰ [SCHEDULER] Se cerraron " + contador + " reservas.");
         }
     }
 }

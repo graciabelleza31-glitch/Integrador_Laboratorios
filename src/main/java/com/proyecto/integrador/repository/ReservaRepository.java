@@ -34,10 +34,4 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
     Optional<String> findUltimoIdReserva();
 
 
-    // =========================================================================
-    // ⭐ NUEVOS MÉTODOS PARA EL LÍMITE DE 2 RESERVAS AL DÍA
-    // =========================================================================
-
-
-
 }
