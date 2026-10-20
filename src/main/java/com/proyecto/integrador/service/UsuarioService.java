@@ -105,10 +105,32 @@ public class UsuarioService {
         }
 
         // 3. VALIDACIÓN CLAVE: que la nueva NO sea igual a la actual
-        if (passwordEncoder.matches(nuevaPassword, alumno.getPassword())) {
-            throw new CambioPasswordException("La nueva contraseña no puede ser igual a la anterior.");
-        }
+        //if (passwordEncoder.matches(nuevaPassword, alumno.getPassword())) {
+          //  throw new CambioPasswordException("La nueva contraseña no puede ser igual a la anterior.");
+        //}
+                    // LÓGICA DE LOGIN HÍBRIDA (Acepta texto plano y encriptado)
+            String passwordBD = alumno.getPassword();
+            boolean loginValido = false;
+            
+            // 1. Intentar comparar en texto plano
+            if (clave.equals(passwordBD)) {
+                loginValido = true;
+            } else {
+                // 2. Intentar comparar encriptado (con BCrypt)
+                try {
+                    if (passwordEncoder.matches(clave, passwordBD)) {
+                        loginValido = true;
+                    }
+                } catch (Exception e) {
+                    // Si falla, ignoramos el error
+                }
+            }
 
+            // Si no pasó ninguna de las dos validaciones, lanzamos error
+            if (!loginValido) {
+                throw new RuntimeException("Código UTP o contraseña incorrectos.");
+            }
+        
         // 4. Validar longitud mínima
         if (nuevaPassword.length() < 8) {
             throw new CambioPasswordException("La nueva contraseña debe tener al menos 8 caracteres.");
