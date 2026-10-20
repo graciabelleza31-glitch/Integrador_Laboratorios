@@ -38,15 +38,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
     // ⭐ NUEVOS MÉTODOS PARA EL LÍMITE DE 2 RESERVAS AL DÍA
     // =========================================================================
 
-    // 1. Cuenta las reservas donde el alumno es el DUEÑO
-    // (Asumo que tu entidad Reserva tiene un campo 'alumno' relacionado con Alumno)
-    long countByAlumno_IdEstudAndFechaReserva(String idEstud, LocalDate fechaReserva);
 
-    // 2. Cuenta las reservas donde el alumno es INTEGRANTE
-    // (Consulta personalizada apuntando a la tabla ReservaIntegrante)
-    @Query("SELECT COUNT(ri) FROM ReservaIntegrante ri " +
-           "WHERE ri.alumno.idEstud = :idEstud " +
-           "AND ri.reserva.fechaReserva = :fecha")
-    long countComoIntegrante(@Param("idEstud") String idEstud, @Param("fecha") LocalDate fecha);
 
 }
