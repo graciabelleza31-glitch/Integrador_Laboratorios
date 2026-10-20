@@ -896,17 +896,20 @@ public String cancelarReserva(
     }
 
     // Evitar cancelar una reserva cuya hora ya comenzó.
+    // Solo se puede cancelar 30 minutos antes del inicio
     LocalDateTime inicioReserva = LocalDateTime.of(
             reserva.getFechaReserva(),
             reserva.getHoraInicio()
     );
+    
+    LocalDateTime limiteCancelacion = LocalDateTime.now().plusMinutes(30);
 
-    if (!inicioReserva.isAfter(LocalDateTime.now())) {
+    if (inicioReserva.isBefore(limiteCancelacion)) {
         redirectAttributes.addFlashAttribute(
-                "mensajeCancelacion",
-                "No puedes cancelar una reserva cuya hora de inicio ya llegó."
+                "errorReserva",
+                "No puedes cancelar la reserva porque faltan menos de 30 minutos para su inicio."
         );
-        return "redirect:/alumno/cuenta";
+        return "redirect:/alumno/laboratorios";
     }
 
     reserva.setEstado("CANCELADA");

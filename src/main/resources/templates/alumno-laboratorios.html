@@ -87,11 +87,18 @@
      th:text="${errorReserva}">
 </div>
 
-        <!-- MIS RESERVAS ACTIVAS -->
+                <!-- MIS RESERVAS ACTIVAS -->
         <div th:if="${not #lists.isEmpty(misReservas)}" class="bloque-mis-reservas">
           <span class="subtitulo-seccion-gris">MIS RESERVAS ACTIVAS</span>
           <div class="lista-mis-reservas">
-            <div th:each="r : ${misReservas}" class="tarjeta-reserva-activa">
+            
+            <!-- Le agregamos la clase "clickeable", el atributo data-id-reserva y el onclick -->
+            <div th:each="r : ${misReservas}" 
+                 class="tarjeta-reserva-activa clickeable" 
+                 style="cursor: pointer; transition: transform 0.2s;"
+                 th:attr="data-id-reserva=${r.idReserva}"
+                 onclick="abrirModalResumen(this)">
+              
               <div class="icono-matraz-verde">🧪</div>
               <div class="info-reserva-activa">
                 <strong class="nombre-lab-activa" th:text="${r.laboratorio}">Lab. Química</strong>
@@ -104,6 +111,7 @@
               <span class="badge-confirmada" th:text="${r.estado}">Confirmada</span>
               <span class="codigo-reserva-gris" th:text="${r.idReserva}">R-001</span>
             </div>
+
           </div>
         </div>
 
@@ -525,6 +533,65 @@
         </button>
       </div>
     </div>
+    <!-- MODAL RESUMEN DE RESERVA Y CANCELACIÓN -->
+<div id="modalResumenReserva" class="fondo-modal-oscuro" style="display: none;">
+    <div class="tarjeta-modal modal-recibo-contenedor">
+        
+        <div class="cabecera-modal-recibo">
+            <div>
+                <h3 class="titulo-modal-recibo">Resumen de Reserva</h3>
+                <p class="subtitulo-modal-recibo" id="resumenId">RES001</p>
+            </div>
+            <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalResumen()">✕</button>
+        </div>
+        
+        <div class="cuerpo-modal-recibo">
+            <div class="cabecera-azul-recibo">
+                <span class="lbl-recibo">LABORATORIO</span>
+                <strong id="resumenLab" class="nombre-lab-recibo">Lab. Química</strong>
+                <span id="resumenCubiculo" class="cubiculo-recibo">A-101</span>
+            </div>
+            
+            <div class="fila-meta-recibo">
+                <div class="col-meta-recibo">
+                    <span class="lbl-meta-recibo">FECHA</span>
+                    <strong id="resumenFecha">2026-09-27</strong>
+                </div>
+                <div class="col-meta-recibo">
+                    <span class="lbl-meta-recibo">HORARIO</span>
+                    <strong id="resumenHorario">07:00 – 09:00</strong>
+                </div>
+                <div class="col-meta-recibo">
+                    <span class="lbl-meta-recibo">ESTADO</span>
+                    <span id="resumenEstado" class="badge-estado-recibo">CONFIRMADA</span>
+                </div>
+            </div>
+            
+            <div class="seccion-recibo">
+                <span class="titulo-seccion-recibo">Integrantes</span>
+                <div id="resumenIntegrantes" class="lista-integrantes-recibo"></div>
+            </div>
+            
+            <div class="seccion-recibo" id="seccionInsumosResumen">
+                <span class="titulo-seccion-recibo">Insumos y EPPs</span>
+                <div id="resumenItems" class="lista-items-recibo"></div>
+            </div>
+        </div>
+        
+        <div class="pie-modal-recibo" style="justify-content: space-between;">
+            <!-- Formulario para cancelar -->
+            <form id="formCancelarReserva" th:action="@{/alumno/reservas/cancelar}" method="post" style="margin: 0;">
+                <input type="hidden" name="idReserva" id="inputCancelarId" value="" />
+                <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
+                        onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
+                    Cancelar Reserva
+                </button>
+            </form>
+            <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
+        </div>
+        
+    </div>
+</div>
 
   </div>
 
@@ -1226,6 +1293,73 @@ function enviarFormularioFinal() {
       document.getElementById('inputMetodoPagoSeleccionado').value = met;
     }
 
+    function abrirModalResumen(tarjeta) {
+    const idReserva = tarjeta.getAttribute('data-id-reserva');
+    if (!idReserva) return;
+    
+    document.getElementById('resumenId').innerText = idReserva;
+    document.getElementById('inputCancelarId').value = idReserva; // Para el form de cancelar
+    document.getElementById('modalResumenReserva').style.display = 'flex';
+    
+    // Reutilizamos tu endpoint de la API
+    fetch(`/alumno/api/recibo/${idReserva}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.encontrado) {
+                alert('No se encontró la reserva.');
+                cerrarModalResumen();
+                return;
+            }
+            
+            document.getElementById('resumenLab').innerText = data.laboratorio;
+            document.getElementById('resumenCubiculo').innerText = data.cubiculo;
+            document.getElementById('resumenFecha').innerText = data.fecha;
+            document.getElementById('resumenHorario').innerText = data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
+            
+            const estadoBadge = document.getElementById('resumenEstado');
+            estadoBadge.innerText = data.estado;
+            estadoBadge.className = 'badge-estado-recibo';
+            if (data.estado === 'CONFIRMADA') estadoBadge.classList.add('confirmada');
+            else if (data.estado === 'EN_USO') estadoBadge.classList.add('enuso');
+            
+            // Integrantes
+            const contInteg = document.getElementById('resumenIntegrantes');
+            contInteg.innerHTML = '';
+            data.integrantes.forEach(i => {
+                contInteg.insertAdjacentHTML('beforeend', `
+                    <div class="item-integrante-recibo">
+                        <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
+                        <div>
+                            <strong>${i.nombre}</strong>
+                            <span>${i.codigo}</span>
+                        </div>
+                    </div>
+                `);
+            });
+            
+            // Insumos
+            const contItems = document.getElementById('resumenItems');
+            const seccionItems = document.getElementById('seccionInsumosResumen');
+            contItems.innerHTML = '';
+            if (data.items.length === 0) {
+                seccionItems.style.display = 'none';
+            } else {
+                seccionItems.style.display = 'block';
+                data.items.forEach(item => {
+                    contItems.insertAdjacentHTML('beforeend', `
+                        <div class="item-recibo">
+                            <span class="nombre-item-recibo">${item.nombre}</span>
+                            <span class="cantidad-item-recibo">x${item.cantidad}</span>
+                        </div>
+                    `);
+                });
+            }
+        });
+}
+
+function cerrarModalResumen() {
+    document.getElementById('modalResumenReserva').style.display = 'none';
+}
     
   </script>
 </body>

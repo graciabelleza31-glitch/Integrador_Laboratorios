@@ -126,15 +126,14 @@
                     <!-- Motivo con la primera letra en mayúscula -->
                     <span class="nombre-lab-historial" style="text-transform: capitalize;" th:text="${incidencia.motivo}">Motivo de incidencia</span>
                     
-                    <!-- Monto -->
                     <span class="detalle-historial">
-                        Monto: S/ <span th:text="${incidencia.monto}">0.00</span>
-                    </span>
-                    
-                    <!-- Fecha Formateada -->
-                    <span class="detalle-historial">
-                        Fecha: <span th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}">20 Oct 2026</span>
-                    </span>
+    <span th:text="${incidencia.estado == 'PAGADA' ? 'Monto pagado: ' : 'Monto a pagar: '}">Monto:</span>
+    S/ <span th:text="${incidencia.monto}">0.00</span>
+</span>
+<span class="detalle-historial">
+    <span th:text="${incidencia.estado == 'PAGADA' ? 'Fecha de pago: ' : 'Fecha de emisión: '}">Fecha:</span>
+    <span th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}">20 Oct 2026</span>
+</span>
                 </div>
                 
                 <div class="accion-historial">
