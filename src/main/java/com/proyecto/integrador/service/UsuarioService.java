@@ -3,12 +3,12 @@ package com.proyecto.integrador.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder; // NUEVO
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // NUEVO
+import org.springframework.transaction.annotation.Transactional;
 
-import com.proyecto.integrador.dto.CambioPasswordDTO; // NUEVO (asegúrate de tenerlo creado)
-import com.proyecto.integrador.exception.CambioPasswordException; // NUEVO (asegúrate de tenerlo creado)
+import com.proyecto.integrador.dto.CambioPasswordDTO;
+import com.proyecto.integrador.exception.CambioPasswordException;
 import com.proyecto.integrador.modelo.Administrador;
 import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.repository.AdministradorRepository;
@@ -23,7 +23,7 @@ public class UsuarioService {
     @Autowired
     private AdministradorRepository administradorRepositorio;
 
-    @Autowired // NUEVO: Inyectamos el encriptador
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     public ResultadoLogin validarCredenciales(String identificador, String password) {
@@ -43,8 +43,23 @@ public class UsuarioService {
         if (alumnoOpcional.isPresent()) {
             Alumno alumno = alumnoOpcional.get();
 
-            // MODIFICADO: Ahora usamos passwordEncoder.matches() en vez de .equals()
-            if (!passwordEncoder.matches(clave, alumno.getPassword())) {
+            // LÓGICA DE LOGIN HÍBRIDA (Alumno)
+            String passwordBD = alumno.getPassword();
+            boolean loginValido = false;
+            
+            if (clave.equals(passwordBD)) {
+                loginValido = true;
+            } else {
+                try {
+                    if (passwordEncoder.matches(clave, passwordBD)) {
+                        loginValido = true;
+                    }
+                } catch (Exception e) {
+                    // Ignorar si el hash es inválido
+                }
+            }
+
+            if (!loginValido) {
                 throw new RuntimeException("Código UTP o contraseña incorrectos.");
             }
 
@@ -74,8 +89,23 @@ public class UsuarioService {
         if (adminOpcional.isPresent()) {
             Administrador admin = adminOpcional.get();
 
-            // MODIFICADO: Ahora usamos passwordEncoder.matches() en vez de .equals()
-            if (!passwordEncoder.matches(clave, admin.getPassword())) {
+            // LÓGICA DE LOGIN HÍBRIDA (Admin)
+            String passwordBD = admin.getPassword();
+            boolean loginValido = false;
+            
+            if (clave.equals(passwordBD)) {
+                loginValido = true;
+            } else {
+                try {
+                    if (passwordEncoder.matches(clave, passwordBD)) {
+                        loginValido = true;
+                    }
+                } catch (Exception e) {
+                     // Ignorar
+                }
+            }
+
+            if (!loginValido) {
                 throw new RuntimeException("Código o contraseña incorrectos.");
             }
 
@@ -92,65 +122,40 @@ public class UsuarioService {
         throw new RuntimeException("Código UTP o usuario no encontrado en el sistema.");
     }
 
-        // NUEVO MÉTODO: Para restablecer contraseña desde el Login (Olvidé mi contraseña)
+    // MÉTODO PARA RESTABLECER CONTRASEÑA (Desde el flujo de "Olvidé mi contraseña")
     @Transactional
     public void restablecerPasswordAlumno(String idAlumno, String nuevaPassword, String confirmacionPassword) {
-        // 1. Buscar al alumno
         Alumno alumno = alumnoRepositorio.findById(idAlumno)
                 .orElseThrow(() -> new CambioPasswordException("Alumno no encontrado"));
 
-        // 2. Validar que la nueva y la confirmación coincidan
         if (!nuevaPassword.equals(confirmacionPassword)) {
             throw new CambioPasswordException("La nueva contraseña y su confirmación no coinciden.");
         }
 
-        // 3. VALIDACIÓN CLAVE: que la nueva NO sea igual a la actual
-        //if (passwordEncoder.matches(nuevaPassword, alumno.getPassword())) {
-          //  throw new CambioPasswordException("La nueva contraseña no puede ser igual a la anterior.");
-        //}
-                    // LÓGICA DE LOGIN HÍBRIDA (Acepta texto plano y encriptado)
-            String passwordBD = alumno.getPassword();
-            boolean loginValido = false;
-            
-            // 1. Intentar comparar en texto plano
-            if (clave.equals(passwordBD)) {
-                loginValido = true;
-            } else {
-                // 2. Intentar comparar encriptado (con BCrypt)
-                try {
-                    if (passwordEncoder.matches(clave, passwordBD)) {
-                        loginValido = true;
-                    }
-                } catch (Exception e) {
-                    // Si falla, ignoramos el error
-                }
-            }
-
-            // Si no pasó ninguna de las dos validaciones, lanzamos error
-            if (!loginValido) {
-                throw new RuntimeException("Código UTP o contraseña incorrectos.");
-            }
-        
-        // 4. Validar longitud mínima
-        if (nuevaPassword.length() < 8) {
-            throw new CambioPasswordException("La nueva contraseña debe tener al menos 8 caracteres.");
+        if (nuevaPassword.length() < 6) { // Ajustado a 6 para que coincida con tu HTML
+            throw new CambioPasswordException("La nueva contraseña debe tener al menos 6 caracteres.");
         }
 
-        // 5. Encriptar y guardar
         alumno.setPassword(passwordEncoder.encode(nuevaPassword));
         alumnoRepositorio.save(alumno);
     }
 
-    // ==============================================================
-    // NUEVO MÉTODO: Para cambiar la contraseña del Alumno
-    // ==============================================================
+    // MÉTODO PARA CAMBIAR CONTRASEÑA DESDE LA CUENTA (Logueado)
     @Transactional
     public void cambiarPasswordAlumno(String idAlumno, CambioPasswordDTO dto) {
         Alumno alumno = alumnoRepositorio.findById(idAlumno)
                 .orElseThrow(() -> new CambioPasswordException("Alumno no encontrado"));
 
-        // ⚠️ TEMPORAL: Validamos en texto plano (solo para tu prueba)
-        if (!dto.getPasswordActual().equals(alumno.getPassword())) {
+        // Validación Híbrida para la actual
+        String passBD = alumno.getPassword();
+        boolean actualValida = dto.getPasswordActual().equals(passBD);
+        if (!actualValida) {
+            try {
+                actualValida = passwordEncoder.matches(dto.getPasswordActual(), passBD);
+            } catch (Exception e) {}
+        }
+
+        if (!actualValida) {
             throw new CambioPasswordException("La contraseña actual es incorrecta.");
         }
 
@@ -158,22 +163,24 @@ public class UsuarioService {
             throw new CambioPasswordException("La nueva contraseña y su confirmación no coinciden.");
         }
 
-        // ⚠️ TEMPORAL: Validación clave en texto plano
-        if (dto.getPasswordNueva().equals(alumno.getPassword())) {
+        // Validación Híbrida para la nueva (que no sea igual)
+        boolean nuevaEsIgual = dto.getPasswordNueva().equals(passBD);
+        if (!nuevaEsIgual) {
+            try {
+                nuevaEsIgual = passwordEncoder.matches(dto.getPasswordNueva(), passBD);
+            } catch (Exception e) {}
+        }
+
+        if (nuevaEsIgual) {
             throw new CambioPasswordException("La nueva contraseña no puede ser igual a la anterior.");
         }
 
-        // ⚠️ TEMPORAL: Guardamos en texto plano
+        // Guardamos en texto plano (para tu prueba de mañana)
         alumno.setPassword(dto.getPasswordNueva());
         alumnoRepositorio.save(alumno);
     }
 
-
-    // ==============================================================
-    // MÉTODOS EXISTENTES
-    // ==============================================================
     public static class ResultadoLogin {
-        // ... (deja tu clase ResultadoLogin exactamente igual que como la tienes)
         private final String rol;
         private final String codigo;
         private final String nombre;
