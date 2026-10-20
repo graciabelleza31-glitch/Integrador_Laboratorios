@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.proyecto.integrador.modelo.Reserva;
@@ -20,7 +21,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
     // Método para consultar horarios ocupados por laboratorio y fecha:
     List<Reserva> findByLaboratorio_IdLabAndFechaReserva(String idLab, LocalDate fechaReserva);
 
-   List<Reserva> findByEstadoAndFechaReservaLessThanEqual(String estado, LocalDate fecha);
+    List<Reserva> findByEstadoAndFechaReservaLessThanEqual(String estado, LocalDate fecha);
 
     // Método para la tarea programada (reservas de una fecha con un estado específico):
     List<Reserva> findByFechaReservaAndEstado(LocalDate fechaReserva, String estado);
@@ -31,4 +32,21 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
     // Consulta para obtener el último ID correlativo de reserva (ej: RES005):
     @Query(value = "SELECT id_reserva FROM reserva WHERE id_reserva LIKE 'RES%' ORDER BY id_reserva DESC LIMIT 1", nativeQuery = true)
     Optional<String> findUltimoIdReserva();
+
+
+    // =========================================================================
+    // ⭐ NUEVOS MÉTODOS PARA EL LÍMITE DE 2 RESERVAS AL DÍA
+    // =========================================================================
+
+    // 1. Cuenta las reservas donde el alumno es el DUEÑO
+    // (Asumo que tu entidad Reserva tiene un campo 'alumno' relacionado con Alumno)
+    long countByAlumno_IdEstudAndFechaReserva(String idEstud, LocalDate fechaReserva);
+
+    // 2. Cuenta las reservas donde el alumno es INTEGRANTE
+    // (Consulta personalizada apuntando a la tabla ReservaIntegrante)
+    @Query("SELECT COUNT(ri) FROM ReservaIntegrante ri " +
+           "WHERE ri.alumno.idEstud = :idEstud " +
+           "AND ri.reserva.fechaReserva = :fecha")
+    long countComoIntegrante(@Param("idEstud") String idEstud, @Param("fecha") LocalDate fecha);
+
 }

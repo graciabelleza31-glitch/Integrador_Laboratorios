@@ -287,49 +287,63 @@ if (!horaFin.isAfter(horaInicio)) {
     return "redirect:/alumno/laboratorios";
 }
 
-// =====================================================
-// 1. LÍMITE DE DOS RESERVAS DIARIAS POR ALUMNO
-// =====================================================
+        // =====================================================
+        // 1. LÍMITE DE DOS RESERVAS DIARIAS POR ALUMNO Y SUS INTEGRANTES
+        // =====================================================
 
-List<ReservaIntegrante> participacionesAlumno =
-        reservaIntegranteRepositorio.findByAlumno_IdEstud(
-                alumnoLogueado.getIdEstud()
-        );
+        // A. Validar al DUEÑO de la reserva (Alumno logueado)
+        List<ReservaIntegrante> participacionesAlumno = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumnoLogueado.getIdEstud());
+        List<String> idsReservasDelDia = new ArrayList<>();
 
-List<String> idsReservasDelDia = new ArrayList<>();
+        for (ReservaIntegrante participacion : participacionesAlumno) {
+            Reserva reservaExistente = participacion.getReserva();
+            if (reservaExistente == null || reservaExistente.getFechaReserva() == null || !fecha.equals(reservaExistente.getFechaReserva())) continue;
+            
+            String estado = reservaExistente.getEstado() == null ? "" : reservaExistente.getEstado().trim().toUpperCase();
+            if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) continue;
 
-for (ReservaIntegrante participacion : participacionesAlumno) {
-    Reserva reservaExistente = participacion.getReserva();
+            if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
+                idsReservasDelDia.add(reservaExistente.getIdReserva());
+            }
+        }
 
-    if (reservaExistente == null
-            || reservaExistente.getFechaReserva() == null
-            || !fecha.equals(reservaExistente.getFechaReserva())) {
-        continue;
-    }
+        if (idsReservasDelDia.size() >= 2) {
+            redirectAttributes.addFlashAttribute("errorReserva", "Ya alcanzaste el límite de dos reservas para este día. Las reservas canceladas no cuentan.");
+            return "redirect:/alumno/laboratorios";
+        }
 
-    String estado = reservaExistente.getEstado() == null
-            ? ""
-            : reservaExistente.getEstado().trim().toUpperCase();
+        // B. ⭐ NUEVO: Validar a CADA INTEGRANTE de la reserva
+        if (codigosIntegrantes != null) {
+            for (String codIntegrante : codigosIntegrantes) {
+                // Si el integrante es el mismo dueño, lo saltamos (ya lo validamos arriba)
+                if (codIntegrante.trim().equalsIgnoreCase(alumnoLogueado.getIdEstud().trim())) {
+                    continue;
+                }
 
-    // Las canceladas no cuentan para el límite diario.
-    if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) {
-        continue;
-    }
+                // Buscamos las participaciones del integrante
+                List<ReservaIntegrante> participacionesIntegrante = reservaIntegranteRepositorio.findByAlumno_IdEstud(codIntegrante.trim());
+                List<String> idsReservasIntegrante = new ArrayList<>();
 
-    // Contar cada reserva una sola vez, aunque el alumno aparezca
-    // más de una vez por algún dato duplicado.
-    if (!idsReservasDelDia.contains(reservaExistente.getIdReserva())) {
-        idsReservasDelDia.add(reservaExistente.getIdReserva());
-    }
-}
+                for (ReservaIntegrante part : participacionesIntegrante) {
+                    Reserva r = part.getReserva();
+                    if (r == null || r.getFechaReserva() == null || !fecha.equals(r.getFechaReserva())) continue;
 
-if (idsReservasDelDia.size() >= 2) {
-    redirectAttributes.addFlashAttribute(
-        "errorReserva",
-        "Ya alcanzaste el límite de dos reservas para este día. Las reservas canceladas no cuentan."
-    );
-    return "redirect:/alumno/laboratorios";
-}
+                    String est = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
+                    if (est.equals("CANCELADA") || est.equals("CANCELADO")) continue;
+
+                    if (!idsReservasIntegrante.contains(r.getIdReserva())) {
+                        idsReservasIntegrante.add(r.getIdReserva());
+                    }
+                }
+
+                // Si el integrante ya tiene 2 reservas ese día, bloqueamos la reserva completa
+                if (idsReservasIntegrante.size() >= 2) {
+                    redirectAttributes.addFlashAttribute("errorReserva", 
+                        "No se puede completar la reserva. El alumno con código " + codIntegrante + " ya alcanzó su límite de 2 reservas para este día.");
+                    return "redirect:/alumno/laboratorios";
+                }
+            }
+        }
 
 // =====================================================
 // 2. EVITAR SUPERPOSICIONES EN EL MISMO LABORATORIO

@@ -25,7 +25,7 @@ public class ReservaSchedulerService {
         
         // 1. Buscamos todas las reservas "EN USO" de hoy o días pasados
         // ⚠️ Cambia "EN USO" por el estado exacto que tengas en tu BD (ej. "En Uso", "ACTIVA")
-        List<Reserva> candidatas = reservaRepository.findByEstadoAndFechaReservaLessThanEqual("EN USO", hoy);
+        List<Reserva> candidatas = reservaRepository.findByEstadoAndFechaReservaLessThanEqual("EN_USO", hoy);
 
         int contador = 0;
         for (Reserva reserva : candidatas) {
