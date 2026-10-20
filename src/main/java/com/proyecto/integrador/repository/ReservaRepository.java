@@ -20,8 +20,8 @@ public interface ReservaRepository extends JpaRepository<Reserva, String> {
     // Método para consultar horarios ocupados por laboratorio y fecha:
     List<Reserva> findByLaboratorio_IdLabAndFechaReserva(String idLab, LocalDate fechaReserva);
 
-    List<Reserva> findByEstadoAndFechaHoraFinBefore(String estado, LocalDateTime ahora);
-    
+   List<Reserva> findByEstadoAndFechaReservaLessThanEqual(String estado, LocalDate fecha);
+
     // Método para la tarea programada (reservas de una fecha con un estado específico):
     List<Reserva> findByFechaReservaAndEstado(LocalDate fechaReserva, String estado);
 
