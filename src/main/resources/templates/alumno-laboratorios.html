@@ -1078,7 +1078,7 @@ function validarFechaNoPasada(input) {
       });
     }
 
-    function cargarBoletaResumen() {
+        function cargarBoletaResumen() {
       calcularCostos();
 
       const lab = labSeleccionadoActual || { nombre: 'Laboratorio', cubiculo: 'S/C' };
@@ -1089,6 +1089,20 @@ function validarFechaNoPasada(input) {
       const hFin = document.getElementById('wizardHoraFin').value || '10:00';
       document.getElementById('boletaHorarioTxt').innerText = `${hIni} – ${hFin}`;
 
+      // ⭐ NUEVO: Armar la lista de integrantes dinámicamente
+      const integrantesFilas = document.querySelectorAll('#listaIntegrantesAgregados .tarjeta-integrante-fila');
+      let nombresIntegrantes = [];
+      
+      integrantesFilas.forEach(fila => {
+          const nombre = fila.querySelector('.nombre-estud-txt').innerText;
+          nombresIntegrantes.push(nombre);
+      });
+
+      // Actualizar el título (ej. "Integrantes (2)") y la lista de nombres
+      document.getElementById('boletaIntegrantesTitulo').innerText = `Integrantes (${nombresIntegrantes.length})`;
+      document.getElementById('boletaIntegrantesNombres').innerText = nombresIntegrantes.join(', ');
+
+      // ... (el resto de tu código para insumos y EPPs se queda igual) ...
       const insumos = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
       const bloqueInsumos = document.getElementById('boletaSeccionInsumosBloque');
       const listaUl = document.getElementById('boletaInsumosLista');
