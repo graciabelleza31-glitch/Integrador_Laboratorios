@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UTP +Lab - Verificar código</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style th:href="@{/css/verificar-codigo.css}"> </style>
+</head>
+<body>
+
+<div class="tarjeta-recuperar">
+    <div class="logo-recuperar">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+    </div>
+    
+    <div class="icono-email">📧</div>
+    
+    <h1 class="titulo-recuperar">Verifica tu correo</h1>
+    <p class="subtitulo-recuperar">
+        Enviamos un código de 6 dígitos a <strong th:text="${correoEnmascarado}">u24*****@utp.edu.pe</strong>.
+        El código expira en 15 minutos.
+    </p>
+    
+    <div th:if="${error}" class="alerta-error" th:text="${error}">Error</div>
+    
+    <form th:action="@{/recuperar/verificar-codigo}" method="post">
+        <input type="hidden" name="codigoUtp" th:value="${codigoUtp}" />
+        
+        <div class="grupo-campo">
+            <label for="codigo">Código de verificación</label>
+            <input type="text" id="codigo" name="codigo" class="campo-codigo" 
+                   placeholder="000000" maxlength="6" 
+                   pattern="[0-9]{6}" inputmode="numeric" 
+                   autocomplete="off" required />
+        </div>
+        
+        <button type="submit" class="btn-enviar">Verificar código</button>
+    </form>
+    
+    <a th:href="@{/recuperar/restablecer}" class="link-volver">← Volver a ingresar código UTP</a>
+</div>
+
+</body>
+</html>

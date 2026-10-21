@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in - UTP +Lab</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-cube"></i> UTP <span>+Lab</span>
+        </div>
+        <ul class="nav-menu">
+            <li><a th:href="@{/dashboard-admin}" class="nav-item"><i class="fa-solid fa-folder"></i> Dashboard</a></li>
+            <li><a th:href="@{/check-in}" class="nav-item active"><i class="fa-solid fa-circle-check"></i> Check-in</a></li>
+            <li><a th:href="@{/inventario}" class="nav-item"><i class="fa-solid fa-box"></i> Inventario</a></li>
+            <li><a th:href="@{/check-out}" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Check-out</a></li>
+            <li><a href="#" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Inspección</a></li>
+            <li><a href="#" class="nav-item"><i class="fa-solid fa-triangle-exclamation"></i> Incidencias <span class="nav-badge">1</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-logo">UTP <span>+Lab</span></div>
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell" style="color: #64748b; font-size: 1.2rem; cursor: pointer;"></i>
+                <div class="user-info">
+                    <div class="user-text">
+                        <div class="name">Hola, Dr.</div>
+                        <div class="role">Administrador</div>
+                    </div>
+                    <div class="avatar">CH</div>
+                </div>
+                <a th:href="@{/login}" class="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Salir</a>
+            </div>
+        </header>
+
+        <!-- CONTENIDO -->
+        <div class="dashboard-container">
+
+            <!-- Encabezado -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>Check-in Presencial</h1>
+                    <p>Validación de identidad y entrega de insumos</p>
+                </div>
+            </div>
+
+            <!-- Mensaje de éxito -->
+            <div class="alert-success" th:if="${param.exito}">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Check-in realizado correctamente. La reserva ahora está EN_USO.</span>
+            </div>
+
+            <!-- Lista de reservas -->
+            <div th:if="${!reservasPendientes.isEmpty()}">
+                <div class="checkin-card" th:each="res : ${reservasPendientes}">
+                    <div class="checkin-left">
+                        <!-- Icono según el tipo de laboratorio -->
+                        <div class="checkin-icon"
+                             th:classappend="${res.laboratorio.tipo == 'Química' ? 'icon-quimica' : 
+                                              (res.laboratorio.tipo == 'Física' ? 'icon-fisica' : 'icon-mecatronica')}">
+                            <i class="fa-solid fa-flask"></i>
+                        </div>
+                        
+                        <div class="checkin-info">
+                            <div class="checkin-title">
+                                <h3 th:text="${res.laboratorio.nombre}">Lab. Química</h3>
+                                <span class="agenda-badge"
+                                      th:classappend="${res.estado == 'CONFIRMADA' ? 'badge-confirmada' : 'badge-pendiente'}"
+                                      th:text="${res.estado}">Confirmada</span>
+                            </div>
+                            <div class="checkin-details"
+                                 th:text="${res.laboratorio.idLab} + ' · ' + ${res.fechaReserva} + ' · ' + 
+                                          ${#temporals.format(res.horaInicio, 'HH:mm')} + '–' + 
+                                          ${#temporals.format(res.horaFin, 'HH:mm')}">
+                                A-101 · 2026-08-21 · 09:00–11:00
+                            </div>
+                            <div class="checkin-integrantes" th:if="${!res.integrantes.isEmpty()}">
+                                <span class="integrante-tag" th:each="intg : ${res.integrantes}"
+                                      th:text="${intg.alumno.nombre} + ' ' + ${intg.alumno.apellido}">
+                                    Mariafernanda Bruno
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkin-right">
+                        <span class="checkin-id" th:text="${res.idReserva}">R-001</span>
+                        <form th:action="@{/check-in/iniciar}" method="post" style="margin: 0;">
+                            <input type="hidden" name="idReserva" th:value="${res.idReserva}">
+                            <button type="submit" class="btn-iniciar">
+                                <i class="fa-solid fa-check"></i> Iniciar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje si no hay reservas -->
+            <div th:if="${reservasPendientes.isEmpty()}" class="empty-state">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <p>No hay reservas pendientes de check-in.</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">Las reservas confirmadas aparecerán aquí.</p>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>

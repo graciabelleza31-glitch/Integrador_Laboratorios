@@ -1,0 +1,281 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: #ffffff;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+/* CONTENEDOR GENERAL PANTALLA COMPLETA */
+.contenedor-principal {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ==========================================================================
+   PANEL IZQUIERDO (FONDO CELESTE E ILUSTRACIÓN)
+   ========================================================================== */
+.panel-izquierdo {
+  flex: 1;
+  background-color: #eaf1f8; /* Tono celeste grisáceo exacto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.envoltura-ilustracion {
+  text-align: center;
+  max-width: 380px;
+}
+
+.icono-microscopio {
+  font-size: 7rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.08));
+}
+
+.elementos-laboratorio {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 2.2rem;
+}
+
+/* LOGOTIPO UTP +Lab */
+.etiqueta-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.etiqueta-logo.compacto {
+  margin-bottom: 1.5rem;
+}
+
+.etiqueta-utp {
+  background-color: #000000;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.82rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.texto-lab {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #0f172a;
+}
+
+.lema-titulo {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-top: 0.6rem;
+}
+
+.lema-subtitulo {
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+/* ==========================================================================
+   PANEL DERECHO (FORMULARIO BLANCO)
+   ========================================================================== */
+.panel-derecho {
+  flex: 1;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+}
+
+.envoltura-formulario {
+  width: 100%;
+  max-width: 440px;
+}
+
+.titulo-principal {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #1a365d; /* Azul oscuro institucional */
+  line-height: 1.25;
+  margin-bottom: 0.4rem;
+}
+
+.subtitulo-principal {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.mensaje-indicacion {
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.mensaje-indicacion strong {
+  font-weight: 700;
+}
+
+/* MENSAJE DE ERROR / ALERTA */
+.cuadro-alerta {
+  background-color: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #b91c1c;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+}
+
+/* CAMPOS DE ENTRADA (INPUTS) */
+.grupo-campo {
+  margin-bottom: 1.35rem;
+}
+
+.grupo-campo label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.45rem;
+}
+
+.caja-entrada {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.caja-entrada input {
+  width: 100%;
+  padding: 0.85rem 2.8rem 0.85rem 1.1rem;
+  font-size: 0.92rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: #0f172a;
+}
+
+.caja-entrada input::placeholder {
+  color: #94a3b8;
+}
+
+.caja-entrada input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.icono-entrada {
+  position: absolute;
+  right: 1rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.boton-ojo {
+  position: absolute;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton-ojo .icono-entrada {
+  position: static;
+  pointer-events: auto;
+}
+
+/* NOTA DEBAJO DEL INPUT DE CÓDIGO */
+.nota-ayuda {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 0.4rem;
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.icono-info {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* ENLACE DE RESTABLECER CLAVE */
+.olvido-clave {
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.olvido-clave a {
+  color: #2563eb;
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.olvido-clave a:hover {
+  text-decoration: underline;
+}
+
+/* BOTÓN DE ENVÍO AZUL */
+.boton-iniciar {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #2563eb; /* Azul corporativo */
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.05s;
+}
+
+.boton-iniciar:hover {
+  background-color: #1d4ed8;
+}
+
+.boton-iniciar:active {
+  transform: scale(0.99);
+}
+
+
+@media (max-width: 860px) {
+  .contenedor-principal {
+    flex-direction: column;
+  }
+  .panel-izquierdo {
+    display: none; /* Oculta la columna de la ilustración en pantallas angostas */
+  }
+  .panel-derecho {
+    padding: 2rem 1.5rem;
+  }
+}
+
+
+

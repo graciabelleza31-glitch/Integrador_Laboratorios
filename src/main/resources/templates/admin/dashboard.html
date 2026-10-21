@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - UTP +Lab</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-cube"></i> UTP <span>+Lab</span>
+        </div>
+        <ul class="nav-menu">
+            <li>
+                <a th:href="@{/dashboard-admin}" class="nav-item active">
+                    <i class="fa-solid fa-folder"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/check-in}" class="nav-item">
+                    <i class="fa-solid fa-circle-check"></i> Check-in
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/inventario}" class="nav-item">
+                    <i class="fa-solid fa-box"></i> Inventario
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/check-out}" class="nav-item">
+                    <i class="fa-solid fa-right-from-bracket"></i> Check-out
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/inspeccion}" class="nav-item">
+                    <i class="fa-solid fa-magnifying-glass"></i> Inspección
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/incidencias}" class="nav-item">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Incidencias
+                    <span class="nav-badge" th:text="${incidentesAbiertos}">1</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-logo">UTP <span>+Lab</span></div>
+            <div class="topbar-right">
+                <i class="fa-regular fa-bell" style="color: #64748b; font-size: 1.2rem; cursor: pointer;"></i>
+                <div class="user-info">
+                    <div class="user-text">
+                        <div class="name" 
+                             th:text="${administrador != null ? 'Hola, ' + administrador.nombre : 'Hola, Admin'}">
+                            Hola, Dr.
+                        </div>
+                        <div class="role">Administrador</div>
+                    </div>
+                    <div class="avatar" 
+                         th:text="${administrador != null ? #strings.substring(administrador.nombre, 0, 1) + #strings.substring(administrador.apellido, 0, 1) : 'CH'}">
+                        CH
+                    </div>
+                </div>
+                <a th:href="@{/login}" class="btn-logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Salir
+                </a>
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <div class="dashboard-container">
+
+            <!-- Encabezado -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h1>Dashboard</h1>
+                    <p>
+                        Monitoreo en tiempo real · 
+                        <span th:text="${#temporals.format(#temporals.createNow(), 'EEEE, dd ''de'' MMMM ''de'' yyyy', 'es')}">
+                            jueves, 24 de setiembre de 2026
+                        </span>
+                    </p>
+                </div>
+                <div class="status-badge">Sistema Activo</div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <!-- KPI 1: Labs en uso -->
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-flask"></i></div>
+                    <div class="kpi-dot" style="background-color: #2563eb;"></div>
+                    <div class="kpi-value" th:text="${labsEnUso}">1</div>
+                    <div class="kpi-title">Labs en uso</div>
+                    <div class="kpi-subtitle" th:text="'de ' + ${labsDisponibles} + ' disponibles'">
+                        de 12 disponibles
+                    </div>
+                </div>
+
+                <!-- KPI 2: Pendientes check-in -->
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="kpi-dot" style="background-color: #f59e0b;"></div>
+                    <div class="kpi-value" th:text="${pendientesCheckIn}">2</div>
+                    <div class="kpi-title">Pendientes check-in</div>
+                    <div class="kpi-subtitle">reservas confirmadas</div>
+                </div>
+
+                <!-- KPI 3: Préstamos activos -->
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <div class="kpi-dot" style="background-color: #8b5cf6;"></div>
+                    <div class="kpi-value" th:text="${prestamosActivos}">2</div>
+                    <div class="kpi-title">Préstamos activos</div>
+                    <div class="kpi-subtitle">en uso o devueltos</div>
+                </div>
+
+                <!-- KPI 4: Incidentes abiertos -->
+                <div class="kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="kpi-dot" style="background-color: #ef4444;"></div>
+                    <div class="kpi-value" th:text="${incidentesAbiertos}">1</div>
+                    <div class="kpi-title">Incidentes abiertos</div>
+                    <div class="kpi-subtitle" 
+                         th:text="${productosStockBajo != null ? productosStockBajo.size() + ' alertas de stock' : '0 alertas de stock'}">
+                        3 alertas de stock
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Principal: Estados de Laboratorios + Agenda -->
+            <div class="main-grid">
+
+                <!-- Estados de laboratorios -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">Estados de laboratorios</div>
+                        <div class="legend">
+                            <span class="legend-item">
+                                <span class="legend-dot" style="background: #f59e0b;"></span> Mantenimiento
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-dot" style="background: #22c55e;"></span> Disponible
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-dot" style="background: #ef4444;"></span> En uso
+                            </span>
+                        </div>
+                    </div>
+                    <div class="lab-grid">
+                        <div class="lab-item" th:each="lab : ${laboratorios}">
+                            <div class="lab-header">
+                                <span class="lab-code">
+                                    <span class="legend-dot" style="background: #22c55e;"></span>
+                                    <span th:text="${lab.idLab}">A-101</span>
+                                </span>
+                                <span class="lab-status status-libre">Libre</span>
+                            </div>
+                            <div class="lab-name" th:text="${lab.nombre}">Lab. Química</div>
+                            <div class="lab-details"
+                                 th:text="${lab.ubicacionCubiculo} + ' · 12 puestos'">
+                                Bloque A · 12 puestos
+                            </div>
+                        </div>
+
+                        <!-- Mensaje si no hay laboratorios -->
+                        <div th:if="${laboratorios.isEmpty()}" 
+                             style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 30px;">
+                            <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>No hay laboratorios registrados.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agenda de hoy -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">Agenda de hoy</div>
+                    </div>
+                    <div class="agenda-list">
+                        <div class="agenda-item" th:each="res : ${agenda}">
+                            <div class="agenda-info">
+                                <span class="agenda-time"
+                                      th:text="${#temporals.format(res.horaInicio, 'HH:mm')} + '-' + ${#temporals.format(res.horaFin, 'HH:mm')}">
+                                    07:00-09:00
+                                </span>
+                                <span class="agenda-title" th:text="${res.laboratorio.nombre}">
+                                    Lab. Química
+                                </span>
+                                <span class="agenda-sub" th:text="${res.laboratorio.ubicacionCubiculo}">
+                                    Bloque A
+                                </span>
+                            </div>
+                            <span class="agenda-badge"
+                                  th:classappend="${res.estado == 'CONFIRMADA' ? 'badge-confirmada' : 
+                                                   (res.estado == 'EN_USO' ? 'badge-enuso' : 
+                                                   (res.estado == 'FINALIZADA' ? 'badge-inspeccionada' : 'badge-pendiente'))}"
+                                  th:text="${res.estado}">
+                                Confirmada
+                            </span>
+                        </div>
+
+                        <!-- Mensaje si no hay reservas -->
+                        <div th:if="${agenda.isEmpty()}" 
+                             style="text-align: center; color: #94a3b8; padding: 30px;">
+                            <i class="fa-solid fa-calendar-xmark" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>No hay reservas para hoy.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Inferior: Incidencias + Alertas de Stock -->
+            <div class="bottom-grid">
+
+                <!-- Incidencias recientes -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">Incidencias recientes</div>
+                        <a th:href="@{/incidencias}" class="link-ver">Ver todas →</a>
+                    </div>
+                    <div>
+                        <!-- Mensaje si no hay incidencias -->
+                        <div style="text-align: center; color: #94a3b8; padding: 30px;">
+                            <i class="fa-solid fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: #22c55e;"></i>
+                            <p>No hay incidencias registradas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas de stock -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-title">Alertas de stock</div>
+                        <a th:href="@{/inventario}" class="link-ver">Ver inventario →</a>
+                    </div>
+                    <div>
+                        <div class="stock-alert" th:each="prod : ${productosStockBajo}">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <div class="stock-info">
+                                <span class="stock-name" th:text="${prod.nombre}">
+                                    Producto
+                                </span>
+                                <span class="stock-detail"
+                                      th:text="${prod.stockActual} + ' und (mín: 10)'">
+                                    5 und (mín: 10)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Mensaje si no hay alertas -->
+                        <div th:if="${productosStockBajo.isEmpty()}" 
+                             style="text-align: center; color: #94a3b8; padding: 30px;">
+                            <i class="fa-solid fa-box-open" style="font-size: 2rem; margin-bottom: 10px; color: #22c55e;"></i>
+                            <p>No hay alertas de stock.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,204 @@
+/* ETIQUETA DEVUELTA */
+.tag-devuelta {
+  background-color: #ede9fe;
+  color: #7c3aed;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.lupa-fondo {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.icono-lupa-vacia {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+/* MODAL AJUSTES */
+.modal-ancho {
+  max-width: 580px !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.cabecera-modal-oscura {
+  background-color: #1a1d3b;
+  color: #ffffff;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cabecera-modal-oscura h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.cabecera-modal-oscura p {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.btn-cerrar-x {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.cuerpo-scroll-modal {
+  padding: 1.5rem 1.75rem;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.bloque-categoria {
+  margin-bottom: 1.5rem;
+}
+
+.etiqueta-categoria {
+  display: block;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.lista-items-inspeccion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fila-item-inspeccion {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.9rem 1.25rem;
+  transition: all 0.2s;
+}
+
+
+.fila-item-inspeccion.borde-danado {
+  border-color: #fca5a5;
+  background-color: #fffafb;
+}
+
+.cabecera-fila-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nombre-item {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.botones-estado-grupo {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-estado {
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-conforme.activo {
+  background-color: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+.btn-danado.activo {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* DESPLEGABLE CUANDO SE MARCA DAÑADO */
+.desplegable-dano {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #fecaca;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.input-descripcion-dano {
+  flex: 2;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.input-costo-dano {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #b91c1c;
+  outline: none;
+  background-color: #fef2f2;
+}
+
+/* PIE DEL MODAL */
+.pie-modal-inspeccion {
+  padding: 1.25rem 1.75rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.texto-alerta-danados {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #ef4444;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.texto-alerta-danados i {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-finalizar-morado {
+  background-color: #7c3aed;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.2s;
+}
+
+.btn-finalizar-morado:hover {
+  background-color: #6d28d9;
+}

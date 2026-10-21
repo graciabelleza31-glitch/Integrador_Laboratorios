@@ -1,9 +1,15 @@
 package com.proyecto.integrador.repository;
 
-import com.proyecto.integrador.modelo.ReservaItem;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.proyecto.integrador.modelo.ReservaItem;
+import com.proyecto.integrador.modelo.ReservaItemId;
+
 @Repository
-public interface ReservaItemRepository extends JpaRepository<ReservaItem, Long> {
+public interface ReservaItemRepository extends JpaRepository<ReservaItem, ReservaItemId> {
+
+    List<ReservaItem> findByReserva_IdReserva(String idReserva);
 }

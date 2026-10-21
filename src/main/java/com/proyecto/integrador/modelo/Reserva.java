@@ -1,19 +1,23 @@
 package com.proyecto.integrador.modelo;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
 @Entity
 @Table(name = "reserva")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Reserva {
+
     @Id
     @Column(name = "id_reserva", length = 6)
     private String idReserva;
@@ -35,8 +39,84 @@ public class Reserva {
     private String estado;
 
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
-    private List<ReservaItem> items;
+    private List<ReservaIntegrante> integrantes;
 
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
-    private List<ReservaIntegrante> integrantes;
+    private List<ReservaItem> items;
+
+    public Reserva() {
+    }
+
+    public Reserva(String idReserva, Laboratorio laboratorio, LocalDate fechaReserva, LocalTime horaInicio, LocalTime horaFin, String estado) {
+        this.idReserva = idReserva;
+        this.laboratorio = laboratorio;
+        this.fechaReserva = fechaReserva;
+        this.horaInicio = horaInicio;
+        this.horaFin = horaFin;
+        this.estado = estado;
+    }
+
+    public String getIdReserva() {
+        return idReserva;
+    }
+
+    public void setIdReserva(String idReserva) {
+        this.idReserva = idReserva;
+    }
+
+    public Laboratorio getLaboratorio() {
+        return laboratorio;
+    }
+
+    public void setLaboratorio(Laboratorio laboratorio) {
+        this.laboratorio = laboratorio;
+    }
+
+    public LocalDate getFechaReserva() {
+        return fechaReserva;
+    }
+
+    public void setFechaReserva(LocalDate fechaReserva) {
+        this.fechaReserva = fechaReserva;
+    }
+
+    public LocalTime getHoraInicio() {
+        return horaInicio;
+    }
+
+    public void setHoraInicio(LocalTime horaInicio) {
+        this.horaInicio = horaInicio;
+    }
+
+    public LocalTime getHoraFin() {
+        return horaFin;
+    }
+
+    public void setHoraFin(LocalTime horaFin) {
+        this.horaFin = horaFin;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public List<ReservaIntegrante> getIntegrantes() {
+        return integrantes;
+    }
+
+    public void setIntegrantes(List<ReservaIntegrante> integrantes) {
+        this.integrantes = integrantes;
+    }
+
+    public List<ReservaItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<ReservaItem> items) {
+        this.items = items;
+    }
 }

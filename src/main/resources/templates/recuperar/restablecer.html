@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UTP +Lab - Restablecer contraseña</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style th:src="@{/css/restablecer.css}"></style>
+</head>
+<body>
+
+<div class="tarjeta-recuperar">
+    <div class="logo-recuperar">
+        <span class="insignia-utp">UTP</span>
+        <span class="texto-lab">+Lab</span>
+    </div>
+    
+    <h1 class="titulo-recuperar">Restablecer contraseña</h1>
+    <p class="subtitulo-recuperar">Ingresa tu código UTP y te enviaremos un código de verificación a tu correo institucional.</p>
+    
+    <div th:if="${error}" class="alerta-error" th:text="${error}">Error</div>
+    
+    <form th:action="@{/recuperar/restablecer}" method="post">
+        <div class="grupo-campo">
+            <label for="codigoUtp">Código UTP</label>
+            <input type="text" id="codigoUtp" name="codigoUtp" class="campo-input" 
+                   placeholder="Ej: U24201349" required 
+                   th:value="${codigoIngresado}" />
+        </div>
+        
+        <button type="submit" class="btn-enviar">Enviar código →</button>
+    </form>
+    
+    <a th:href="@{/login}" class="link-volver">← Volver al inicio de sesión</a>
+</div>
+
+</body>
+</html>
