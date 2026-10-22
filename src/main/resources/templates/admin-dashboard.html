@@ -44,6 +44,24 @@
           </div>
         </div>
 
+        <!-- AVISO DE INSPECCIONES PENDIENTES -->
+        <div th:if="${inspeccionesPendientes != null && inspeccionesPendientes > 0}" 
+             class="banner-alerta-amarillo" 
+             style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span class="icono-alerta-triangulo">🔔</span>
+                <div class="texto-alerta-amarillo">
+                    <strong style="font-size: 0.95rem;">Tienes inspecciones pendientes</strong>
+                    <p style="font-size: 0.84rem;">Hay <strong th:text="${inspeccionesPendientes}">0</strong> laboratorio(s) esperando revisión de materiales.</p>
+                </div>
+            </div>
+            
+            <a th:href="@{/admin/inspeccion}" class="btn-nueva-reserva" style="background-color: #f59e0b; text-decoration: none; padding: 0.5rem 1.2rem; font-size: 0.85rem; color: white;">
+                Ir a Inspecciones →
+            </a>
+        </div>
+
         <!-- 4 TARJETAS SUPERIORES DE MÉTRICAS -->
         <div class="grid-cuatro-metricas-figma">
           

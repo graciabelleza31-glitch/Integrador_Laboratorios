@@ -66,53 +66,64 @@ public class InspeccionController {
     @GetMapping
     @Transactional(readOnly = true)
     public String verInspeccion(HttpSession sesion, Model modelo) {
+        // Traemos las DEVUELTAS y las NO_INSPECCIONADAS (para que el admin sepa qué pasó)
         List<Reserva> devueltas = reservaRepositorio.findByEstado("DEVUELTA");
-        
-        // Si no hubiera reservas en DEVUELTA, buscar opcionalmente EN_USO para pruebas
-        if (devueltas == null || devueltas.isEmpty()) {
-            devueltas = reservaRepositorio.findByEstado("EN_USO");
-        }
+        List<Reserva> noInspeccionadas = reservaRepositorio.findByEstado("NO_INSPECCIONADO");
 
         List<InspeccionCardDto> listaInspeccion = new ArrayList<>();
 
+        // Procesamos las DEVUELTAS
         if (devueltas != null) {
             for (Reserva r : devueltas) {
-                List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
-                List<String> nombresIntegrantes = new ArrayList<>();
-                for (ReservaIntegrante ri : integrantes) {
-                    if (ri.getAlumno() != null) {
-                        nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
-                    }
-                }
-
-                String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-                String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
-                        ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-                String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
-                        ? r.getLaboratorio().getTipo() : "General";
-
-                String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
-                        ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
-
-                listaInspeccion.add(new InspeccionCardDto(
-                        r.getIdReserva(),
-                        labNombre,
-                        tipoLab,
-                        cubiculo,
-                        (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
-                        horario,
-                        r.getEstado(),
-                        nombresIntegrantes
-                ));
+                listaInspeccion.add(convertirADto(r));
             }
         }
 
+        // Procesamos las NO_INSPECCIONADAS (solo para que se vean, no se pueden inspeccionar)
+        if (noInspeccionadas != null) {
+            for (Reserva r : noInspeccionadas) {
+                listaInspeccion.add(convertirADto(r));
+            }
+        }
+
+        // Contamos las incidencias para el sidebar
         long cantIncidencias = sancionRepositorio.count();
 
         modelo.addAttribute("inspecciones", listaInspeccion);
         modelo.addAttribute("totalIncidencias", cantIncidencias > 0 ? cantIncidencias : 1);
 
         return "admin-inspeccion";
+    }
+
+    // Método auxiliar para no repetir código
+    private InspeccionCardDto convertirADto(Reserva r) {
+        List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(r.getIdReserva());
+        List<String> nombresIntegrantes = new ArrayList<>();
+        for (ReservaIntegrante ri : integrantes) {
+            if (ri.getAlumno() != null) {
+                nombresIntegrantes.add(ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+            }
+        }
+
+        String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
+        String cubiculo = (r.getLaboratorio() != null && r.getLaboratorio().getUbicacionCubiculo() != null)
+                ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
+        String tipoLab = (r.getLaboratorio() != null && r.getLaboratorio().getTipo() != null)
+                ? r.getLaboratorio().getTipo() : "General";
+
+        String horario = (r.getHoraInicio() != null && r.getHoraFin() != null)
+                ? r.getHoraInicio() + "–" + r.getHoraFin() : "09:00–11:00";
+
+        return new InspeccionCardDto(
+                r.getIdReserva(),
+                labNombre,
+                tipoLab,
+                cubiculo,
+                (r.getFechaReserva() != null ? r.getFechaReserva().toString() : ""),
+                horario,
+                r.getEstado(),
+                nombresIntegrantes
+        );
     }
 
     // 2. MODAL: SOLO MATERIALES PRESTADOS Y EPPS SIN COSTO OBLIGATORIOS

@@ -63,6 +63,12 @@ public String verDashboard(
     LocalDate hoy = LocalDate.now();
     boolean esHoy = fechaConsulta.equals(hoy);
 
+     // Contar cuántas reservas están listas para inspección (Estado DEVUELTA)
+        long inspeccionesPendientes = reservaRepositorio.findByEstado("DEVUELTA").size();
+        
+        // Mandarlo a la vista
+        modelo.addAttribute("inspeccionesPendientes", inspeccionesPendientes);
+
     // Subtítulo con fecha formateada
     Locale espLocale = new Locale("es", "PE");
     String diaSemana = fechaConsulta.getDayOfWeek().getDisplayName(TextStyle.FULL, espLocale);
