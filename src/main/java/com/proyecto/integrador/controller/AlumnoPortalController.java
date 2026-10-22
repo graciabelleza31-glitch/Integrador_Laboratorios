@@ -73,7 +73,7 @@ public class AlumnoPortalController {
     // =========================================================================
     // 1. PANTALLA PRINCIPAL: LABORATORIOS Y GESTIÓN DE RESERVAS
     // =========================================================================
-    @GetMapping("/laboratorios")
+        @GetMapping("/laboratorios")
     @Transactional(readOnly = true)
     public String verLaboratorios(HttpSession sesion, Model modelo) {
         Object usuario = sesion.getAttribute("usuarioLogueado");
@@ -81,45 +81,30 @@ public class AlumnoPortalController {
             return "redirect:/login";
         }
 
-        Alumno alumno = null;
-        if (usuario instanceof Alumno) {
-            alumno = (Alumno) usuario;
-        } else {
-            return "redirect:/login";
-        }
+        Alumno alumno = (Alumno) usuario;
 
-        // Consultar sanciones pendientes en la BD
+        // 1. Consultar sanciones pendientes
         List<Sancion> sancionesPendientes = sancionRepositorio.findByAlumno_IdEstudAndEstado(alumno.getIdEstud(), "PENDIENTE");
         long incidenciasPendientes = sancionesPendientes.size();
 
-        // Determinar si la cuenta está bloqueada
         String estadoCuenta = (alumno.getEstadoCuenta() != null) ? alumno.getEstadoCuenta().trim().toUpperCase() : "";
         boolean estaBloqueado = incidenciasPendientes > 0
-                || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
-                || estadoCuenta.contains("BLOQUEADO_POR_DUEUDA");
+                || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta);
 
-        // ⭐ OBTENER CARRERA DEL ALUMNO (cubre si es relación objeto o String directo)
-        String idCarrera = null;
-        try {
-            if (alumno.getCarrera() != null) {
-                idCarrera = alumno.getCarrera().getIdCarrera();
-            }
-        } catch (Exception e) {
-            idCarrera = alumno.getCarrera().getIdCarrera();
+        // 2. Obtener la carrera y validar si permite laboratorios
+        String idCarrera = (alumno.getCarrera() != null) ? alumno.getCarrera().getIdCarrera() : null;
+        
+        List<Laboratorio> labs = new ArrayList<>();
+        boolean puedeReservarPorCarrera = false;
+
+        if (idCarrera != null) {
+            // Usamos la consulta que ya tienes en tu repositorio
+            labs = laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(idCarrera);
+            // Si la lista trae al menos un laboratorio, su carrera sí tiene permiso
+            puedeReservarPorCarrera = !labs.isEmpty();
         }
-        if (idCarrera == null) {
-            idCarrera = alumno.getCarrera().getIdCarrera();
-        }
 
-        // ⭐ LISTAR LABORATORIOS PERMITIDOS SEGÚN LA CARRERA
-        List<Laboratorio> labs = (idCarrera != null)
-                ? laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(idCarrera)
-                : new ArrayList<>();
-
-        // Si la lista está vacía (como en Comunicaciones C0004), no puede reservar
-        boolean puedeReservarPorCarrera = !labs.isEmpty();
-
-        // Separar productos entre Insumos y EPPs
+        // 3. Separar productos entre Insumos y EPPs
         List<Producto> todosLosProductos = productoRepositorio.findAll();
         List<Producto> insumos = new ArrayList<>();
         List<Producto> epps = new ArrayList<>();
@@ -132,23 +117,17 @@ public class AlumnoPortalController {
             }
         }
 
-        // Obtener reservas activas en las que participa el alumno
+        // 4. Contar reservas del día
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         LocalDate hoy = LocalDate.now();
         List<String> idsReservasHoy = new ArrayList<>();
 
         for (ReservaIntegrante ri : participaciones) {
             Reserva r = ri.getReserva();
-
-            if (r == null || r.getFechaReserva() == null || !hoy.equals(r.getFechaReserva())) {
-                continue;
-            }
+            if (r == null || r.getFechaReserva() == null || !hoy.equals(r.getFechaReserva())) continue;
 
             String estado = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
-
-            if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) {
-                continue;
-            }
+            if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) continue;
 
             if (!idsReservasHoy.contains(r.getIdReserva())) {
                 idsReservasHoy.add(r.getIdReserva());
@@ -161,38 +140,31 @@ public class AlumnoPortalController {
         modelo.addAttribute("reservasRestantes", Math.max(0, 2 - reservasHoy));
         modelo.addAttribute("limiteDiarioAlcanzado", reservasHoy >= 2);
 
+        // 5. Listar mis reservas activas
         List<ReservaActivaDto> misReservas = new ArrayList<>();
-
         for (ReservaIntegrante ri : participaciones) {
             Reserva r = ri.getReserva();
-            
-            // ⭐ Solo mostrar si es de HOY o del FUTURO
             if (r != null && r.getFechaReserva() != null && !r.getFechaReserva().isBefore(LocalDate.now())) {
                 String estado = r.getEstado() != null ? r.getEstado().toUpperCase() : "";
-                
                 if ("CONFIRMADA".equals(estado) || "EN_USO".equals(estado)) {
-                    String labNombre = (r.getLaboratorio() != null) ? r.getLaboratorio().getNombre() : "Laboratorio";
-                    String cubiculo = (r.getLaboratorio() != null) ? r.getLaboratorio().getUbicacionCubiculo() : "S/C";
-                    String fechaFormato = (r.getFechaReserva() != null) ? r.getFechaReserva().toString() : "";
-                    String horario = r.getHoraInicio() + "–" + r.getHoraFin();
-
                     misReservas.add(new ReservaActivaDto(
                             r.getIdReserva(),
-                            labNombre,
-                            cubiculo,
-                            fechaFormato,
-                            horario,
+                            r.getLaboratorio() != null ? r.getLaboratorio().getNombre() : "Laboratorio",
+                            r.getLaboratorio() != null ? r.getLaboratorio().getUbicacionCubiculo() : "S/C",
+                            r.getFechaReserva().toString(),
+                            r.getHoraInicio() + "–" + r.getHoraFin(),
                             r.getEstado()
                     ));
                 }
             }
         }
 
+        // 6. Enviar todo a la vista
         modelo.addAttribute("alumno", alumno);
         modelo.addAttribute("estaBloqueado", estaBloqueado);
         modelo.addAttribute("numIncidencias", incidenciasPendientes);
         modelo.addAttribute("laboratorios", labs);
-        modelo.addAttribute("puedeReservarPorCarrera", puedeReservarPorCarrera); // ⭐ Pasamos la bandera a la vista
+        modelo.addAttribute("puedeReservarPorCarrera", puedeReservarPorCarrera); 
         modelo.addAttribute("insumos", insumos);
         modelo.addAttribute("epps", epps);
         modelo.addAttribute("misReservas", misReservas);
@@ -271,6 +243,17 @@ public class AlumnoPortalController {
             return "redirect:/login";
         }
         Alumno alumnoLogueado = (Alumno) usuario;
+
+        // Blindaje: Validar que la carrera del alumno permita reservar
+        String idCarreraAlumno = (alumnoLogueado.getCarrera() != null) ? alumnoLogueado.getCarrera().getIdCarrera() : null;
+        if (idCarreraAlumno == null) return "redirect:/alumno/laboratorios";
+        
+        List<Laboratorio> labsPermitidos = laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(idCarreraAlumno);
+        boolean labPermitido = labsPermitidos.stream().anyMatch(l -> l.getIdLab().equals(idLab));
+        if (!labPermitido) {
+            redirectAttributes.addFlashAttribute("errorReserva", "Tu carrera no tiene acceso a este laboratorio.");
+            return "redirect:/alumno/laboratorios";
+        }
 
         // Doble validación de seguridad contra cuentas bloqueadas
         boolean tieneSancion = sancionRepositorio.existsByAlumno_IdEstudAndEstado(alumnoLogueado.getIdEstud(), "PENDIENTE");

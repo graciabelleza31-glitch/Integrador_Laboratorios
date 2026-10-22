@@ -72,12 +72,15 @@
           </button>
         </div>
 
-        <!-- BANNER DE INCIDENCIAS -->
-        <div th:if="${estaBloqueado}" class="banner-incidencias-bloqueo">
+        <!-- BANNER DE INCIDENCIAS (Clickeable) -->
+        <div th:if="${estaBloqueado}" 
+             class="banner-incidencias-bloqueo" 
+             style="cursor: pointer; transition: transform 0.2s;"
+             onclick="window.location.href='/alumno/incidencias'">
           <div class="icono-bloqueo-circulo">⛔</div>
           <div class="texto-bloqueo-contenido">
             <strong>Tienes incidencias pendientes de pago</strong>
-            <p>No puedes realizar ni unirte a reservas hasta que regularices tus incidencias en la sección "Incidencias".</p>
+            <p>Haz clic aquí para ir a la sección "Incidencias" y regularizar tu situación.</p>
           </div>
         </div>
 
@@ -86,11 +89,12 @@
           <strong>Carrera sin acceso a laboratorios:</strong> Tu plan de estudios no cuenta con laboratorios asignados para reserva.
         </div>
 
-        <!-- AVISO DE LÍMITE DIARIO (SOLO se muestra si la carrera tiene acceso Y no está bloqueado) -->
+                <!-- AVISO DE LÍMITE DIARIO -->
         <th:block th:if="${puedeReservarPorCarrera and not estaBloqueado}">
           <div th:if="${limiteDiarioAlcanzado}"
                class="alert alert-warning"
-               role="alert">
+               role="alert"
+               style="margin-bottom: 2rem;"> <!-- 👈 Margen inferior agregado -->
             <strong>¡Límite diario alcanzado!</strong>
             Ya has utilizado tus dos reservas permitidas para hoy.
             Las reservas canceladas no cuentan para este límite.
@@ -98,7 +102,8 @@
 
           <div th:unless="${limiteDiarioAlcanzado}"
                class="alert alert-info"
-               role="status">
+               role="status"
+               style="margin-bottom: 2rem; background-color: transparent; border: none; padding-left: 0;"> <!-- 👈 Estilos para separar -->
             Hoy llevas
             <strong th:text="${reservasHoy}">0</strong>
             de 2 reservas permitidas.
@@ -151,8 +156,18 @@
             <button type="button" class="btn-filtro" onclick="filtrarLabs('Física', this)">Física</button>
           </div>
 
+         
+
           <span class="subtitulo-seccion-gris">TODOS LOS LABORATORIOS</span>
 
+          <!-- Mensaje si no hay laboratorios para su carrera -->
+          <div th:if="${#lists.isEmpty(laboratorios)}" style="text-align: center; padding: 3rem; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #e2e8f0;">
+            <span style="font-size: 2.5rem;">🔬</span>
+            <p style="margin-top: 1rem; font-weight: 600;">No hay laboratorios disponibles para tu carrera.</p>
+          </div>
+
+          <div class="rejilla-laboratorios" th:unless="${#lists.isEmpty(laboratorios)}">
+             <!-- ... tus tarjetas de lab ... -->
           <div class="rejilla-laboratorios">
             <div th:each="lab : ${laboratorios}" 
                  class="tarjeta-lab-grid" 

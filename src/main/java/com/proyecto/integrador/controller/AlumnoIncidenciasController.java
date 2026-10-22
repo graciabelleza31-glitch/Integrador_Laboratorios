@@ -102,35 +102,34 @@ public String verMisIncidencias(HttpSession session, Model model) {
     return "alumno-incidencias";
 }
 
-    // ACCIÓN: CONFIRMAR PAGO DE LA SANCIÓN POR PARTE DEL ALUMNO
+        // ACCIÓN: CONFIRMAR PAGO DE LA SANCIÓN POR PARTE DEL ALUMNO
     @PostMapping("/pagar/{id}")
     @ResponseBody
     @Transactional
-    public ResponseEntity<?> registrarPagoAlumno(@PathVariable("id") String id) {
+    public ResponseEntity<?> registrarPagoAlumno(@PathVariable("id") String id, HttpSession session) { // Agregamos HttpSession
         Optional<Sancion> opt = sancionRepositorio.findById(id);
         if (opt.isPresent()) {
             Sancion s = opt.get();
-            // Usar exactamente 'RESUELTA' (femenino, según tu CHECK)
             s.setEstado("RESUELTA");
             sancionRepositorio.save(s);
 
             Alumno al = s.getAlumno();
             if (al != null) {
-                // Verificar si aún tiene alguna otra sanción que no esté 'RESUELTA'
                 long deudasPendientes = sancionRepositorio.countByAlumno_IdEstudAndEstadoNotIn(
                     al.getIdEstud(), 
                     List.of("RESUELTA")
                 );
 
-                // Si ya pagó todo, vuelve a 'HABILITADO'
                 if (deudasPendientes == 0) {
                     al.setEstadoCuenta("HABILITADO");
                     alumnoRepositorio.save(al);
+
+                    // ⭐ NUEVO: Refrescamos la sesión del alumno para desbloquearlo al instante
+                    session.setAttribute("usuarioLogueado", al);
                 }
             }
         }
 
-        // Código de transacción para el modal de éxito de Figma
         long numeroTxn = 1000000000L + (long)(Math.random() * 9000000000L);
         return ResponseEntity.ok(Map.of(
             "status", "ok",
