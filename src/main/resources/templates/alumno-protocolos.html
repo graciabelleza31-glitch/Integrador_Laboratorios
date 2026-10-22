@@ -160,18 +160,8 @@
     }
 
     function descargarTerminos() {
-      // Enlace directo a la carpeta estática donde está tu PDF
-      const rutaPdf = '/docs/terminos.pdf';
-      
-      const enlace = document.createElement('a');
-      enlace.href = rutaPdf;
-      enlace.download = 'Terminos y Condiciones - UTP +Lab.pdf'; // Nombre con el que se descargará
-      enlace.target = '_blank';
-      
-      document.body.appendChild(enlace);
-      enlace.click();
-      document.body.removeChild(enlace);
-    }
+    window.open('/docs/terminos.pdf', '_blank');
+}
   </script>
 </body>
 </html>
