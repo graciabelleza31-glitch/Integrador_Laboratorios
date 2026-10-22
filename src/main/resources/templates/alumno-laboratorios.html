@@ -19,16 +19,17 @@
     <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
 
       <section class="seccion-checkout">
+        
         <!-- Botón de pago (solo aparece si hay incidencias) -->
-<div th:if="${numIncidencias > 0}" class="banner-incidencias-bloqueo" style="display: flex; justify-content: space-between; align-items: center;">
-    <div class="texto-bloqueo-contenido">
-        <strong>⚠️ Tienes incidencias pendientes de pago</strong>
-        <p>Para poder reservar un laboratorio, primero debes regularizar tu situación.</p>
-    </div>
-    <a th:href="@{/alumno/incidencias}" class="btn-nueva-reserva" style="background-color: #ef4444; text-decoration: none;">
-        Pagar ahora
-    </a>
-</div>
+        <div th:if="${numIncidencias > 0}" class="banner-incidencias-bloqueo" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.location.href='/alumno/incidencias'">
+            <div class="texto-bloqueo-contenido">
+                <strong>⚠️ Tienes incidencias pendientes de pago</strong>
+                <p>Haz clic aquí para regularizar tu situación.</p>
+            </div>
+            <span class="btn-nueva-reserva" style="background-color: #ef4444; text-decoration: none;">
+                Pagar ahora
+            </span>
+        </div>
 
         <!-- BIENVENIDA -->
         <div class="fila-bienvenida">
@@ -37,50 +38,34 @@
             <p class="subtitulo-bienvenida"><strong>Laboratorios</strong> Reserva y gestiona tu tiempo en los laboratorios de la universidad</p>
           </div>
 
-          <!-- CASO 1: Puede reservar (Habilitado, carrera con permiso y no llegó al límite) -->
+          <!-- BOTONES DE ESTADO -->
           <button th:if="${not estaBloqueado and puedeReservarPorCarrera and not limiteDiarioAlcanzado}" 
-                  type="button" 
-                  class="btn-nueva-reserva" 
-                  onclick="abrirWizardPaso1()">
+                  type="button" class="btn-nueva-reserva" onclick="abrirWizardPaso1()">
             + Nueva Reserva
           </button>
 
-          <!-- CASO 2: Límite diario de 2 reservas alcanzado -->
           <button th:if="${not estaBloqueado and puedeReservarPorCarrera and limiteDiarioAlcanzado}" 
-                  type="button" 
-                  class="btn-reservas-bloqueadas" 
-                  title="Has alcanzado el límite máximo de 2 reservas diarias"
-                  disabled>
+                  type="button" class="btn-reservas-bloqueadas" disabled>
             🚫 Límite diario alcanzado
           </button>
 
-          <!-- CASO 3: Carrera sin acceso a laboratorios (ej. Comunicaciones) -->
           <button th:if="${not estaBloqueado and not puedeReservarPorCarrera}" 
-                  type="button" 
-                  class="btn-reservas-bloqueadas" 
-                  title="Tu carrera no cuenta con acceso a laboratorios"
-                  disabled>
+                  type="button" class="btn-reservas-bloqueadas" disabled>
             🚫 Sin acceso por carrera
           </button>
 
-          <!-- CASO 4: Bloqueado por sanciones / incidencias -->
           <button th:if="${estaBloqueado}" 
-                  type="button" 
-                  class="btn-reservas-bloqueadas" 
-                  disabled>
+                  type="button" class="btn-reservas-bloqueadas" disabled>
             ⛔ Reservas bloqueadas
           </button>
         </div>
 
-        <!-- BANNER DE INCIDENCIAS (Clickeable) -->
-        <div th:if="${estaBloqueado}" 
-             class="banner-incidencias-bloqueo" 
-             style="cursor: pointer; transition: transform 0.2s;"
-             onclick="window.location.href='/alumno/incidencias'">
+        <!-- BANNER DE INCIDENCIAS -->
+        <div th:if="${estaBloqueado}" class="banner-incidencias-bloqueo">
           <div class="icono-bloqueo-circulo">⛔</div>
           <div class="texto-bloqueo-contenido">
             <strong>Tienes incidencias pendientes de pago</strong>
-            <p>Haz clic aquí para ir a la sección "Incidencias" y regularizar tu situación.</p>
+            <p>No puedes realizar ni unirte a reservas hasta que regularices tus incidencias en la sección "Incidencias".</p>
           </div>
         </div>
 
@@ -89,44 +74,27 @@
           <strong>Carrera sin acceso a laboratorios:</strong> Tu plan de estudios no cuenta con laboratorios asignados para reserva.
         </div>
 
-                <!-- AVISO DE LÍMITE DIARIO -->
+        <!-- AVISO DE LÍMITE DIARIO -->
         <th:block th:if="${puedeReservarPorCarrera and not estaBloqueado}">
-          <div th:if="${limiteDiarioAlcanzado}"
-               class="alert alert-warning"
-               role="alert"
-               style="margin-bottom: 2rem;"> <!-- 👈 Margen inferior agregado -->
-            <strong>¡Límite diario alcanzado!</strong>
-            Ya has utilizado tus dos reservas permitidas para hoy.
-            Las reservas canceladas no cuentan para este límite.
+          <div th:if="${limiteDiarioAlcanzado}" class="alert alert-warning" role="alert" style="margin-bottom: 2rem;">
+            <strong>¡Límite diario alcanzado!</strong> Ya has utilizado tus dos reservas permitidas para hoy.
           </div>
 
-          <div th:unless="${limiteDiarioAlcanzado}"
-               class="alert alert-info"
-               role="status"
-               style="margin-bottom: 2rem; background-color: transparent; border: none; padding-left: 0;"> <!-- 👈 Estilos para separar -->
-            Hoy llevas
-            <strong th:text="${reservasHoy}">0</strong>
-            de 2 reservas permitidas.
-            Te quedan
-            <strong th:text="${reservasRestantes}">2</strong>.
+          <div th:unless="${limiteDiarioAlcanzado}" class="alert alert-info" role="status" style="margin-bottom: 2rem; background-color: transparent; border: none; padding-left: 0;">
+            Hoy llevas <strong th:text="${reservasHoy}">0</strong> de 2 reservas permitidas. Te quedan <strong th:text="${reservasRestantes}">2</strong>.
           </div>
         </th:block>
 
         <!-- Mensaje de error después de intentar reservar -->
-        <div th:if="${errorReserva != null}"
-             class="alert alert-danger"
-             role="alert"
-             th:text="${errorReserva}">
-        </div>
+        <div th:if="${errorReserva != null}" class="alert alert-danger" role="alert" th:text="${errorReserva}"></div>
 
-                 <!-- MIS RESERVAS ACTIVAS -->
+        <!-- MIS RESERVAS ACTIVAS -->
         <div th:if="${not #lists.isEmpty(misReservas)}" class="bloque-mis-reservas">
           <span class="subtitulo-seccion-gris">MIS RESERVAS ACTIVAS</span>
           <div class="lista-mis-reservas">
-            
             <div th:each="r : ${misReservas}" 
                  class="tarjeta-reserva-activa clickeable" 
-                 style="cursor: pointer; transition: transform 0.2s;"
+                 style="cursor: pointer;"
                  th:attr="data-id-reserva=${r.idReserva}"
                  onclick="abrirModalResumen(this)">
               
@@ -142,11 +110,10 @@
               <span class="badge-confirmada" th:text="${r.estado}">Confirmada</span>
               <span class="codigo-reserva-gris" th:text="${r.idReserva}">R-001</span>
             </div>
-
           </div>
         </div>
 
-                <!-- CUADRÍCULA DE LABORATORIOS -->
+        <!-- CUADRÍCULA DE LABORATORIOS -->
         <div class="bloque-todos-labs">
           <div class="barra-filtros">
             <button type="button" class="btn-filtro activo" onclick="filtrarLabs('TODOS', this)">Todos</button>
@@ -158,7 +125,7 @@
           <span class="subtitulo-seccion-gris">TODOS LOS LABORATORIOS</span>
 
           <!-- Mensaje si no hay laboratorios para su carrera -->
-          <div th:if="${#lists.isEmpty(laboratorios)}" style="text-align: center; padding: 3rem; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #e2e8f0; margin-bottom: 2rem;">
+          <div th:if="${#lists.isEmpty(laboratorios)}" style="text-align: center; padding: 3rem; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #e2e8f0;">
             <span style="font-size: 2.5rem;">🔬</span>
             <p style="margin-top: 1rem; font-weight: 600;">No hay laboratorios disponibles para tu carrera.</p>
           </div>
@@ -192,15 +159,11 @@
       </section>
     </main>
 
-    <!-- ========================================================
-         MODAL 1: CONSULTA DE HORARIOS
-         ======================================================== -->
+    <!-- MODAL 1: CONSULTA DE HORARIOS -->
     <div id="modalHorarios" class="fondo-modal" style="display: none;">
       <div class="tarjeta-modal modal-horarios-ancho">
         <div class="cabecera-modal-azul">
-          <div class="icono-cabecera-lab">
-            <i data-lucide="beaker"></i>
-          </div>
+          <div class="icono-cabecera-lab"><i data-lucide="beaker"></i></div>
           <div>
             <h3 id="tituloLabModal">Lab. Química</h3>
             <p id="subtituloLabModal">Bloque A · Sala A-101 · 12 puestos</p>
@@ -213,14 +176,11 @@
             <span class="txt-horarios-disp">Horarios disponibles</span>
             <input type="date" id="inputFechaConsulta" class="input-fecha-box" onchange="actualizarHorariosModalConsulta()" />
           </div>
-
           <div class="matriz-horas-grid" id="gridHorariosConsulta"></div>
-
           <div class="leyenda-horarios">
             <div class="item-leyenda"><span class="bolita disp"></span> Disponible (<span id="txtCantDisp">0</span>)</div>
             <div class="item-leyenda"><span class="bolita ocup"></span> Ocupado (<span id="txtCantOcup">0</span>)</div>
           </div>
-
           <div class="acciones-modal-horarios">
             <button type="button" class="btn-gris-cerrar" onclick="cerrarModalHorarios()">Cerrar</button>
             <button type="button" class="btn-azul-reservar" onclick="pasarDeHorariosAWizard()">+ Reservar</button>
@@ -229,12 +189,9 @@
       </div>
     </div>
 
-    <!-- ========================================================
-         MODAL 2: ASISTENTE WIZARD (DINÁMICO: 4 Ó 5 PASOS)
-         ======================================================== -->
+    <!-- MODAL 2: WIZARD NUEVA RESERVA -->
     <div id="modalWizard" class="fondo-modal" style="display: none;">
       <div class="tarjeta-modal modal-wizard-ancho">
-        
         <div class="cabecera-wizard">
           <div class="progreso-wizard">
             <h3 class="titulo-wizard">Nueva Reserva</h3>
@@ -244,7 +201,6 @@
         </div>
 
         <form th:action="@{/alumno/reservas/confirmar-pago}" method="post" id="formReservaCompleta">
-          
           <input type="hidden" name="idLab" id="wizardIdLab" required />
           <input type="hidden" name="fecha" id="wizardFechaEnvio" />
           <input type="hidden" name="horaInicio" id="wizardHoraInicio" />
@@ -252,7 +208,7 @@
           <input type="hidden" name="montoTotal" id="inputMontoTotalFinal" value="0.00" />
           <input type="hidden" name="metodoPago" id="inputMetodoPagoSeleccionado" value="DIRECTO" />
 
-          <!-- ================= PASO A: LAB Y HORARIOS ================= -->
+          <!-- PASO A: LAB Y HORARIOS -->
           <div id="seccionPasoLab" class="cuerpo-paso-wizard">
             <label class="etiqueta-form-wizard">Fecha</label>
             <input type="date" id="wizardFechaInput" class="input-fecha-wizard" onchange="validarFechaNoPasada(this); cambiarFechaWizard(this.value);" />
@@ -299,7 +255,7 @@
             </div>
           </div>
 
-          <!-- ================= PASO B: INTEGRANTES ================= -->
+          <!-- PASO B: INTEGRANTES -->
           <div id="seccionPasoIntegrantes" class="cuerpo-paso-wizard" style="display: none;">
             <div class="cabecera-integrantes-flex">
               <div>
@@ -341,7 +297,7 @@
             </div>
           </div>
 
-          <!-- ================= PASO C: INSUMOS ================= -->
+          <!-- PASO C: INSUMOS -->
           <div id="seccionPasoInsumos" class="cuerpo-paso-wizard" style="display: none;">
             <div class="cabecera-integrantes-flex">
               <div>
@@ -386,7 +342,7 @@
             </div>
           </div>
 
-          <!-- ================= PASO D: EPPs ================= -->
+          <!-- PASO D: EPPs -->
           <div id="seccionPasoEpps" class="cuerpo-paso-wizard" style="display: none;">
             <strong class="titulo-integrantes-txt">Equipos de Protección Personal (EPP)</strong>
             <p class="sub-integrantes-txt">Bata y gafas incluidas. Los demás tienen costo adicional.</p>
@@ -465,7 +421,7 @@
             </div>
           </div>
 
-          <!-- ================= PASO E: BOLETA ================= -->
+          <!-- PASO E: BOLETA -->
           <div id="seccionPasoBoleta" class="cuerpo-paso-wizard" style="display: none;">
             <div class="recuadro-boleta-reserva">
               <div class="cabecera-boleta-azul">
@@ -528,15 +484,11 @@
               </button>
             </div>
           </div>
-
         </form>
-
       </div>
     </div>
 
-    <!-- ========================================================
-         MODAL 3: PAGO
-         ======================================================== -->
+    <!-- MODAL 3: PAGO -->
     <div id="modalPagoReserva" class="fondo-modal" style="display: none; z-index: 1100;">
       <div class="tarjeta-modal modal-pago-ancho">
         <div class="cabecera-pago-flex">
@@ -575,65 +527,63 @@
         </button>
       </div>
     </div>
+    
     <!-- MODAL RESUMEN DE RESERVA Y CANCELACIÓN -->
-<div id="modalResumenReserva" class="fondo-modal-oscuro" style="display: none;">
-    <div class="tarjeta-modal modal-recibo-contenedor">
-        
-        <div class="cabecera-modal-recibo">
-            <div>
-                <h3 class="titulo-modal-recibo">Resumen de Reserva</h3>
-                <p class="subtitulo-modal-recibo" id="resumenId">RES001</p>
-            </div>
-            <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalResumen()">✕</button>
-        </div>
-        
-        <div class="cuerpo-modal-recibo">
-            <div class="cabecera-azul-recibo">
-                <span class="lbl-recibo">LABORATORIO</span>
-                <strong id="resumenLab" class="nombre-lab-recibo">Lab. Química</strong>
-                <span id="resumenCubiculo" class="cubiculo-recibo">A-101</span>
+    <div id="modalResumenReserva" class="fondo-modal-oscuro" style="display: none;">
+        <div class="tarjeta-modal modal-recibo-contenedor">
+            <div class="cabecera-modal-recibo">
+                <div>
+                    <h3 class="titulo-modal-recibo">Resumen de Reserva</h3>
+                    <p class="subtitulo-modal-recibo" id="resumenId">RES001</p>
+                </div>
+                <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalResumen()">✕</button>
             </div>
             
-            <div class="fila-meta-recibo">
-                <div class="col-meta-recibo">
-                    <span class="lbl-meta-recibo">FECHA</span>
-                    <strong id="resumenFecha">2026-09-27</strong>
+            <div class="cuerpo-modal-recibo">
+                <div class="cabecera-azul-recibo">
+                    <span class="lbl-recibo">LABORATORIO</span>
+                    <strong id="resumenLab" class="nombre-lab-recibo">Lab. Química</strong>
+                    <span id="resumenCubiculo" class="cubiculo-recibo">A-101</span>
                 </div>
-                <div class="col-meta-recibo">
-                    <span class="lbl-meta-recibo">HORARIO</span>
-                    <strong id="resumenHorario">07:00 – 09:00</strong>
+                
+                <div class="fila-meta-recibo">
+                    <div class="col-meta-recibo">
+                        <span class="lbl-meta-recibo">FECHA</span>
+                        <strong id="resumenFecha">2026-09-27</strong>
+                    </div>
+                    <div class="col-meta-recibo">
+                        <span class="lbl-meta-recibo">HORARIO</span>
+                        <strong id="resumenHorario">07:00 – 09:00</strong>
+                    </div>
+                    <div class="col-meta-recibo">
+                        <span class="lbl-meta-recibo">ESTADO</span>
+                        <span id="resumenEstado" class="badge-estado-recibo">CONFIRMADA</span>
+                    </div>
                 </div>
-                <div class="col-meta-recibo">
-                    <span class="lbl-meta-recibo">ESTADO</span>
-                    <span id="resumenEstado" class="badge-estado-recibo">CONFIRMADA</span>
+                
+                <div class="seccion-recibo">
+                    <span class="titulo-seccion-recibo">Integrantes</span>
+                    <div id="resumenIntegrantes" class="lista-integrantes-recibo"></div>
+                </div>
+                
+                <div class="seccion-recibo" id="seccionInsumosResumen">
+                    <span class="titulo-seccion-recibo">Insumos y EPPs</span>
+                    <div id="resumenItems" class="lista-items-recibo"></div>
                 </div>
             </div>
             
-            <div class="seccion-recibo">
-                <span class="titulo-seccion-recibo">Integrantes</span>
-                <div id="resumenIntegrantes" class="lista-integrantes-recibo"></div>
-            </div>
-            
-            <div class="seccion-recibo" id="seccionInsumosResumen">
-                <span class="titulo-seccion-recibo">Insumos y EPPs</span>
-                <div id="resumenItems" class="lista-items-recibo"></div>
+            <div class="pie-modal-recibo" style="justify-content: space-between;">
+                <!-- Formulario para cancelar con acción dinámica -->
+                <form id="formCancelarReserva" action="" method="post" style="margin: 0;">
+                    <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
+                            onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
+                        Cancelar Reserva
+                    </button>
+                </form>
+                <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
             </div>
         </div>
-        
-        <div class="pie-modal-recibo" style="justify-content: space-between;">
-            <!-- Formulario para cancelar -->
-            <form id="formCancelarReserva" th:action="@{'/alumno/reservas/' + ${resumenId.text} + '/cancelar'}" method="post" style="margin: 0;">
-    <input type="hidden" name="idReserva" id="inputCancelarId" value="" />
-    <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
-            onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
-        Cancelar Reserva
-    </button>
-</form>
-            <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
-        </div>
-        
     </div>
-</div>
 
   </div>
 
@@ -641,7 +591,34 @@
 
   <!-- SCRIPT CON LIMPIEZA TOTAL AL SALIR -->
   <script>
-
+    // 1. INICIALIZACIÓN DE ÍCONOS Y FECHAS
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const fechaHoy = `${año}-${mes}-${dia}`;
+        
+        const inputConsulta = document.getElementById('inputFechaConsulta');
+        const inputWizard = document.getElementById('wizardFechaInput');
+        const inputHidden = document.getElementById('wizardFechaEnvio');
+        
+        if (inputConsulta) {
+            inputConsulta.value = fechaHoy;
+            inputConsulta.min = fechaHoy;
+        }
+        if (inputWizard) {
+            inputWizard.value = fechaHoy;
+            inputWizard.min = fechaHoy;
+        }
+        if (inputHidden) {
+            inputHidden.value = fechaHoy;
+        }
+    });
 
     const BLOQUES_HORARIOS = [
       { h: "07:00", f: "08:00" }, { h: "08:00", f: "09:00" }, { h: "09:00", f: "10:00" },
@@ -649,39 +626,6 @@
       { h: "13:00", f: "14:00" }, { h: "14:00", f: "15:00" }, { h: "15:00", f: "16:00" },
       { h: "16:00", f: "17:00" }, { h: "17:00", f: "18:00" }, { h: "18:00", f: "19:00" }
     ];
-
-  
-
-    // ========== INICIALIZAR FECHA ACTUAL Y BLOQUEAR DÍAS PASADOS ==========
-document.addEventListener("DOMContentLoaded", function () {
-    if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    
-    // Obtener la fecha de HOY en formato YYYY-MM-DD
-    const hoy = new Date();
-    const año = hoy.getFullYear();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoy.getDate()).padStart(2, '0');
-    const fechaHoy = `${año}-${mes}-${dia}`;
-    
-    // Configurar ambos inputs con la fecha de hoy
-    const inputConsulta = document.getElementById('inputFechaConsulta');
-    const inputWizard = document.getElementById('wizardFechaInput');
-    const inputHidden = document.getElementById('wizardFechaEnvio');
-    
-    if (inputConsulta) {
-        inputConsulta.value = fechaHoy;
-        inputConsulta.min = fechaHoy;  // Bloquear días anteriores
-    }
-    if (inputWizard) {
-        inputWizard.value = fechaHoy;
-        inputWizard.min = fechaHoy;
-    }
-    if (inputHidden) {
-        inputHidden.value = fechaHoy;
-    }
-});
 
     function filtrarLabs(tipo, btn) {
       document.querySelectorAll('.barra-filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
@@ -716,66 +660,63 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function actualizarHorariosModalConsulta() {
-    if (!labSeleccionadoActual) return;
-    const fecha = document.getElementById('inputFechaConsulta').value;
-    const grid = document.getElementById('gridHorariosConsulta');
-    grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Cargando horarios...</span>';
+        if (!labSeleccionadoActual) return;
+        const fecha = document.getElementById('inputFechaConsulta').value;
+        const grid = document.getElementById('gridHorariosConsulta');
+        grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Cargando horarios...</span>';
 
-    // ===== FECHA Y HORA LOCALES =====
-    const ahora = new Date();
-    const horaActual = ahora.getHours();
-    const minutoActual = ahora.getMinutes();
-    const año = ahora.getFullYear();
-    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-    const dia = String(ahora.getDate()).padStart(2, '0');
-    const hoyStr = `${año}-${mes}-${dia}`;
-    const esHoy = (fecha === hoyStr);
+        const ahora = new Date();
+        const horaActual = ahora.getHours();
+        const minutoActual = ahora.getMinutes();
+        const año = ahora.getFullYear();
+        const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+        const dia = String(ahora.getDate()).padStart(2, '0');
+        const hoyStr = `${año}-${mes}-${dia}`;
+        const esHoy = (fecha === hoyStr);
 
-    fetch(`/api/laboratorios/${labSeleccionadoActual.id}/horarios-ocupados?fecha=${fecha}`)
-        .then(res => res.json())
-        .then(ocupados => {
-            grid.innerHTML = '';
-            let cDisp = 0, cOcup = 0;
-            BLOQUES_HORARIOS.forEach(b => {
-                const horaBloque = parseInt(b.h.split(':')[0], 10);
-                
-                let yaPaso = false;
-                if (esHoy) {
-                    if (horaBloque < horaActual) yaPaso = true;
-                    else if (horaBloque === horaActual && minutoActual >= 30) yaPaso = true;
-                }
-                
-                const estaOcupado = ocupados.includes(b.h);
-                const estaBloqueado = estaOcupado || yaPaso;
-                
-                const slot = document.createElement('div');
-                slot.className = `btn-hora-slot ${estaBloqueado ? 'ocupado' : 'disponible'}`;
-                slot.innerText = b.h;
-                grid.appendChild(slot);
-                
-                if (estaBloqueado) cOcup++; else cDisp++;
+        fetch(`/api/laboratorios/${labSeleccionadoActual.id}/horarios-ocupados?fecha=${fecha}`)
+            .then(res => res.json())
+            .then(ocupados => {
+                grid.innerHTML = '';
+                let cDisp = 0, cOcup = 0;
+                BLOQUES_HORARIOS.forEach(b => {
+                    const horaBloque = parseInt(b.h.split(':')[0], 10);
+                    let yaPaso = false;
+                    if (esHoy) {
+                        if (horaBloque < horaActual) yaPaso = true;
+                        else if (horaBloque === horaActual && minutoActual >= 30) yaPaso = true;
+                    }
+                    const estaOcupado = ocupados.includes(b.h);
+                    const estaBloqueado = estaOcupado || yaPaso;
+                    
+                    const slot = document.createElement('div');
+                    slot.className = `btn-hora-slot ${estaBloqueado ? 'ocupado' : 'disponible'}`;
+                    slot.innerText = b.h;
+                    grid.appendChild(slot);
+                    
+                    if (estaBloqueado) cOcup++; else cDisp++;
+                });
+                document.getElementById('txtCantDisp').innerText = cDisp;
+                document.getElementById('txtCantOcup').innerText = cOcup;
+            })
+            .catch(() => {
+                grid.innerHTML = '';
+                BLOQUES_HORARIOS.forEach(b => {
+                    const slot = document.createElement('div');
+                    slot.className = 'btn-hora-slot disponible';
+                    slot.innerText = b.h;
+                    grid.appendChild(slot);
+                });
             });
-            document.getElementById('txtCantDisp').innerText = cDisp;
-            document.getElementById('txtCantOcup').innerText = cOcup;
-        })
-        .catch(() => {
-            grid.innerHTML = '';
-            BLOQUES_HORARIOS.forEach(b => {
-                const slot = document.createElement('div');
-                slot.className = 'btn-hora-slot disponible';
-                slot.innerText = b.h;
-                grid.appendChild(slot);
-            });
-        });
-}
-
-function validarFechaNoPasada(input) {
-    const hoy = new Date().toISOString().split('T')[0];
-    if (input.value < hoy) {
-        input.value = hoy;
-        alert('No puedes seleccionar una fecha anterior a hoy.');
     }
-}
+
+    function validarFechaNoPasada(input) {
+        const hoy = new Date().toISOString().split('T')[0];
+        if (input.value < hoy) {
+            input.value = hoy;
+            alert('No puedes seleccionar una fecha anterior a hoy.');
+        }
+    }
 
     function pasarDeHorariosAWizard() {
       cerrarModalHorarios();
@@ -795,22 +736,17 @@ function validarFechaNoPasada(input) {
       lucide.createIcons();
     }
 
-    // FUNCIÓN DE LIMPIEZA COMPLETA AL CERRAR O SALIR
     function cerrarWizard() {
       document.getElementById('modalWizard').style.display = 'none';
-
-      // 1. Limpiar campos ocultos y selecciones
       document.getElementById('wizardIdLab').value = '';
       document.getElementById('wizardHoraInicio').value = '';
       document.getElementById('wizardHoraFin').value = '';
       document.querySelectorAll('.item-lab-radio').forEach(i => i.classList.remove('seleccionado'));
 
-      // 2. Limpiar horas
       horasSeleccionadas = [];
       document.querySelectorAll('.btn-slot-select').forEach(s => s.classList.remove('seleccionado'));
       document.getElementById('tagMax2Horas').style.display = 'none';
 
-      // 3. Limpiar integrantes extras (dejando solo al alumno logueado)
       document.querySelectorAll('.tarjeta-integrante-fila').forEach((f, idx) => {
         if (idx > 0) f.remove();
       });
@@ -821,23 +757,18 @@ function validarFechaNoPasada(input) {
       document.getElementById('inputNombreAutocompletado').value = '';
       document.getElementById('msgErrorBusqueda').style.display = 'none';
 
-      // 4. Limpiar insumos
       document.getElementById('checkSolicitarInsumos').checked = false;
       tieneInsumosActivo = false;
       document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]').forEach(c => c.checked = false);
       document.getElementById('contadorInsumosBadge').innerText = '0/10';
 
-      // 5. Limpiar EPPs de pago
       document.querySelectorAll('.card-epp-select:not(.incluido)').forEach(c => {
         c.classList.remove('seleccionado');
         c.querySelector('input[type="checkbox"]').checked = false;
       });
       costoEppsTotal = 0;
 
-      // 6. Limpiar términos
       document.getElementById('checkAceptoTerminos').checked = false;
-
-      // 7. Resetear a paso 1
       irALaboratorio();
     }
 
@@ -852,12 +783,8 @@ function validarFechaNoPasada(input) {
       for (let i = 1; i <= totalPasos; i++) {
         let clase = 'paso-circulo';
         let texto = i;
-        if (i < paso) {
-          clase += ' completado';
-          texto = '✓';
-        } else if (i === paso) {
-          clase += ' activo';
-        }
+        if (i < paso) { clase += ' completado'; texto = '✓'; } 
+        else if (i === paso) { clase += ' activo'; }
         html += `<span class="${clase}">${texto}</span>`;
         if (i < totalPasos) html += `<span class="linea-paso"></span>`;
       }
@@ -891,97 +818,73 @@ function validarFechaNoPasada(input) {
     }
 
     function cargarHorariosWizard() {
-    const idLab = document.getElementById('wizardIdLab').value;
-    const fecha = document.getElementById('wizardFechaEnvio').value;
-    const grid = document.getElementById('gridHorasWizard');
-    horasSeleccionadas = [];
-    document.getElementById('tagMax2Horas').style.display = 'none';
+        const idLab = document.getElementById('wizardIdLab').value;
+        const fecha = document.getElementById('wizardFechaEnvio').value;
+        const grid = document.getElementById('gridHorasWizard');
+        horasSeleccionadas = [];
+        document.getElementById('tagMax2Horas').style.display = 'none';
 
-    if (!idLab) {
-        grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Selecciona un laboratorio arriba para ver horarios</span>';
-        return;
-    }
+        if (!idLab) {
+            grid.innerHTML = '<span style="grid-column: 1/-1; text-align: center; color: #94a3b8;">Selecciona un laboratorio arriba para ver horarios</span>';
+            return;
+        }
 
-    // ===== OBTENER FECHA Y HORA LOCALES (NO UTC) =====
-    const ahora = new Date();
-    const horaActual = ahora.getHours();
-    const minutoActual = ahora.getMinutes();
-    
-    // Formato de hoy en LOCAL: YYYY-MM-DD
-    const año = ahora.getFullYear();
-    const mes = String(ahora.getMonth() + 1).padStart(2, '0');
-    const dia = String(ahora.getDate()).padStart(2, '0');
-    const hoyStr = `${año}-${mes}-${dia}`;
-    
-    // Comparar como strings
-    const fechaSeleccionada = fecha; // "YYYY-MM-DD"
-    const esHoy = (fechaSeleccionada === hoyStr);
-    const esFuturo = (fechaSeleccionada > hoyStr);  // Fechas posteriores a hoy
+        const ahora = new Date();
+        const horaActual = ahora.getHours();
+        const minutoActual = ahora.getMinutes();
+        const año = ahora.getFullYear();
+        const mes = String(ahora.getMonth() + 1).padStart(2, '0');
+        const dia = String(ahora.getDate()).padStart(2, '0');
+        const hoyStr = `${año}-${mes}-${dia}`;
+        const esHoy = (fecha === hoyStr);
+        const esFuturo = (fecha > hoyStr);
 
-    fetch(`/api/laboratorios/${idLab}/horarios-ocupados?fecha=${fecha}`)
-        .then(res => res.json())
-        .then(ocupados => {
-            grid.innerHTML = '';
-            BLOQUES_HORARIOS.forEach(b => {
-                const horaBloque = parseInt(b.h.split(':')[0], 10);
-                
-                // Solo bloquear por hora pasada si ES HOY
-                let yaPaso = false;
-                if (esHoy) {
-                    if (horaBloque < horaActual) {
-                        yaPaso = true;
-                    } else if (horaBloque === horaActual && minutoActual >= 30) {
-                        yaPaso = true;
+        fetch(`/api/laboratorios/${idLab}/horarios-ocupados?fecha=${fecha}`)
+            .then(res => res.json())
+            .then(ocupados => {
+                grid.innerHTML = '';
+                BLOQUES_HORARIOS.forEach(b => {
+                    const horaBloque = parseInt(b.h.split(':')[0], 10);
+                    let yaPaso = false;
+                    if (esHoy) {
+                        if (horaBloque < horaActual) yaPaso = true;
+                        else if (horaBloque === horaActual && minutoActual >= 30) yaPaso = true;
                     }
-                }
-                // Si esFuturo → nunca bloquear por hora pasada
-                
-                const estaOcupado = ocupados.includes(b.h);
-                const estaBloqueado = estaOcupado || yaPaso;
-                
-                const slot = document.createElement('div');
-                slot.className = `btn-slot-select ${estaBloqueado ? 'bloqueado' : ''}`;
-                slot.innerText = b.h;
-                
-                if (yaPaso) slot.title = 'Esta hora ya pasó';
-                else if (estaOcupado) slot.title = 'Horario ocupado';
-                
-                if (!estaBloqueado) {
+                    const estaOcupado = ocupados.includes(b.h);
+                    const estaBloqueado = estaOcupado || yaPaso;
+                    const slot = document.createElement('div');
+                    slot.className = `btn-slot-select ${estaBloqueado ? 'bloqueado' : ''}`;
+                    slot.innerText = b.h;
+                    if (yaPaso) slot.title = 'Esta hora ya pasó';
+                    else if (estaOcupado) slot.title = 'Horario ocupado';
+                    if (!estaBloqueado) { slot.onclick = () => seleccionarHora(slot, b.h, b.f); }
+                    grid.appendChild(slot);
+                });
+            })
+            .catch(() => {
+                grid.innerHTML = '';
+                BLOQUES_HORARIOS.forEach(b => {
+                    const slot = document.createElement('div');
+                    slot.className = 'btn-slot-select';
+                    slot.innerText = b.h;
                     slot.onclick = () => seleccionarHora(slot, b.h, b.f);
-                }
-                grid.appendChild(slot);
+                    grid.appendChild(slot);
+                });
             });
-        })
-        .catch(() => {
-            grid.innerHTML = '';
-            BLOQUES_HORARIOS.forEach(b => {
-                const slot = document.createElement('div');
-                slot.className = 'btn-slot-select';
-                slot.innerText = b.h;
-                slot.onclick = () => seleccionarHora(slot, b.h, b.f);
-                grid.appendChild(slot);
-            });
-        });
-}
+    }
 
     let horasSeleccionadas = [];
     function seleccionarHora(btn, inicio, fin) {
       if (btn.classList.contains('bloqueado')) return;
-
       if (btn.classList.contains('seleccionado')) {
         btn.classList.remove('seleccionado');
         horasSeleccionadas = horasSeleccionadas.filter(h => h.inicio !== inicio);
       } else {
-        if (horasSeleccionadas.length >= 2) {
-          alert('Solo puedes seleccionar un máximo de 2 horas.');
-          return;
-        }
+        if (horasSeleccionadas.length >= 2) { alert('Solo puedes seleccionar un máximo de 2 horas.'); return; }
         btn.classList.add('seleccionado');
         horasSeleccionadas.push({ inicio: inicio, fin: fin });
       }
-
       document.getElementById('tagMax2Horas').style.display = (horasSeleccionadas.length === 2) ? 'inline-block' : 'none';
-
       if (horasSeleccionadas.length > 0) {
         horasSeleccionadas.sort((a, b) => a.inicio.localeCompare(b.inicio));
         document.getElementById('wizardHoraInicio').value = horasSeleccionadas[0].inicio;
@@ -1001,8 +904,7 @@ function validarFechaNoPasada(input) {
     }
 
     function irALaboratorio() {
-      pasoActual = 1;
-      ocultarTodasSecciones();
+      pasoActual = 1; ocultarTodasSecciones();
       document.getElementById('seccionPasoLab').style.display = 'block';
       actualizarIndicadores(1);
     }
@@ -1016,25 +918,22 @@ function validarFechaNoPasada(input) {
     }
 
     function irAIntegrantes() {
-      pasoActual = 2;
-      ocultarTodasSecciones();
+      pasoActual = 2; ocultarTodasSecciones();
       document.getElementById('seccionPasoIntegrantes').style.display = 'block';
       actualizarIndicadores(2);
     }
 
     function validarIntegrantesYSiguiente() {
       tieneInsumosActivo = document.getElementById('checkSolicitarInsumos').checked;
-      if (tieneInsumosActivo) {
-        irAInsumos();
-      } else {
+      if (tieneInsumosActivo) { irAInsumos(); } 
+      else {
         document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]').forEach(c => c.checked = false);
         irAEPPs();
       }
     }
 
     function irAInsumos() {
-      pasoActual = 3;
-      ocultarTodasSecciones();
+      pasoActual = 3; ocultarTodasSecciones();
       document.getElementById('seccionPasoInsumos').style.display = 'block';
       actualizarIndicadores(3);
     }
@@ -1044,8 +943,7 @@ function validarFechaNoPasada(input) {
     }
 
     function irAEPPs() {
-      pasoActual = tieneInsumosActivo ? 4 : 3;
-      ocultarTodasSecciones();
+      pasoActual = tieneInsumosActivo ? 4 : 3; ocultarTodasSecciones();
       document.getElementById('seccionPasoEpps').style.display = 'block';
       actualizarIndicadores(pasoActual);
     }
@@ -1065,7 +963,6 @@ function validarFechaNoPasada(input) {
       const codigo = this.value.trim().toUpperCase();
       const msgError = document.getElementById('msgErrorBusqueda');
       const inputNombre = document.getElementById('inputNombreAutocompletado');
-
       if (codigo.length >= 6) {
         fetch('/api/alumnos/buscar/' + encodeURIComponent(codigo))
           .then(res => res.json())
@@ -1094,28 +991,17 @@ function validarFechaNoPasada(input) {
     });
 
     function agregarIntegrantePorCodigo() {
-      if (totalIntegrantes >= 5) {
-        alert('Límite alcanzado: Máximo 5 integrantes por reserva.');
-        return;
-      }
+      if (totalIntegrantes >= 5) { alert('Límite alcanzado: Máximo 5 integrantes por reserva.'); return; }
       const inputNombre = document.getElementById('inputNombreAutocompletado');
       const inputCodigo = document.getElementById('inputCodigoBuscar');
       const codigoReal = inputNombre.getAttribute('data-codigo-real') || inputCodigo.value.trim().toUpperCase();
       const nombre = inputNombre.value.trim();
 
-      if (!codigoReal || !nombre) {
-        alert('Ingresa un código o DNI registrado.');
-        return;
-      }
-
-      if (codigosAgregados.has(codigoReal)) {
-        alert('Este integrante ya se encuentra en la lista.');
-        return;
-      }
+      if (!codigoReal || !nombre) { alert('Ingresa un código o DNI registrado.'); return; }
+      if (codigosAgregados.has(codigoReal)) { alert('Este integrante ya se encuentra en la lista.'); return; }
 
       const lista = document.getElementById('listaIntegrantesAgregados');
       const iniciales = nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-
       const html = `
         <div class="tarjeta-integrante-fila" id="integrante_${codigoReal}">
           <div class="avatar-circulo-estudiante">${iniciales}</div>
@@ -1127,12 +1013,10 @@ function validarFechaNoPasada(input) {
           <input type="hidden" name="integrantesCodigos" value="${codigoReal}" />
         </div>
       `;
-
       lista.insertAdjacentHTML('beforeend', html);
       codigosAgregados.add(codigoReal);
       totalIntegrantes++;
       document.getElementById('contadorBadgeIntegrantes').innerText = `${totalIntegrantes}/5`;
-
       inputCodigo.value = '';
       inputNombre.value = '';
       inputNombre.removeAttribute('data-codigo-real');
@@ -1150,11 +1034,7 @@ function validarFechaNoPasada(input) {
 
     function actualizarContadorInsumos(chk) {
       const checks = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
-      if (checks.length > 10) {
-        alert('Máximo 10 insumos.');
-        chk.checked = false;
-        return;
-      }
+      if (checks.length > 10) { alert('Máximo 10 insumos.'); chk.checked = false; return; }
       document.getElementById('contadorInsumosBadge').innerText = `${checks.length}/10`;
     }
 
@@ -1191,36 +1071,28 @@ function validarFechaNoPasada(input) {
       });
     }
 
-        function cargarBoletaResumen() {
+    function cargarBoletaResumen() {
       calcularCostos();
-
       const lab = labSeleccionadoActual || { nombre: 'Laboratorio', cubiculo: 'S/C' };
       document.getElementById('boletaLabCubiculo').innerText = `${lab.nombre} · ${lab.cubiculo}`;
-
       document.getElementById('boletaFechaTxt').innerText = document.getElementById('wizardFechaEnvio').value;
       const hIni = document.getElementById('wizardHoraInicio').value || '08:00';
       const hFin = document.getElementById('wizardHoraFin').value || '10:00';
       document.getElementById('boletaHorarioTxt').innerText = `${hIni} – ${hFin}`;
 
-      // ⭐ NUEVO: Armar la lista de integrantes dinámicamente
       const integrantesFilas = document.querySelectorAll('#listaIntegrantesAgregados .tarjeta-integrante-fila');
       let nombresIntegrantes = [];
-      
       integrantesFilas.forEach(fila => {
           const nombre = fila.querySelector('.nombre-estud-txt').innerText;
           nombresIntegrantes.push(nombre);
       });
-
-      // Actualizar el título (ej. "Integrantes (2)") y la lista de nombres
       document.getElementById('boletaIntegrantesTitulo').innerText = `Integrantes (${nombresIntegrantes.length})`;
       document.getElementById('boletaIntegrantesNombres').innerText = nombresIntegrantes.join(', ');
 
-      // ... (el resto de tu código para insumos y EPPs se queda igual) ...
       const insumos = document.querySelectorAll('#listaInsumosContenedor input[type="checkbox"]:checked');
       const bloqueInsumos = document.getElementById('boletaSeccionInsumosBloque');
       const listaUl = document.getElementById('boletaInsumosLista');
       listaUl.innerHTML = '';
-
       if (insumos.length > 0 && tieneInsumosActivo) {
         bloqueInsumos.style.display = 'block';
         document.getElementById('boletaInsumosTitulo').innerText = `Insumos (${insumos.length})`;
@@ -1248,86 +1120,52 @@ function validarFechaNoPasada(input) {
       }
     }
 
-    
-let enviandoReserva = false;
+    let enviandoReserva = false;
+    async function validarYEnviarReserva() {
+      if (enviandoReserva) return;
+      const idLab = document.getElementById('wizardIdLab').value;
+      const fecha = document.getElementById('wizardFechaEnvio').value;
+      const inicio = document.getElementById('wizardHoraInicio').value;
+      const fin = document.getElementById('wizardHoraFin').value;
 
-async function validarYEnviarReserva() {
-  if (enviandoReserva) return;
+      if (!idLab || !fecha || !inicio || !fin) { alert('Selecciona el laboratorio, la fecha y el horario.'); return; }
 
-  const idLab = document.getElementById('wizardIdLab').value;
-  const fecha = document.getElementById('wizardFechaEnvio').value;
-  const inicio = document.getElementById('wizardHoraInicio').value;
-  const fin = document.getElementById('wizardHoraFin').value;
+      try {
+        const respuesta = await fetch(`/api/laboratorios/${encodeURIComponent(idLab)}/horarios-ocupados?fecha=${encodeURIComponent(fecha)}`);
+        if (!respuesta.ok) throw new Error('No se pudieron consultar los horarios.');
+        const ocupados = await respuesta.json();
+        const bloquesDelIntervalo = BLOQUES_HORARIOS.filter(b => b.h >= inicio && b.h < fin);
+        const bloquesEnConflicto = bloquesDelIntervalo.filter(b => ocupados.includes(b.h));
 
-  if (!idLab || !fecha || !inicio || !fin) {
-    alert('Selecciona el laboratorio, la fecha y el horario.');
-    return;
-  }
-
-  try {
-    const respuesta = await fetch(
-      `/api/laboratorios/${encodeURIComponent(idLab)}/horarios-ocupados?fecha=${encodeURIComponent(fecha)}`
-    );
-
-    if (!respuesta.ok) {
-      throw new Error('No se pudieron consultar los horarios.');
+        if (bloquesEnConflicto.length > 0) {
+          alert('¡Cruce de horario!\n\nEl laboratorio ya tiene una reserva activa en el horario seleccionado. Elige otro horario antes de continuar.');
+          cargarHorariosWizard();
+          return;
+        }
+        enviandoReserva = true;
+        document.getElementById('formReservaCompleta').submit();
+      } catch (error) {
+        console.error(error);
+        alert('No pudimos verificar la disponibilidad del laboratorio. Por seguridad, la reserva no se ha enviado. Inténtalo nuevamente.');
+      }
     }
 
-    const ocupados = await respuesta.json();
-
-    // Detectar cualquier bloque ocupado dentro del intervalo elegido.
-    const bloquesDelIntervalo = BLOQUES_HORARIOS.filter(
-      b => b.h >= inicio && b.h < fin
-    );
-
-    const bloquesEnConflicto = bloquesDelIntervalo.filter(
-      b => ocupados.includes(b.h)
-    );
-
-    if (bloquesEnConflicto.length > 0) {
-      alert(
-        '¡Cruce de horario!\n\n' +
-        'El laboratorio ya tiene una reserva activa en el horario seleccionado. ' +
-        'Elige otro horario antes de continuar.'
-      );
-
-      // Actualizar los horarios disponibles del laboratorio.
-      cargarHorariosWizard();
-      return;
+    function procesarBotonFinalBoleta() {
+      if (!document.getElementById('checkAceptoTerminos').checked) {
+        alert('Debes aceptar los términos y condiciones para continuar.');
+        return;
+      }
+      if (costoEppsTotal > 0) {
+        document.getElementById('modalPagoReserva').style.display = 'flex';
+      } else {
+        document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
+        validarYEnviarReserva();
+      }
     }
 
-    // La validación definitiva del límite diario y del cruce
-    // también debe hacerse en el servidor Java.
-    enviandoReserva = true;
-    document.getElementById('formReservaCompleta').submit();
-
-  } catch (error) {
-    console.error(error);
-    alert(
-      'No pudimos verificar la disponibilidad del laboratorio. ' +
-      'Por seguridad, la reserva no se ha enviado. Inténtalo nuevamente.'
-    );
-  }
-}
-
-function procesarBotonFinalBoleta() {
-  if (!document.getElementById('checkAceptoTerminos').checked) {
-    alert('Debes aceptar los términos y condiciones para continuar.');
-    return;
-  }
-
-  if (costoEppsTotal > 0) {
-    document.getElementById('modalPagoReserva').style.display = 'flex';
-  } else {
-    document.getElementById('inputMetodoPagoSeleccionado').value = 'GRATUITO';
-    validarYEnviarReserva();
-  }
-}
-
-function enviarFormularioFinal() {
-  validarYEnviarReserva();
-}
-
+    function enviarFormularioFinal() {
+      validarYEnviarReserva();
+    }
 
     function cerrarModalPago() {
       document.getElementById('modalPagoReserva').style.display = 'none';
@@ -1339,82 +1177,76 @@ function enviarFormularioFinal() {
       document.getElementById('inputMetodoPagoSeleccionado').value = met;
     }
 
+    // ⭐ FUNCIÓN ARREGLADA PARA ABRIR EL MODAL Y CANCELAR
     function abrirModalResumen(tarjeta) {
-    const idReserva = tarjeta.getAttribute('data-id-reserva');
-    if (!idReserva) return;
+        const idReserva = tarjeta.getAttribute('data-id-reserva');
+        if (!idReserva) return;
+        
+        // Asignar la acción correcta al botón de cancelar
+        const formCancelar = document.getElementById('formCancelarReserva');
+        if (formCancelar) {
+            formCancelar.action = `/alumno/reservas/${idReserva}/cancelar`;
+        }
 
-
-    const formCancelar = document.getElementById('formCancelarReserva');
-    if (formCancelar) {
-        formCancelar.action = `/alumno/reservas/${idReserva}/cancelar`;
-    }
-    
-    document.getElementById('resumenId').innerText = idReserva;
-    
-    document.getElementById('resumenId').innerText = idReserva;
-    document.getElementById('inputCancelarId').value = idReserva; // Para el form de cancelar
-    document.getElementById('modalResumenReserva').style.display = 'flex';
-
-    // Reutilizamos tu endpoint de la API
-    fetch(`/alumno/api/recibo/${idReserva}`)
-        .then(res => res.json())
-        .then(data => {
-            if (!data.encontrado) {
-                alert('No se encontró la reserva.');
-                cerrarModalResumen();
-                return;
-            }
-            
-            document.getElementById('resumenLab').innerText = data.laboratorio;
-            document.getElementById('resumenCubiculo').innerText = data.cubiculo;
-            document.getElementById('resumenFecha').innerText = data.fecha;
-            document.getElementById('resumenHorario').innerText = data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
-            
-            const estadoBadge = document.getElementById('resumenEstado');
-            estadoBadge.innerText = data.estado;
-            estadoBadge.className = 'badge-estado-recibo';
-            if (data.estado === 'CONFIRMADA') estadoBadge.classList.add('confirmada');
-            else if (data.estado === 'EN_USO') estadoBadge.classList.add('enuso');
-            
-            // Integrantes
-            const contInteg = document.getElementById('resumenIntegrantes');
-            contInteg.innerHTML = '';
-            data.integrantes.forEach(i => {
-                contInteg.insertAdjacentHTML('beforeend', `
-                    <div class="item-integrante-recibo">
-                        <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
-                        <div>
-                            <strong>${i.nombre}</strong>
-                            <span>${i.codigo}</span>
-                        </div>
-                    </div>
-                `);
-            });
-            
-            // Insumos
-            const contItems = document.getElementById('resumenItems');
-            const seccionItems = document.getElementById('seccionInsumosResumen');
-            contItems.innerHTML = '';
-            if (data.items.length === 0) {
-                seccionItems.style.display = 'none';
-            } else {
-                seccionItems.style.display = 'block';
-                data.items.forEach(item => {
-                    contItems.insertAdjacentHTML('beforeend', `
-                        <div class="item-recibo">
-                            <span class="nombre-item-recibo">${item.nombre}</span>
-                            <span class="cantidad-item-recibo">x${item.cantidad}</span>
+        document.getElementById('resumenId').innerText = idReserva;
+        document.getElementById('modalResumenReserva').style.display = 'flex';
+        
+        fetch(`/alumno/api/recibo/${idReserva}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.encontrado) {
+                    alert('No se encontró la reserva.');
+                    cerrarModalResumen();
+                    return;
+                }
+                
+                document.getElementById('resumenLab').innerText = data.laboratorio;
+                document.getElementById('resumenCubiculo').innerText = data.cubiculo;
+                document.getElementById('resumenFecha').innerText = data.fecha;
+                document.getElementById('resumenHorario').innerText = data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
+                
+                const estadoBadge = document.getElementById('resumenEstado');
+                estadoBadge.innerText = data.estado;
+                estadoBadge.className = 'badge-estado-recibo';
+                if (data.estado === 'CONFIRMADA') estadoBadge.classList.add('confirmada');
+                else if (data.estado === 'EN_USO') estadoBadge.classList.add('enuso');
+                
+                const contInteg = document.getElementById('resumenIntegrantes');
+                contInteg.innerHTML = '';
+                data.integrantes.forEach(i => {
+                    contInteg.insertAdjacentHTML('beforeend', `
+                        <div class="item-integrante-recibo">
+                            <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
+                            <div>
+                                <strong>${i.nombre}</strong>
+                                <span>${i.codigo}</span>
+                            </div>
                         </div>
                     `);
                 });
-            }
-        });
-}
+                
+                const contItems = document.getElementById('resumenItems');
+                const seccionItems = document.getElementById('seccionInsumosResumen');
+                contItems.innerHTML = '';
+                if (data.items.length === 0) {
+                    seccionItems.style.display = 'none';
+                } else {
+                    seccionItems.style.display = 'block';
+                    data.items.forEach(item => {
+                        contItems.insertAdjacentHTML('beforeend', `
+                            <div class="item-recibo">
+                                <span class="nombre-item-recibo">${item.nombre}</span>
+                                <span class="cantidad-item-recibo">x${item.cantidad}</span>
+                            </div>
+                        `);
+                    });
+                }
+            });
+    }
 
-function cerrarModalResumen() {
-    document.getElementById('modalResumenReserva').style.display = 'none';
-}
-    
+    function cerrarModalResumen() {
+        document.getElementById('modalResumenReserva').style.display = 'none';
+    }
   </script>
 </body>
 </html>
