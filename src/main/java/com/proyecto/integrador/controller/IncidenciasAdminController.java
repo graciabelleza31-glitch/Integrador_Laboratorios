@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.modelo.Sancion;
 import com.proyecto.integrador.repository.AlumnoRepository;
+import com.proyecto.integrador.repository.ReservaRepository;
 import com.proyecto.integrador.repository.SancionRepository;
 import com.proyecto.integrador.service.EmailService;
 
@@ -41,6 +42,9 @@ public class IncidenciasAdminController {
 
     @Autowired
     private AlumnoRepository alumnoRepositorio;
+
+    @Autowired 
+    private ReservaRepository reservaRepositorio;
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -207,6 +211,10 @@ public class IncidenciasAdminController {
                 }
             }
         }
+        reservaRepositorio.findById(idReserva).ifPresent(reserva -> {
+            reserva.setEstado("INSPECCIONADA"); 
+            reservaRepositorio.save(reserva);
+        });
         return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
