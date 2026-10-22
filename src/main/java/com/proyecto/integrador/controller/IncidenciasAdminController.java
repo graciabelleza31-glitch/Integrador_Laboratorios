@@ -25,12 +25,16 @@ import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.modelo.Sancion;
 import com.proyecto.integrador.repository.AlumnoRepository;
 import com.proyecto.integrador.repository.SancionRepository;
+import com.proyecto.integrador.service.EmailService;
 
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin/incidencias")
 public class IncidenciasAdminController {
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private SancionRepository sancionRepositorio;
@@ -134,7 +138,7 @@ public class IncidenciasAdminController {
         return "admin-incidencias";
     }
 
-    // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO (PASA A ESTADO 'NOTIFICADA')
+       // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO (PASA A ESTADO 'NOTIFICADA' Y ENVÍA CORREO)
     @PostMapping("/notificar/{idReserva}")
     @ResponseBody
     @Transactional
@@ -144,7 +148,7 @@ public class IncidenciasAdminController {
                 .collect(Collectors.toList());
 
         for (Sancion s : sanciones) {
-            if (!"RESUELTA".equalsIgnoreCase(s.getEstado())) {
+            if (!"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"NOTIFICADA".equalsIgnoreCase(s.getEstado())) {
                 s.setEstado("NOTIFICADA");
                 sancionRepositorio.save(s);
 
@@ -152,8 +156,25 @@ public class IncidenciasAdminController {
                 if (al != null) {
                     al.setEstadoCuenta("BLOQUEADO_POR_DEUDA");
                     alumnoRepositorio.save(al);
+
+                    // 📧 ENVÍO DE CORREO AL ESTUDIANTE CON BREVO
+                    try {
+                        String correoDestino = al.getIdEstud().toLowerCase() + "@utp.edu.pe";
+                        String nombreCompleto = al.getNombre() + " " + al.getApellido();
+                        
+                        // Llamamos al nuevo método de tu EmailService
+                        emailService.enviarCorreoIncidencia(
+                            correoDestino, 
+                            nombreCompleto, 
+                            s.getMotivo(), 
+                            s.getMontoDeuda().toString(), 
+                            idReserva
+                        );
+                        
+                    } catch (Exception e) {
+                        System.out.println("❌ Error enviando correo a " + al.getIdEstud() + ": " + e.getMessage());
+                    }
                 }
-                // AQUÍ PODRÍAS AGREGAR EL emailService.enviarCorreo(al.getCorreo(), ...) SI LO TIENES
             }
         }
         
