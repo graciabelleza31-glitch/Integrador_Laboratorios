@@ -119,12 +119,11 @@
              th:text="${errorReserva}">
         </div>
 
-                <!-- MIS RESERVAS ACTIVAS -->
+                 <!-- MIS RESERVAS ACTIVAS -->
         <div th:if="${not #lists.isEmpty(misReservas)}" class="bloque-mis-reservas">
           <span class="subtitulo-seccion-gris">MIS RESERVAS ACTIVAS</span>
           <div class="lista-mis-reservas">
             
-            <!-- Le agregamos la clase "clickeable", el atributo data-id-reserva y el onclick -->
             <div th:each="r : ${misReservas}" 
                  class="tarjeta-reserva-activa clickeable" 
                  style="cursor: pointer; transition: transform 0.2s;"
@@ -642,6 +641,8 @@
 
   <!-- SCRIPT CON LIMPIEZA TOTAL AL SALIR -->
   <script>
+
+
     const BLOQUES_HORARIOS = [
       { h: "07:00", f: "08:00" }, { h: "08:00", f: "09:00" }, { h: "09:00", f: "10:00" },
       { h: "10:00", f: "11:00" }, { h: "11:00", f: "12:00" }, { h: "12:00", f: "13:00" },
@@ -653,7 +654,9 @@
 
     // ========== INICIALIZAR FECHA ACTUAL Y BLOQUEAR DÍAS PASADOS ==========
 document.addEventListener("DOMContentLoaded", function () {
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     
     // Obtener la fecha de HOY en formato YYYY-MM-DD
     const hoy = new Date();
@@ -1339,6 +1342,7 @@ function enviarFormularioFinal() {
     function abrirModalResumen(tarjeta) {
     const idReserva = tarjeta.getAttribute('data-id-reserva');
     if (!idReserva) return;
+
 
     const formCancelar = document.getElementById('formCancelarReserva');
     if (formCancelar) {
