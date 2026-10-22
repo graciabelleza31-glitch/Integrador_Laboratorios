@@ -147,7 +147,7 @@
           </div>
         </div>
 
-        <!-- CUADRÍCULA DE LABORATORIOS -->
+                <!-- CUADRÍCULA DE LABORATORIOS -->
         <div class="bloque-todos-labs">
           <div class="barra-filtros">
             <button type="button" class="btn-filtro activo" onclick="filtrarLabs('TODOS', this)">Todos</button>
@@ -156,19 +156,16 @@
             <button type="button" class="btn-filtro" onclick="filtrarLabs('Física', this)">Física</button>
           </div>
 
-         
-
           <span class="subtitulo-seccion-gris">TODOS LOS LABORATORIOS</span>
 
           <!-- Mensaje si no hay laboratorios para su carrera -->
-          <div th:if="${#lists.isEmpty(laboratorios)}" style="text-align: center; padding: 3rem; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #e2e8f0;">
+          <div th:if="${#lists.isEmpty(laboratorios)}" style="text-align: center; padding: 3rem; color: #64748b; background: white; border-radius: 12px; border: 1px dashed #e2e8f0; margin-bottom: 2rem;">
             <span style="font-size: 2.5rem;">🔬</span>
             <p style="margin-top: 1rem; font-weight: 600;">No hay laboratorios disponibles para tu carrera.</p>
           </div>
 
+          <!-- Grilla de Laboratorios -->
           <div class="rejilla-laboratorios" th:unless="${#lists.isEmpty(laboratorios)}">
-             <!-- ... tus tarjetas de lab ... -->
-          <div class="rejilla-laboratorios">
             <div th:each="lab : ${laboratorios}" 
                  class="tarjeta-lab-grid" 
                  th:classappend="${estaBloqueado ? 'tarjeta-deshabilitada' : ''}"
@@ -626,13 +623,13 @@
         
         <div class="pie-modal-recibo" style="justify-content: space-between;">
             <!-- Formulario para cancelar -->
-            <form id="formCancelarReserva" th:action="@{/alumno/reservas/cancelar}" method="post" style="margin: 0;">
-                <input type="hidden" name="idReserva" id="inputCancelarId" value="" />
-                <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
-                        onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
-                    Cancelar Reserva
-                </button>
-            </form>
+            <form id="formCancelarReserva" th:action="@{'/alumno/reservas/' + ${resumenId.text} + '/cancelar'}" method="post" style="margin: 0;">
+    <input type="hidden" name="idReserva" id="inputCancelarId" value="" />
+    <button type="submit" class="btn-cancelar" style="background-color: #fee2e2; color: #ef4444; font-weight: 700; border: 1px solid #fca5a5; padding: 0.7rem 1.5rem;" 
+            onclick="return confirm('¿Estás seguro de que deseas cancelar esta reserva? Esta acción liberará el espacio.')">
+        Cancelar Reserva
+    </button>
+</form>
             <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalResumen()">Cerrar</button>
         </div>
         
@@ -1342,11 +1339,18 @@ function enviarFormularioFinal() {
     function abrirModalResumen(tarjeta) {
     const idReserva = tarjeta.getAttribute('data-id-reserva');
     if (!idReserva) return;
+
+    const formCancelar = document.getElementById('formCancelarReserva');
+    if (formCancelar) {
+        formCancelar.action = `/alumno/reservas/${idReserva}/cancelar`;
+    }
+    
+    document.getElementById('resumenId').innerText = idReserva;
     
     document.getElementById('resumenId').innerText = idReserva;
     document.getElementById('inputCancelarId').value = idReserva; // Para el form de cancelar
     document.getElementById('modalResumenReserva').style.display = 'flex';
-    
+
     // Reutilizamos tu endpoint de la API
     fetch(`/alumno/api/recibo/${idReserva}`)
         .then(res => res.json())

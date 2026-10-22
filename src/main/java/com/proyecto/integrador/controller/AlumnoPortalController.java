@@ -707,7 +707,7 @@ public java.util.Map<String, Object> obtenerRecibo(@PathVariable("idReserva") St
 @GetMapping("/api/estadisticas")
 @org.springframework.web.bind.annotation.ResponseBody
 @Transactional(readOnly = true)
-public java.util.Map<String, Object> obtenerEstadisticas(HttpSession sesion) {
+public java.util.Map<String, Object> obtenerEstadisticas(@RequestParam(value = "mes", required = false) String mes, HttpSession sesion) {
     java.util.Map<String, Object> resp = new java.util.HashMap<>();
     
     Object usuario = sesion.getAttribute("usuarioLogueado");
@@ -716,50 +716,106 @@ public java.util.Map<String, Object> obtenerEstadisticas(HttpSession sesion) {
     Alumno alumno = (Alumno) usuario;
     List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
     
-    // Últimos 6 meses
-    java.util.Map<String, Integer> reservasPorMes = new java.util.LinkedHashMap<>();
-    java.util.Map<String, Integer> horasPorMes = new java.util.LinkedHashMap<>();
-    java.util.Map<String, Integer> materialesPorMes = new java.util.LinkedHashMap<>();
+    // Determinar el mes y año a consultar
+    java.time.LocalDate fechaConsulta;
+    try {
+        fechaConsulta = (mes != null && !mes.isEmpty()) ? java.time.LocalDate.parse(mes + "-01") : java.time.LocalDate.now();
+    } catch (Exception e) {
+        fechaConsulta = java.time.LocalDate.now();
+    }
     
-    java.time.LocalDate hoy = java.time.LocalDate.now();
-    java.util.Locale espLocale = new java.util.Locale("es", "PE");
+    int diasEnMes = fechaConsulta.lengthOfMonth();
+    java.util.Map<Integer, Integer> reservasPorDia = new java.util.LinkedHashMap<>();
+    java.util.Map<Integer, Integer> horasPorDia = new java.util.LinkedHashMap<>();
+    java.util.Map<Integer, Integer> materialesPorDia = new java.util.LinkedHashMap<>();
     
-    for (int i = 5; i >= 0; i--) {
-        java.time.LocalDate mes = hoy.minusMonths(i);
-        String key = mes.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, espLocale) + " " + mes.getYear();
-        key = key.substring(0, 1).toUpperCase() + key.substring(1).replace(".", "");
-        reservasPorMes.put(key, 0);
-        horasPorMes.put(key, 0);
-        materialesPorMes.put(key, 0);
+    // Inicializar todos los días en 0
+    for (int i = 1; i <= diasEnMes; i++) {
+        reservasPorDia.put(i, 0);
+        horasPorDia.put(i, 0);
+        materialesPorDia.put(i, 0);
     }
     
     for (ReservaIntegrante ri : participaciones) {
         Reserva r = ri.getReserva();
         if (r == null || r.getFechaReserva() == null) continue;
         
-        for (int i = 5; i >= 0; i--) {
-            java.time.LocalDate mes = hoy.minusMonths(i);
-            if (r.getFechaReserva().getMonth() == mes.getMonth() && r.getFechaReserva().getYear() == mes.getYear()) {
-                String key = mes.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, espLocale) + " " + mes.getYear();
-                key = key.substring(0, 1).toUpperCase() + key.substring(1).replace(".", "");
-                
-                reservasPorMes.put(key, reservasPorMes.get(key) + 1);
-                
-                if (r.getHoraInicio() != null && r.getHoraFin() != null) {
-                    long horas = java.time.Duration.between(r.getHoraInicio(), r.getHoraFin()).toHours();
-                    horasPorMes.put(key, horasPorMes.get(key) + (int) horas);
-                }
-                
-                List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(r.getIdReserva());
-                materialesPorMes.put(key, materialesPorMes.get(key) + items.size());
+        if (r.getFechaReserva().getMonth() == fechaConsulta.getMonth() && 
+            r.getFechaReserva().getYear() == fechaConsulta.getYear()) {
+            
+            int dia = r.getFechaReserva().getDayOfMonth();
+            reservasPorDia.put(dia, reservasPorDia.get(dia) + 1);
+            
+            if (r.getHoraInicio() != null && r.getHoraFin() != null) {
+                long horas = java.time.Duration.between(r.getHoraInicio(), r.getHoraFin()).toHours();
+                horasPorDia.put(dia, horasPorDia.get(dia) + (int) horas);
             }
+            
+            List<ReservaItem> items = reservaItemRepositorio.findByReserva_IdReserva(r.getIdReserva());
+            materialesPorDia.put(dia, materialesPorDia.get(dia) + items.size());
         }
     }
     
-    resp.put("labels", new ArrayList<>(reservasPorMes.keySet()));
-    resp.put("reservas", new ArrayList<>(reservasPorMes.values()));
-    resp.put("horas", new ArrayList<>(horasPorMes.values()));
-    resp.put("materiales", new ArrayList<>(materialesPorMes.values()));
+    resp.put("labels", new ArrayList<>(reservasPorDia.keySet())); // Días del 1 al 31
+    resp.put("reservas", new ArrayList<>(reservasPorDia.values()));
+    resp.put("horas", new ArrayList<>(horasPorDia.values()));
+    resp.put("materiales", new ArrayList<>(materialesPorDia.values()));
+    
+    return resp;
+}
+
+@GetMapping("/api/incidencia/{idSancion}")
+@org.springframework.web.bind.annotation.ResponseBody
+@Transactional(readOnly = true)
+public java.util.Map<String, Object> obtenerDetalleIncidencia(@PathVariable("idSancion") String idSancion) {
+    java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    
+    Optional<Sancion> opt = sancionRepositorio.findById(idSancion);
+    if (opt.isEmpty()) {
+        resp.put("encontrado", false);
+        return resp;
+    }
+    
+    Sancion s = opt.get();
+    resp.put("encontrado", true);
+    resp.put("idSancion", s.getIdSancion());
+    resp.put("motivo", s.getMotivo());
+    resp.put("monto", s.getMontoDeuda());
+    resp.put("estado", s.getEstado());
+    
+    // Datos de la reserva y lab
+    if (s.getReserva() != null) {
+        resp.put("idReserva", s.getReserva().getIdReserva());
+        resp.put("laboratorio", s.getReserva().getLaboratorio() != null ? s.getReserva().getLaboratorio().getNombre() : "Laboratorio");
+        resp.put("cubiculo", s.getReserva().getLaboratorio() != null ? s.getReserva().getLaboratorio().getUbicacionCubiculo() : "S/C");
+        resp.put("fechaReserva", s.getReserva().getFechaReserva() != null ? s.getReserva().getFechaReserva().toString() : "");
+        resp.put("horario", s.getReserva().getHoraInicio() + " - " + s.getReserva().getHoraFin());
+        
+        // Integrantes
+        List<ReservaIntegrante> integrantes = reservaIntegranteRepositorio.findByReserva_IdReserva(s.getReserva().getIdReserva());
+        List<java.util.Map<String, String>> listaIntegrantes = new ArrayList<>();
+        for (ReservaIntegrante ri : integrantes) {
+            if (ri.getAlumno() != null) {
+                java.util.Map<String, String> m = new java.util.HashMap<>();
+                m.put("nombre", ri.getAlumno().getNombre() + " " + ri.getAlumno().getApellido());
+                m.put("codigo", ri.getAlumno().getIdEstud());
+                listaIntegrantes.add(m);
+            }
+        }
+        resp.put("integrantes", listaIntegrantes);
+    }
+    
+    // Datos de la boleta/pago (si ya está resuelta)
+    List<Boleta> boletas = boletaRepositorio.findAll().stream()
+            .filter(b -> b.getReserva() != null && b.getReserva().getIdReserva().equals(s.getReserva().getIdReserva()))
+            .toList();
+            
+    if (!boletas.isEmpty()) {
+        Boleta b = boletas.get(0);
+        resp.put("montoPagado", b.getTotal());
+        resp.put("metodoPago", b.getTipoOperacion());
+        resp.put("fechaPago", b.getFechaEmision().toString());
+    }
     
     return resp;
 }

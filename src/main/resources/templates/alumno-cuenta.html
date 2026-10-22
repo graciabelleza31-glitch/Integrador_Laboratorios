@@ -121,7 +121,11 @@
         </div>
 
         <div class="lista-historial-reservas" th:unless="${historialIncidencias.isEmpty()}">
-            <div class="fila-historial-reserva" th:each="incidencia : ${historialIncidencias}">
+            <div class="fila-historial-reserva clickeable" 
+     style="cursor: pointer;"
+     th:each="incidencia : ${historialIncidencias}"
+     th:attr="data-id-sancion=${incidencia.idSancion}"
+     onclick="abrirModalIncidencia(this)">
                 <div class="info-historial">
                     <!-- Motivo con la primera letra en mayúscula -->
                     <span class="nombre-lab-historial" style="text-transform: capitalize;" th:text="${incidencia.motivo}">Motivo de incidencia</span>
@@ -165,18 +169,18 @@
   </div>
 
   <!-- MODAL RECIBO DE RESERVA -->
-  <div id="modalRecibo" class="fondo-modal-oscuro" style="display: none;">
-      <div class="tarjeta-modal modal-recibo-contenedor">
+    <div id="modalRecibo" class="fondo-modal-oscuro" style="display: none;">
+        <div class="tarjeta-modal modal-recibo-contenedor">
           
-          <div class="cabecera-modal-recibo">
-              <div>
+            <div class="cabecera-modal-recibo">
+                <div>
                   <h3 class="titulo-modal-recibo">Recibo de Reserva</h3>
                   <p class="subtitulo-modal-recibo" id="reciboId">RES001</p>
               </div>
-              <button type="button" class="btn-cerrar-recibo" onclick="cerrarRecibo()">✕</button>
-          </div>
+                <button type="button" class="btn-cerrar-recibo" onclick="cerrarRecibo()">✕</button>
+            </div>
           
-          <div class="cuerpo-modal-recibo">
+            <div class="cuerpo-modal-recibo">
               <!-- Encabezado azul con lab -->
               <div class="cabecera-azul-recibo">
                   <span class="lbl-recibo">LABORATORIO</span>
@@ -227,7 +231,79 @@
           </div>
           
       </div>
-  </div>
+    </div>
+
+    <!-- MODAL DETALLE DE INCIDENCIA -->
+<div id="modalDetalleIncidencia" class="fondo-modal-oscuro" style="display: none;">
+    <div class="tarjeta-modal modal-recibo-contenedor">
+        
+        <div class="cabecera-modal-recibo">
+            <div>
+                <h3 class="titulo-modal-recibo">Detalle de Incidencia</h3>
+                <p class="subtitulo-modal-recibo" id="incId">S001</p>
+            </div>
+            <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalIncidencia()">✕</button>
+        </div>
+        
+        <div class="cuerpo-modal-recibo">
+            <div class="cabecera-azul-recibo">
+                <span class="lbl-recibo">MOTIVO DE LA INCIDENCIA</span>
+                <strong id="incMotivo" class="nombre-lab-recibo" style="font-size: 1rem; line-height: 1.3;">Se rompió...</strong>
+            </div>
+            
+            <div class="fila-meta-recibo">
+                <div class="col-meta-recibo">
+                    <span class="lbl-meta-recibo">RESERVA</span>
+                    <strong id="incReserva">RES001</strong>
+                </div>
+                <div class="col-meta-recibo">
+                    <span class="lbl-meta-recibo">FECHA</span>
+                    <strong id="incFecha">2026-10-22</strong>
+                </div>
+                <div class="col-meta-recibo">
+                    <span class="lbl-meta-recibo">ESTADO</span>
+                    <span id="incEstado" class="badge-estado-recibo">PENDIENTE</span>
+                </div>
+            </div>
+
+            <div class="seccion-recibo">
+                <span class="titulo-seccion-recibo">Laboratorio</span>
+                <div style="font-size: 0.9rem; color: #334155;">
+                    <strong id="incLab">Lab. Química</strong> - <span id="incCubiculo">A-101</span>
+                </div>
+                <div id="incHorario" style="font-size: 0.85rem; color: #64748b;">12:00 - 14:00</div>
+            </div>
+            
+            <div class="seccion-recibo">
+                <span class="titulo-seccion-recibo">Integrantes del Grupo</span>
+                <div id="incIntegrantes" class="lista-integrantes-recibo"></div>
+            </div>
+
+            <div class="seccion-recibo" id="seccionPagoIncidencia">
+                <span class="titulo-seccion-recibo">Información de Pago</span>
+                <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.85rem; color: #64748b;">Monto:</span>
+                        <strong id="incMonto" style="color: #ef4444; font-size: 1.1rem;">S/ 25.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;" id="filaMetodoPago" >
+                        <span style="font-size: 0.85rem; color: #64748b;">Método de pago:</span>
+                        <strong id="incMetodo" style="color: #0f172a;">YAPE</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;" id="filaFechaPago">
+                        <span style="font-size: 0.85rem; color: #64748b;">Fecha de pago:</span>
+                        <strong id="incFechaPago" style="color: #0f172a;">22 Oct 2026</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="pie-modal-recibo">
+            <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalIncidencia()">Cerrar</button>
+        </div>
+        
+    </div>
+</div>
 
   <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
 
@@ -309,14 +385,83 @@ function cerrarRecibo() {
     document.getElementById('modalRecibo').style.display = 'none';
 }
 
+function abrirModalIncidencia(fila) {
+    const idSancion = fila.getAttribute('data-id-sancion');
+    if (!idSancion) return;
+
+    document.getElementById('modalDetalleIncidencia').style.display = 'flex';
+    document.getElementById('incId').innerText = idSancion;
+
+    fetch(`/alumno/api/incidencia/${idSancion}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.encontrado) {
+                alert('No se encontró la incidencia.');
+                cerrarModalIncidencia();
+                return;
+            }
+
+            document.getElementById('incMotivo').innerText = data.motivo;
+            document.getElementById('incReserva').innerText = data.idReserva;
+            document.getElementById('incFecha').innerText = data.fechaReserva;
+            document.getElementById('incLab').innerText = data.laboratorio;
+            document.getElementById('incCubiculo').innerText = data.cubiculo;
+            document.getElementById('incHorario').innerText = data.horario;
+            document.getElementById('incMonto').innerText = 'S/ ' + parseFloat(data.monto).toFixed(2);
+
+            const badge = document.getElementById('incEstado');
+            badge.innerText = data.estado;
+            badge.className = 'badge-estado-recibo';
+            if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') badge.classList.add('confirmada');
+            else if (data.estado === 'NOTIFICADA') badge.classList.add('enuso');
+            else badge.classList.add('cancelada');
+
+            // Mostrar u ocultar info de pago según el estado
+            if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') {
+                document.getElementById('filaMetodoPago').style.display = 'flex';
+                document.getElementById('filaFechaPago').style.display = 'flex';
+                document.getElementById('incMetodo').innerText = data.metodoPago ? data.metodoPago.replace('PAGO_', '') : 'YAPE';
+                document.getElementById('incFechaPago').innerText = data.fechaPago || '—';
+            } else {
+                document.getElementById('filaMetodoPago').style.display = 'none';
+                document.getElementById('filaFechaPago').style.display = 'none';
+            }
+
+            // Integrantes
+            const contInteg = document.getElementById('incIntegrantes');
+            contInteg.innerHTML = '';
+            if (data.integrantes) {
+                data.integrantes.forEach(i => {
+                    contInteg.insertAdjacentHTML('beforeend', `
+                        <div class="item-integrante-recibo">
+                            <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
+                            <div>
+                                <strong>${i.nombre}</strong>
+                                <span>${i.codigo}</span>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+        });
+}
+
+function cerrarModalIncidencia() {
+    document.getElementById('modalDetalleIncidencia').style.display = 'none';
+}
+
 let chartInstance = null;
 let datosEstadisticas = null;
 
 function abrirGrafico(tipo) {
     document.getElementById('modalGrafico').style.display = 'flex';
     
+    // Obtenemos el mes actual del input o de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7); // YYYY-MM
+    
     const cargarDatos = () => {
-        return fetch('/alumno/api/estadisticas')
+        return fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
             .then(res => res.json())
             .then(data => {
                 datosEstadisticas = data;
@@ -324,11 +469,8 @@ function abrirGrafico(tipo) {
             });
     };
     
-    if (!datosEstadisticas) {
-        cargarDatos();
-    } else {
-        dibujarGrafico(tipo);
-    }
+    // Siempre cargar datos nuevos para el mes actual
+    cargarDatos();
 }
 
 function dibujarGrafico(tipo) {
