@@ -98,8 +98,26 @@ public class AlumnoPortalController {
                 || "BLOQUEADO_POR_DEUDA".equals(estadoCuenta)
                 || estadoCuenta.contains("BLOQUEADO_POR_DUEUDA");
 
-        // Listar laboratorios
-        List<Laboratorio> labs = laboratorioRepositorio.findAll();
+        // ⭐ OBTENER CARRERA DEL ALUMNO (cubre si es relación objeto o String directo)
+        String idCarrera = null;
+        try {
+            if (alumno.getCarrera() != null) {
+                idCarrera = alumno.getCarrera().getIdCarrera();
+            }
+        } catch (Exception e) {
+            idCarrera = alumno.getCarrera().getIdCarrera();
+        }
+        if (idCarrera == null) {
+            idCarrera = alumno.getCarrera().getIdCarrera();
+        }
+
+        // ⭐ LISTAR LABORATORIOS PERMITIDOS SEGÚN LA CARRERA
+        List<Laboratorio> labs = (idCarrera != null)
+                ? laboratorioRepositorio.findLaboratoriosPermitidosPorCarrera(idCarrera)
+                : new ArrayList<>();
+
+        // Si la lista está vacía (como en Comunicaciones C0004), no puede reservar
+        boolean puedeReservarPorCarrera = !labs.isEmpty();
 
         // Separar productos entre Insumos y EPPs
         List<Producto> todosLosProductos = productoRepositorio.findAll();
@@ -117,43 +135,39 @@ public class AlumnoPortalController {
         // Obtener reservas activas en las que participa el alumno
         List<ReservaIntegrante> participaciones = reservaIntegranteRepositorio.findByAlumno_IdEstud(alumno.getIdEstud());
         LocalDate hoy = LocalDate.now();
-List<String> idsReservasHoy = new ArrayList<>();
+        List<String> idsReservasHoy = new ArrayList<>();
 
-for (ReservaIntegrante ri : participaciones) {
-    Reserva r = ri.getReserva();
+        for (ReservaIntegrante ri : participaciones) {
+            Reserva r = ri.getReserva();
 
-    if (r == null || r.getFechaReserva() == null
-            || !hoy.equals(r.getFechaReserva())) {
-        continue;
-    }
+            if (r == null || r.getFechaReserva() == null || !hoy.equals(r.getFechaReserva())) {
+                continue;
+            }
 
-    String estado = r.getEstado() == null
-            ? ""
-            : r.getEstado().trim().toUpperCase();
+            String estado = r.getEstado() == null ? "" : r.getEstado().trim().toUpperCase();
 
-    if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) {
-        continue;
-    }
+            if (estado.equals("CANCELADA") || estado.equals("CANCELADO")) {
+                continue;
+            }
 
-    if (!idsReservasHoy.contains(r.getIdReserva())) {
-        idsReservasHoy.add(r.getIdReserva());
-    }
-}
+            if (!idsReservasHoy.contains(r.getIdReserva())) {
+                idsReservasHoy.add(r.getIdReserva());
+            }
+        }
 
-int reservasHoy = idsReservasHoy.size();
+        int reservasHoy = idsReservasHoy.size();
 
-modelo.addAttribute("reservasHoy", reservasHoy);
-modelo.addAttribute("reservasRestantes", Math.max(0, 2 - reservasHoy));
-modelo.addAttribute("limiteDiarioAlcanzado", reservasHoy >= 2);
+        modelo.addAttribute("reservasHoy", reservasHoy);
+        modelo.addAttribute("reservasRestantes", Math.max(0, 2 - reservasHoy));
+        modelo.addAttribute("limiteDiarioAlcanzado", reservasHoy >= 2);
 
         List<ReservaActivaDto> misReservas = new ArrayList<>();
 
-                for (ReservaIntegrante ri : participaciones) {
+        for (ReservaIntegrante ri : participaciones) {
             Reserva r = ri.getReserva();
             
-            // ⭐ NUEVO: Solo mostrar si es de HOY o del FUTURO
+            // ⭐ Solo mostrar si es de HOY o del FUTURO
             if (r != null && r.getFechaReserva() != null && !r.getFechaReserva().isBefore(LocalDate.now())) {
-                
                 String estado = r.getEstado() != null ? r.getEstado().toUpperCase() : "";
                 
                 if ("CONFIRMADA".equals(estado) || "EN_USO".equals(estado)) {
@@ -178,6 +192,7 @@ modelo.addAttribute("limiteDiarioAlcanzado", reservasHoy >= 2);
         modelo.addAttribute("estaBloqueado", estaBloqueado);
         modelo.addAttribute("numIncidencias", incidenciasPendientes);
         modelo.addAttribute("laboratorios", labs);
+        modelo.addAttribute("puedeReservarPorCarrera", puedeReservarPorCarrera); // ⭐ Pasamos la bandera a la vista
         modelo.addAttribute("insumos", insumos);
         modelo.addAttribute("epps", epps);
         modelo.addAttribute("misReservas", misReservas);

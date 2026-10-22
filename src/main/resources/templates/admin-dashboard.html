@@ -45,22 +45,24 @@
         </div>
 
         <!-- AVISO DE INSPECCIONES PENDIENTES -->
-        <div th:if="${inspeccionesPendientes != null && inspeccionesPendientes > 0}" 
-             class="banner-alerta-amarillo" 
-             style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-            
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <span class="icono-alerta-triangulo">🔔</span>
-                <div class="texto-alerta-amarillo">
-                    <strong style="font-size: 0.95rem;">Tienes inspecciones pendientes</strong>
-                    <p style="font-size: 0.84rem;">Hay <strong th:text="${inspeccionesPendientes}">0</strong> laboratorio(s) esperando revisión de materiales.</p>
-                </div>
-            </div>
-            
-            <a th:href="@{/admin/inspeccion}" class="btn-nueva-reserva" style="background-color: #f59e0b; text-decoration: none; padding: 0.5rem 1.2rem; font-size: 0.85rem; color: white;">
-                Ir a Inspecciones →
-            </a>
+<div th:if="${inspeccionesPendientes != null && inspeccionesPendientes > 0}" 
+     class="banner-alerta-amarillo" 
+     style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; gap: 1rem; flex-wrap: wrap;">
+    
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <span class="icono-alerta-triangulo" style="font-size: 1.5rem; background: #fef08a; padding: 0.5rem; border-radius: 50%;">🔔</span>
+        <div class="texto-alerta-amarillo">
+            <strong style="font-size: 1rem; display: block; margin-bottom: 0.2rem;">Tienes inspecciones pendientes</strong>
+            <p style="font-size: 0.85rem; margin: 0;">
+                Hay <strong style="font-size: 1rem; background: #f59e0b; color: white; padding: 0 6px; border-radius: 4px;" th:text="${inspeccionesPendientes}">0</strong> laboratorio(s) esperando revisión de materiales.
+            </p>
         </div>
+    </div>
+    
+    <a th:href="@{/admin/inspeccion}" class="btn-nueva-reserva" style="background-color: #f59e0b; text-decoration: none; padding: 0.6rem 1.2rem; font-size: 0.85rem; color: white; border-radius: 8px; font-weight: 700;">
+        Ir a Inspecciones →
+    </a>
+</div>
 
         <!-- 4 TARJETAS SUPERIORES DE MÉTRICAS -->
         <div class="grid-cuatro-metricas-figma">

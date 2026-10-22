@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -19,33 +18,24 @@ public class InspeccionSchedulerService {
     private ReservaRepository reservaRepository;
 
     // Se ejecuta cada minuto
-    @Scheduled(fixedRate = 60000) 
+    @Scheduled(fixedRate = 60000)
     @Transactional
-    public void verificarInspeccionesVencidas() {
+    public void vencerInspecciones() {
         LocalDate hoy = LocalDate.now();
-        LocalTime horaActual = LocalTime.now();
 
-        // 1. Buscamos las reservas que ya se DEVOLVIERON (o están EN USO) pero que ya pasó su hora
+        // Buscamos reservas que estén DEVUELTAS o EN_USO (por si no hicieron checkout)
         List<Reserva> reservasPendientes = reservaRepository.findByEstadoAndFechaReservaLessThanEqual("DEVUELTA", hoy);
         
-        // (También podrías incluir "EN_USO" si el alumno no hizo check-out)
+        for (Reserva r : reservasPendientes) {
+            // Calculamos la hora exacta de fin sumando 30 minutos
+            LocalDateTime horaFin = LocalDateTime.of(r.getFechaReserva(), r.getHoraFin());
+            LocalDateTime limite = horaFin.plusMinutes(30);
 
-        for (Reserva reserva : reservasPendientes) {
-            // Calculamos la fecha y hora exacta en la que terminó la reserva
-            LocalDateTime horaFinReserva = LocalDateTime.of(reserva.getFechaReserva(), reserva.getHoraFin());
-            
-            // Le sumamos 30 minutos de tolerancia
-            LocalDateTime limiteTolerancia = horaFinReserva.plusMinutes(30);
-
-            // Si la hora actual ya superó el límite (pasaron más de 30 min), se cancela la inspección
-            if (LocalDateTime.now().isAfter(limiteTolerancia)) {
-                reserva.setEstado("NO_INSPECCIONADO"); 
-                reservaRepository.save(reserva);
-                
-                System.out.println("⚠️ [INSPECCIÓN] La reserva " + reserva.getIdReserva() + " pasó a estado NO_INSPECCIONADO por falta de atención.");
-                
-                // OPCIONAL: Aquí podrías generar una incidencia automática al alumno
-                // o enviar un correo al administrador para que sepa que se le pasó.
+            // Si la hora actual superó el límite, se marca como NO_INSPECCIONADO
+            if (LocalDateTime.now().isAfter(limite)) {
+                r.setEstado("NO_INSPECCIONADO");
+                reservaRepository.save(r);
+                System.out.println("⚠️ [SCHEDULER] Reserva " + r.getIdReserva() + " pasó a NO_INSPECCIONADO.");
             }
         }
     }

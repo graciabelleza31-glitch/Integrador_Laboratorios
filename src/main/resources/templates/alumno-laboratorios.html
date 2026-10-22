@@ -37,13 +37,33 @@
             <p class="subtitulo-bienvenida"><strong>Laboratorios</strong> Reserva y gestiona tu tiempo en los laboratorios de la universidad</p>
           </div>
 
-          <button th:if="${not estaBloqueado}" 
+          <!-- CASO 1: Puede reservar (Habilitado, carrera con permiso y no llegó al límite) -->
+          <button th:if="${not estaBloqueado and puedeReservarPorCarrera and not limiteDiarioAlcanzado}" 
                   type="button" 
                   class="btn-nueva-reserva" 
                   onclick="abrirWizardPaso1()">
             + Nueva Reserva
           </button>
 
+          <!-- CASO 2: Límite diario de 2 reservas alcanzado -->
+          <button th:if="${not estaBloqueado and puedeReservarPorCarrera and limiteDiarioAlcanzado}" 
+                  type="button" 
+                  class="btn-reservas-bloqueadas" 
+                  title="Has alcanzado el límite máximo de 2 reservas diarias"
+                  disabled>
+            🚫 Límite diario alcanzado
+          </button>
+
+          <!-- CASO 3: Carrera sin acceso a laboratorios (ej. Comunicaciones) -->
+          <button th:if="${not estaBloqueado and not puedeReservarPorCarrera}" 
+                  type="button" 
+                  class="btn-reservas-bloqueadas" 
+                  title="Tu carrera no cuenta con acceso a laboratorios"
+                  disabled>
+            🚫 Sin acceso por carrera
+          </button>
+
+          <!-- CASO 4: Bloqueado por sanciones / incidencias -->
           <button th:if="${estaBloqueado}" 
                   type="button" 
                   class="btn-reservas-bloqueadas" 
@@ -61,31 +81,38 @@
           </div>
         </div>
 
-        <!-- Aviso del límite diario -->
-<div th:if="${limiteDiarioAlcanzado}"
-     class="alert alert-warning"
-     role="alert">
-    <strong>¡Límite diario alcanzado!</strong>
-    Ya has utilizado tus dos reservas permitidas para hoy.
-    Las reservas canceladas no cuentan para este límite.
-</div>
+        <!-- Banner informativo si la carrera no tiene laboratorios habilitados -->
+        <div th:if="${not puedeReservarPorCarrera}" class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem;">
+          <strong>Carrera sin acceso a laboratorios:</strong> Tu plan de estudios no cuenta con laboratorios asignados para reserva.
+        </div>
 
-<div th:unless="${limiteDiarioAlcanzado}"
-     class="alert alert-info"
-     role="status">
-    Hoy llevas
-    <strong th:text="${reservasHoy}">0</strong>
-    de 2 reservas permitidas.
-    Te quedan
-    <strong th:text="${reservasRestantes}">2</strong>.
-</div>
+        <!-- AVISO DE LÍMITE DIARIO (SOLO se muestra si la carrera tiene acceso Y no está bloqueado) -->
+        <th:block th:if="${puedeReservarPorCarrera and not estaBloqueado}">
+          <div th:if="${limiteDiarioAlcanzado}"
+               class="alert alert-warning"
+               role="alert">
+            <strong>¡Límite diario alcanzado!</strong>
+            Ya has utilizado tus dos reservas permitidas para hoy.
+            Las reservas canceladas no cuentan para este límite.
+          </div>
 
-<!-- Mensaje de error después de intentar reservar -->
-<div th:if="${errorReserva != null}"
-     class="alert alert-danger"
-     role="alert"
-     th:text="${errorReserva}">
-</div>
+          <div th:unless="${limiteDiarioAlcanzado}"
+               class="alert alert-info"
+               role="status">
+            Hoy llevas
+            <strong th:text="${reservasHoy}">0</strong>
+            de 2 reservas permitidas.
+            Te quedan
+            <strong th:text="${reservasRestantes}">2</strong>.
+          </div>
+        </th:block>
+
+        <!-- Mensaje de error después de intentar reservar -->
+        <div th:if="${errorReserva != null}"
+             class="alert alert-danger"
+             role="alert"
+             th:text="${errorReserva}">
+        </div>
 
                 <!-- MIS RESERVAS ACTIVAS -->
         <div th:if="${not #lists.isEmpty(misReservas)}" class="bloque-mis-reservas">
@@ -474,7 +501,14 @@
               <label class="label-checkbox-custom">
                 <input type="checkbox" id="checkAceptoTerminos" required />
                 <span class="txt-terminos-peq">
-                  Acepto los <a th:href="@{/alumno/protocolos}" target="_blank" class="enlace-protocolos">términos, condiciones y protocolos de seguridad</a> del laboratorio.
+                  Acepto los 
+                  <a th:href="@{'/docs/Terminos y Condiciones - Protocolos de Laboratorio UTP +Lab.pdf'}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="enlace-protocolos">
+                    términos, condiciones y protocolos de seguridad
+                  </a> 
+                  del laboratorio.
                 </span>
               </label>
             </div>

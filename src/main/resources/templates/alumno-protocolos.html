@@ -15,8 +15,8 @@
   <div class="contenedor-app">
     <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('protocolos')}"></aside>
 
-<main class="area-principal">
-    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
 
       <!-- SECCIÓN PROTOCOLOS -->
       <section class="seccion-checkout">
@@ -132,8 +132,10 @@
       </section>
     </main>
   </div>
+
   <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
-  <script>
+
+  <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function () {
       if (typeof lucide !== 'undefined') lucide.createIcons();
     });
@@ -145,24 +147,28 @@
       // Cerrar todos los acordeones
       document.querySelectorAll('.acordeon-item').forEach(acc => {
         acc.classList.remove('abierto');
-        acc.querySelector('.flecha-indicador').innerText = '▼';
+        const flecha = acc.querySelector('.flecha-indicador');
+        if (flecha) flecha.innerText = '▼';
       });
 
       // Si no estaba abierto, lo abrimos
       if (!estaAbierto) {
         item.classList.add('abierto');
-        item.querySelector('.flecha-indicador').innerText = '▲';
+        const flecha = item.querySelector('.flecha-indicador');
+        if (flecha) flecha.innerText = '▲';
       }
+    }
 
-      function descargarTerminos() {
+    function descargarTerminos() {
+      // Ruta codificada para soportar espacios en la URL
+      const rutaPdf = /[[@{'/docs/Terminos y Condiciones - Protocolos de Laboratorio UTP +Lab.pdf'}]]/ 
+      '/docs/Terminos%20y%20Condiciones%20-%20Protocolos%20de%20Laboratorio%20UTP%20%2BLab.pdf';
       const enlace = document.createElement('a');
-      enlace.href = /*[[@{/docs/Terminos_y_Condiciones_UTP.pdf}]]*/ '/docs/Terminos_y_Condiciones_UTP.pdf';
-      enlace.download = 'Terminos_y_Condiciones_UTP.pdf';
-      enlace.target = '_blank';
+      enlace.href = rutaPdf;
+      enlace.download = 'Terminos y Condiciones - Protocolos de Laboratorio UTP +Lab.pdf';
       document.body.appendChild(enlace);
       enlace.click();
       document.body.removeChild(enlace);
-      }
     }
   </script>
 </body>
