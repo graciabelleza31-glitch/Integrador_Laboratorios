@@ -278,7 +278,7 @@
   </div>
   <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
 
-  {% comment %} <script>
+  <script>
     let idSancionActual = '';
     let montoActual = 'S/ 350.00';
 
@@ -385,7 +385,6 @@
 
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
-  </script> {% endcomment %}
-  <script th:src="@{/js/alumno-incidencias.js}"></script>
+  </script>
 </body>
 </html>

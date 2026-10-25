@@ -27,11 +27,8 @@
           <p class="subtitulo-seccion-catalogo">Perfil e historial del estudiante</p>
         </div>
 
-        <div th:if="${mensajeCancelacion != null}"
-     class="alert alert-info"
-     role="status"
-     th:text="${mensajeCancelacion}">
-</div>
+        <div th:if="${mensajeCancelacion != null}" class="alert alert-info" role="status" th:text="${mensajeCancelacion}">
+        </div>
 
         <!-- TARJETA DE PERFIL -->
         <div class="tarjeta-perfil-alumno">
@@ -73,205 +70,367 @@
         </div>
 
         <!-- HISTORIAL DE RESERVAS -->
-<div class="cabecera-historial-con-filtro">
-    <span class="subtitulo-seccion-gris">HISTORIAL DE RESERVAS</span>
-    
-    <div class="selector-mes-historial">
-        <a th:href="@{/alumno/cuenta(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
-            <i data-lucide="chevron-left"></i>
-        </a>
-        <input type="month" 
-               th:value="${mesInput}"
-               onchange="window.location.href='/alumno/cuenta?mes=' + this.value"
-               class="input-mes-historial">
-        <a th:href="@{/alumno/cuenta(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
-            <i data-lucide="chevron-right"></i>
-        </a>
-        <a th:href="@{/alumno/cuenta}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
-            Actual
-        </a>
-    </div>
-</div>
-
-<div class="lista-historial-reservas">
-    <div th:each="h : ${historial}" 
-         class="fila-historial-reserva clickeable"
-         th:attr="data-id-reserva=${h.idReserva}"
-         onclick="abrirRecibo(this)">
-        <div class="info-historial">
-            <strong class="nombre-lab-historial" th:text="${h.laboratorio}">Lab. Química</strong>
-            <span class="detalle-historial" th:text="${h.fecha} + ' · ' + ${h.horario}">18 Ago 2026 · 09:00–11:00</span>
-        </div>
-        <div class="accion-historial">
-            <span class="codigo-historial" th:text="${h.idReserva}">R-007</span>
-            <span class="badge-estado-historial"
-                  th:classappend="${h.estado == 'CONFIRMADA' ? 'confirmada' : (h.estado == 'EN_USO' ? 'enuso' : (h.estado == 'DEVUELTA' ? 'devuelta' : 'cancelada'))}"
-                  th:text="${h.estado}">Completada</span>
-        </div>
-    </div>
-
-    <div th:if="${#lists.isEmpty(historial)}" class="estado-vacio-historial">
-        <i data-lucide="calendar-x"></i>
-        <p>No tienes reservas en <strong th:text="${mesFormateado}">este mes</strong>.</p>
-    </div>
-    <!-- HISTORIAL DE INCIDENCIAS POR LABORATORIO -->
-        <div class="cabecera-historial-con-filtro" style="margin-top: 3rem;">
-            <span class="subtitulo-seccion-gris">HISTORIAL DE INCIDENCIAS Y PAGOS</span>
-        </div>
-
-        <div class="lista-historial-reservas" th:if="${not #maps.isEmpty(incidenciasPorLab)}">
+        <div class="cabecera-historial-con-filtro">
+            <span class="subtitulo-seccion-gris">HISTORIAL DE RESERVAS</span>
             
-            <!-- Bucle principal: Itera sobre cada laboratorio -->
-            <div th:each="entrada : ${incidenciasPorLab}" class="grupo-laboratorio-incidencia" style="margin-bottom: 2rem;">
-                <h4 class="nombre-lab-historial" style="margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; font-size: 15px;" 
-                    th:text="${entrada.key}">Lab. Química</h4>
-                
-                <!-- Bucle secundario: Itera sobre las incidencias de ESE laboratorio -->
-                <div th:each="incidencia : ${entrada.value}" class="fila-historial-reserva" style="cursor: default;">
-                    <div class="info-historial">
-                        <strong class="nombre-lab-historial" th:text="${incidencia.item}">Vaso de precipitado</strong>
-                        <span class="detalle-historial" th:text="${incidencia.fecha} + ' · ' + ${incidencia.monto}">18 Ago 2026 · S/ 150.00</span>
-                    </div>
-                    <div class="accion-historial">
-                        <span class="codigo-historial" th:text="${incidencia.idSancion}">INC-001</span>
-                        <span class="badge-estado-historial"
-                              th:classappend="${incidencia.estado == 'RESUELTA' or incidencia.estado == 'PAGADO' ? 'confirmada' : 'cancelada'}"
-                              th:text="${incidencia.estado}">RESUELTA</span>
-                    </div>
+            <div class="selector-mes-historial">
+                <a th:href="@{/alumno/cuenta(mes=${mesAnterior})}" class="btn-mes-nav" title="Mes anterior">
+                    <i data-lucide="chevron-left"></i>
+                </a>
+                <input type="month" 
+                       th:value="${mesInput}"
+                       onchange="window.location.href='/alumno/cuenta?mes=' + this.value"
+                       class="input-mes-historial">
+                <a th:href="@{/alumno/cuenta(mes=${mesSiguiente})}" class="btn-mes-nav" title="Mes siguiente">
+                    <i data-lucide="chevron-right"></i>
+                </a>
+                <a th:href="@{/alumno/cuenta}" class="btn-mes-actual" th:if="${!esMesActual}" title="Ir al mes actual">
+                    Actual
+                </a>
+            </div>
+        </div>
+
+        <div class="lista-historial-reservas" style="margin-bottom: 2.5rem;">
+            <div th:each="h : ${historial}" 
+                 class="fila-historial-reserva clickeable"
+                 th:attr="data-id-reserva=${h.idReserva}"
+                 onclick="abrirRecibo(this)">
+                <div class="info-historial">
+                    <strong class="nombre-lab-historial" th:text="${h.laboratorio}">Lab. Química</strong>
+                    <span class="detalle-historial" th:text="${h.fecha} + ' · ' + ${h.horario}">18 Ago 2026 · 09:00–11:00</span>
+                </div>
+                <div class="accion-historial">
+                    <span class="codigo-historial" th:text="${h.idReserva}">R-007</span>
+                    <span class="badge-estado-historial"
+                          th:classappend="${h.estado == 'CONFIRMADA' ? 'confirmada' : (h.estado == 'EN_USO' ? 'enuso' : (h.estado == 'DEVUELTA' ? 'devuelta' : 'cancelada'))}"
+                          th:text="${h.estado}">Completada</span>
                 </div>
             </div>
-            
+
+            <div th:if="${#lists.isEmpty(historial)}" class="estado-vacio-historial">
+                <i data-lucide="calendar-x"></i>
+                <p>No tienes reservas en <strong th:text="${mesFormateado}">este mes</strong>.</p>
+            </div>
         </div>
 
-        <!-- Mensaje si no tiene ninguna incidencia en todo su historial -->
-        <div th:if="${#maps.isEmpty(incidenciasPorLab)}" class="estado-vacio-historial">
-            <i data-lucide="shield-check"></i>
-            <p>Excelente historial. No tienes incidencias registradas en ningún laboratorio.</p>
+        <!-- HISTORIAL DE INCIDENCIAS -->
+        <h3 class="subtitulo-seccion-gris" style="margin-top: 2rem;">HISTORIAL DE INCIDENCIAS</h3>
+
+        <div class="tarjeta-perfil-alumno" th:if="${historialIncidencias.isEmpty()}" style="text-align: center; padding: 2rem;">
+            <p style="color: #64748b;">No tienes incidencias registradas. ¡Sigue así! 🎉</p>
         </div>
 
-</div>
-
+        <div class="lista-historial-reservas" th:unless="${historialIncidencias.isEmpty()}">
+            <div class="fila-historial-reserva clickeable" 
+     style="cursor: pointer;"
+     th:each="incidencia : ${historialIncidencias}"
+     th:attr="data-id-sancion=${incidencia.idSancion}"
+     onclick="abrirModalIncidencia(this)">
+                <div class="info-historial">
+                    <!-- Motivo con la primera letra en mayúscula -->
+                    <span class="nombre-lab-historial" style="text-transform: capitalize;" th:text="${incidencia.motivo}">Motivo de incidencia</span>
+                    
+                    <span class="detalle-historial">
+    <span th:text="${incidencia.estado == 'PAGADA' ? 'Monto pagado: ' : 'Monto a pagar: '}">Monto:</span>
+    S/ <span th:text="${incidencia.monto}">0.00</span>
+</span>
+<span class="detalle-historial">
+    <span th:text="${incidencia.estado == 'PAGADA' ? 'Fecha de pago: ' : 'Fecha de emisión: '}">Fecha:</span>
+    <span th:text="${#temporals.format(incidencia.fechaSancion, 'dd MMM yyyy, HH:mm')}">20 Oct 2026</span>
+</span>
+                </div>
+                
+                <div class="accion-historial">
+                    <!-- Badge de Estado -->
+                    <span class="badge-estado-historial confirmada" th:if="${incidencia.estado == 'PAGADA'}" th:text="${incidencia.estado}">PAGADA</span>
+                    <span class="badge-estado-historial cancelada" th:if="${incidencia.estado == 'PENDIENTE'}" th:text="${incidencia.estado}">PENDIENTE</span>
+                </div>
+            </div>
+        </div>
 
       </section>
     </main>
   </div>
 
   <!-- MODAL DE GRÁFICO -->
-<div id="modalGrafico" class="fondo-modal-oscuro" style="display: none;">
-    <div class="tarjeta-modal modal-grafico-contenedor">
-        <div class="cabecera-modal-grafico">
-            <div>
-                <h3 id="tituloGrafico" class="titulo-modal-grafico">Estadísticas</h3>
-                <p class="subtitulo-modal-grafico">Últimos 6 meses</p>
-            </div>
-            <button type="button" class="btn-cerrar-recibo" onclick="cerrarGrafico()">✕</button>
-        </div>
-        <div class="cuerpo-modal-grafico">
-            <canvas id="canvasGrafico" style="max-height: 340px;"></canvas>
-        </div>
-    </div>
-</div>
+  <div id="modalGrafico" class="fondo-modal-oscuro" style="display: none;">
+      <div class="tarjeta-modal modal-grafico-contenedor">
+          <div class="cabecera-modal-grafico">
+              <div>
+                  <h3 id="tituloGrafico" class="titulo-modal-grafico">Estadísticas</h3>
+                  <p class="subtitulo-modal-grafico">Últimos 6 meses</p>
+              </div>
+              <button type="button" class="btn-cerrar-recibo" onclick="cerrarGrafico()">✕</button>
+          </div>
+          <div class="cuerpo-modal-grafico">
+              <canvas id="canvasGrafico" style="max-height: 340px;"></canvas>
+          </div>
+      </div>
+  </div>
 
   <!-- MODAL RECIBO DE RESERVA -->
-<div id="modalRecibo" class="fondo-modal-oscuro" style="display: none;">
+    <div id="modalRecibo" class="fondo-modal-oscuro" style="display: none;">
+        <div class="tarjeta-modal modal-recibo-contenedor">
+          
+            <div class="cabecera-modal-recibo">
+                <div>
+                  <h3 class="titulo-modal-recibo">Recibo de Reserva</h3>
+                  <p class="subtitulo-modal-recibo" id="reciboId">RES001</p>
+              </div>
+                <button type="button" class="btn-cerrar-recibo" onclick="cerrarRecibo()">✕</button>
+            </div>
+          
+            <div class="cuerpo-modal-recibo">
+              <!-- Encabezado azul con lab -->
+              <div class="cabecera-azul-recibo">
+                  <span class="lbl-recibo">LABORATORIO</span>
+                  <strong id="reciboLab" class="nombre-lab-recibo">Lab. Química</strong>
+                  <span id="reciboCubiculo" class="cubiculo-recibo">A-101</span>
+              </div>
+              
+              <!-- Fecha y horario -->
+              <div class="fila-meta-recibo">
+                  <div class="col-meta-recibo">
+                      <span class="lbl-meta-recibo">FECHA</span>
+                      <strong id="reciboFecha">2026-09-27</strong>
+                  </div>
+                  <div class="col-meta-recibo">
+                      <span class="lbl-meta-recibo">HORARIO</span>
+                      <strong id="reciboHorario">07:00 – 09:00</strong>
+                  </div>
+                  <div class="col-meta-recibo">
+                      <span class="lbl-meta-recibo">ESTADO</span>
+                      <span id="reciboEstado" class="badge-estado-recibo">CONFIRMADA</span>
+                  </div>
+              </div>
+              
+              <!-- Integrantes -->
+              <div class="seccion-recibo">
+                  <span class="titulo-seccion-recibo">Integrantes</span>
+                  <div id="reciboIntegrantes" class="lista-integrantes-recibo"></div>
+              </div>
+              
+              <!-- Insumos / EPPs -->
+              <div class="seccion-recibo" id="seccionInsumosRecibo">
+                  <span class="titulo-seccion-recibo">Insumos y EPPs</span>
+                  <div id="reciboItems" class="lista-items-recibo"></div>
+              </div>
+              
+              <!-- Total pagado -->
+              <div class="fila-total-recibo">
+                  <div>
+                      <span class="lbl-total-recibo">TOTAL PAGADO</span>
+                      <span id="reciboMetodoPago" class="metodo-pago-recibo">GRATUITO</span>
+                  </div>
+                  <strong id="reciboMontoTotal" class="monto-total-recibo">S/ 0.00</strong>
+              </div>
+          </div>
+          
+          <div class="pie-modal-recibo">
+              <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarRecibo()">Cerrar</button>
+          </div>
+          
+      </div>
+    </div>
+
+    <!-- MODAL DETALLE DE INCIDENCIA -->
+<div id="modalDetalleIncidencia" class="fondo-modal-oscuro" style="display: none;">
     <div class="tarjeta-modal modal-recibo-contenedor">
         
         <div class="cabecera-modal-recibo">
             <div>
-                <h3 class="titulo-modal-recibo">Recibo de Reserva</h3>
-                <p class="subtitulo-modal-recibo" id="reciboId">RES001</p>
+                <h3 class="titulo-modal-recibo">Detalle de Incidencia</h3>
+                <p class="subtitulo-modal-recibo" id="incId">S001</p>
             </div>
-            <button type="button" class="btn-cerrar-recibo" onclick="cerrarRecibo()">✕</button>
+            <button type="button" class="btn-cerrar-recibo" onclick="cerrarModalIncidencia()">✕</button>
         </div>
         
         <div class="cuerpo-modal-recibo">
-            <!-- Encabezado azul con lab -->
             <div class="cabecera-azul-recibo">
-                <span class="lbl-recibo">LABORATORIO</span>
-                <strong id="reciboLab" class="nombre-lab-recibo">Lab. Química</strong>
-                <span id="reciboCubiculo" class="cubiculo-recibo">A-101</span>
+                <span class="lbl-recibo">MOTIVO DE LA INCIDENCIA</span>
+                <strong id="incMotivo" class="nombre-lab-recibo" style="font-size: 1rem; line-height: 1.3;">Se rompió...</strong>
             </div>
             
-            <!-- Fecha y horario -->
             <div class="fila-meta-recibo">
                 <div class="col-meta-recibo">
-                    <span class="lbl-meta-recibo">FECHA</span>
-                    <strong id="reciboFecha">2026-09-27</strong>
+                    <span class="lbl-meta-recibo">RESERVA</span>
+                    <strong id="incReserva">RES001</strong>
                 </div>
                 <div class="col-meta-recibo">
-                    <span class="lbl-meta-recibo">HORARIO</span>
-                    <strong id="reciboHorario">07:00 – 09:00</strong>
+                    <span class="lbl-meta-recibo">FECHA</span>
+                    <strong id="incFecha">2026-10-22</strong>
                 </div>
                 <div class="col-meta-recibo">
                     <span class="lbl-meta-recibo">ESTADO</span>
-                    <span id="reciboEstado" class="badge-estado-recibo">CONFIRMADA</span>
+                    <span id="incEstado" class="badge-estado-recibo">PENDIENTE</span>
                 </div>
             </div>
-            
-            <!-- Integrantes -->
+
             <div class="seccion-recibo">
-                <span class="titulo-seccion-recibo">Integrantes</span>
-                <div id="reciboIntegrantes" class="lista-integrantes-recibo"></div>
-            </div>
-            
-            <!-- Insumos / EPPs -->
-            <div class="seccion-recibo" id="seccionInsumosRecibo">
-                <span class="titulo-seccion-recibo">Insumos y EPPs</span>
-                <div id="reciboItems" class="lista-items-recibo"></div>
-            </div>
-            
-            <!-- Total pagado -->
-            <div class="fila-total-recibo">
-                <div>
-                    <span class="lbl-total-recibo">TOTAL PAGADO</span>
-                    <span id="reciboMetodoPago" class="metodo-pago-recibo">GRATUITO</span>
+                <span class="titulo-seccion-recibo">Laboratorio</span>
+                <div style="font-size: 0.9rem; color: #334155;">
+                    <strong id="incLab">Lab. Química</strong> - <span id="incCubiculo">A-101</span>
                 </div>
-                <strong id="reciboMontoTotal" class="monto-total-recibo">S/ 0.00</strong>
+                <div id="incHorario" style="font-size: 0.85rem; color: #64748b;">12:00 - 14:00</div>
+            </div>
+            
+            <div class="seccion-recibo">
+                <span class="titulo-seccion-recibo">Integrantes del Grupo</span>
+                <div id="incIntegrantes" class="lista-integrantes-recibo"></div>
+            </div>
+
+            <div class="seccion-recibo" id="seccionPagoIncidencia">
+                <span class="titulo-seccion-recibo">Información de Pago</span>
+                <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.85rem; color: #64748b;">Monto:</span>
+                        <strong id="incMonto" style="color: #ef4444; font-size: 1.1rem;">S/ 25.00</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;" id="filaMetodoPago" >
+                        <span style="font-size: 0.85rem; color: #64748b;">Método de pago:</span>
+                        <strong id="incMetodo" style="color: #0f172a;">YAPE</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;" id="filaFechaPago">
+                        <span style="font-size: 0.85rem; color: #64748b;">Fecha de pago:</span>
+                        <strong id="incFechaPago" style="color: #0f172a;">22 Oct 2026</strong>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="pie-modal-recibo">
-            <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarRecibo()">Cerrar</button>
+            <button type="button" class="btn-cerrar-modal-recibo" onclick="cerrarModalIncidencia()">Cerrar</button>
         </div>
         
     </div>
 </div>
+
   <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
 
-  {% comment %} <script>
-        function abrirRecibo(fila) {
-        const idReserva = fila.getAttribute('data-id-reserva');
-        if (!idReserva) return;
-        
-        document.getElementById('reciboId').innerText = idReserva;
-        document.getElementById('modalRecibo').style.display = 'flex';
-        
-        fetch(`/alumno/api/recibo/${idReserva}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.encontrado) {
-                    alert('No se encontró el recibo.');
-                    cerrarRecibo();
-                    return;
-                }
-                
-                document.getElementById('reciboLab').innerText = data.laboratorio;
-                document.getElementById('reciboCubiculo').innerText = data.cubiculo;
-                document.getElementById('reciboFecha').innerText = data.fecha;
-                document.getElementById('reciboHorario').innerText = data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
-                
-                // Estado
-                const estadoBadge = document.getElementById('reciboEstado');
-                estadoBadge.innerText = data.estado;
-                estadoBadge.className = 'badge-estado-recibo';
-                if (data.estado === 'CONFIRMADA') estadoBadge.classList.add('confirmada');
-                else if (data.estado === 'EN_USO') estadoBadge.classList.add('enuso');
-                else if (data.estado === 'DEVUELTA') estadoBadge.classList.add('devuelta');
-                else estadoBadge.classList.add('cancelada');
-                
-                // Integrantes
-                const contInteg = document.getElementById('reciboIntegrantes');
-                contInteg.innerHTML = '';
+  <script>
+function abrirRecibo(fila) {
+    const idReserva = fila.getAttribute('data-id-reserva');
+    if (!idReserva) return;
+    
+    document.getElementById('reciboId').innerText = idReserva;
+    document.getElementById('modalRecibo').style.display = 'flex';
+    
+    fetch(`/alumno/api/recibo/${idReserva}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.encontrado) {
+                alert('No se encontró el recibo.');
+                cerrarRecibo();
+                return;
+            }
+            
+            document.getElementById('reciboLab').innerText = data.laboratorio;
+            document.getElementById('reciboCubiculo').innerText = data.cubiculo;
+            document.getElementById('reciboFecha').innerText = data.fecha;
+            document.getElementById('reciboHorario').innerText = data.horaInicio.substring(0, 5) + ' – ' + data.horaFin.substring(0, 5);
+            
+            // Estado
+            const estadoBadge = document.getElementById('reciboEstado');
+            estadoBadge.innerText = data.estado;
+            estadoBadge.className = 'badge-estado-recibo';
+            if (data.estado === 'CONFIRMADA') estadoBadge.classList.add('confirmada');
+            else if (data.estado === 'EN_USO') estadoBadge.classList.add('enuso');
+            else if (data.estado === 'DEVUELTA') estadoBadge.classList.add('devuelta');
+            else estadoBadge.classList.add('cancelada');
+            
+            // Integrantes
+            const contInteg = document.getElementById('reciboIntegrantes');
+            contInteg.innerHTML = '';
+            data.integrantes.forEach(i => {
+                contInteg.insertAdjacentHTML('beforeend', `
+                    <div class="item-integrante-recibo">
+                        <div class="avatar-mini-recibo">${i.nombre.substring(0,2).toUpperCase()}</div>
+                        <div>
+                            <strong>${i.nombre}</strong>
+                            <span>${i.codigo}</span>
+                        </div>
+                    </div>
+                `);
+            });
+            
+            // Insumos
+            const contItems = document.getElementById('reciboItems');
+            const seccionItems = document.getElementById('seccionInsumosRecibo');
+            contItems.innerHTML = '';
+            if (data.items.length === 0) {
+                seccionItems.style.display = 'none';
+            } else {
+                seccionItems.style.display = 'block';
+                data.items.forEach(item => {
+                    contItems.insertAdjacentHTML('beforeend', `
+                        <div class="item-recibo">
+                            <span class="nombre-item-recibo">${item.nombre}</span>
+                            <span class="cantidad-item-recibo">x${item.cantidad}</span>
+                        </div>
+                    `);
+                });
+            }
+            
+            // Total
+            document.getElementById('reciboMetodoPago').innerText = data.metodoPago.replace('PAGO_', '');
+            document.getElementById('reciboMontoTotal').innerText = 'S/ ' + parseFloat(data.montoTotal).toFixed(2);
+        })
+        .catch(() => {
+            alert('Error al cargar el recibo.');
+            cerrarRecibo();
+        });
+}
+
+function cerrarRecibo() {
+    document.getElementById('modalRecibo').style.display = 'none';
+}
+
+function abrirModalIncidencia(fila) {
+    const idSancion = fila.getAttribute('data-id-sancion');
+    if (!idSancion) return;
+
+    document.getElementById('modalDetalleIncidencia').style.display = 'flex';
+    document.getElementById('incId').innerText = idSancion;
+
+    fetch(`/alumno/api/incidencia/${idSancion}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.encontrado) {
+                alert('No se encontró la incidencia.');
+                cerrarModalIncidencia();
+                return;
+            }
+
+            document.getElementById('incMotivo').innerText = data.motivo;
+            document.getElementById('incReserva').innerText = data.idReserva;
+            document.getElementById('incFecha').innerText = data.fechaReserva;
+            document.getElementById('incLab').innerText = data.laboratorio;
+            document.getElementById('incCubiculo').innerText = data.cubiculo;
+            document.getElementById('incHorario').innerText = data.horario;
+            document.getElementById('incMonto').innerText = 'S/ ' + parseFloat(data.monto).toFixed(2);
+
+            const badge = document.getElementById('incEstado');
+            badge.innerText = data.estado;
+            badge.className = 'badge-estado-recibo';
+            if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') badge.classList.add('confirmada');
+            else if (data.estado === 'NOTIFICADA') badge.classList.add('enuso');
+            else badge.classList.add('cancelada');
+
+            // Mostrar u ocultar info de pago según el estado
+            if (data.estado === 'PAGADA' || data.estado === 'RESUELTA') {
+                document.getElementById('filaMetodoPago').style.display = 'flex';
+                document.getElementById('filaFechaPago').style.display = 'flex';
+                document.getElementById('incMetodo').innerText = data.metodoPago ? data.metodoPago.replace('PAGO_', '') : 'YAPE';
+                document.getElementById('incFechaPago').innerText = data.fechaPago || '—';
+            } else {
+                document.getElementById('filaMetodoPago').style.display = 'none';
+                document.getElementById('filaFechaPago').style.display = 'none';
+            }
+
+            // Integrantes
+            const contInteg = document.getElementById('incIntegrantes');
+            contInteg.innerHTML = '';
+            if (data.integrantes) {
                 data.integrantes.forEach(i => {
                     contInteg.insertAdjacentHTML('beforeend', `
                         <div class="item-integrante-recibo">
@@ -283,116 +442,91 @@
                         </div>
                     `);
                 });
-                
-                // Insumos
-                const contItems = document.getElementById('reciboItems');
-                const seccionItems = document.getElementById('seccionInsumosRecibo');
-                contItems.innerHTML = '';
-                if (data.items.length === 0) {
-                    seccionItems.style.display = 'none';
-                } else {
-                    seccionItems.style.display = 'block';
-                    data.items.forEach(item => {
-                        contItems.insertAdjacentHTML('beforeend', `
-                            <div class="item-recibo">
-                                <span class="nombre-item-recibo">${item.nombre}</span>
-                                <span class="cantidad-item-recibo">x${item.cantidad}</span>
-                            </div>
-                        `);
-                    });
-                }
-                
-                // Total
-                document.getElementById('reciboMetodoPago').innerText = data.metodoPago.replace('PAGO_', '');
-                document.getElementById('reciboMontoTotal').innerText = 'S/ ' + parseFloat(data.montoTotal).toFixed(2);
-            })
-            .catch(() => {
-                alert('Error al cargar el recibo.');
-                cerrarRecibo();
-            });
-    }
-
-    function cerrarRecibo() {
-        document.getElementById('modalRecibo').style.display = 'none';
-    }
-
-    let chartInstance = null;
-    let datosEstadisticas = null;
-
-    function abrirGrafico(tipo) {
-        document.getElementById('modalGrafico').style.display = 'flex';
-        
-        const cargarDatos = () => {
-            return fetch('/alumno/api/estadisticas')
-                .then(res => res.json())
-                .then(data => {
-                    datosEstadisticas = data;
-                    dibujarGrafico(tipo);
-                });
-        };
-        
-        if (!datosEstadisticas) {
-            cargarDatos();
-        } else {
-            dibujarGrafico(tipo);
-        }
-    }
-
-    function dibujarGrafico(tipo) {
-        const ctx = document.getElementById('canvasGrafico').getContext('2d');
-        
-        if (chartInstance) chartInstance.destroy();
-        
-        let titulo = '', datos = [], color = '';
-        
-        if (tipo === 'reservas') {
-            titulo = 'Reservas por mes';
-            datos = datosEstadisticas.reservas;
-            color = '#2563eb';
-        } else if (tipo === 'horas') {
-            titulo = 'Horas de laboratorio por mes';
-            datos = datosEstadisticas.horas;
-            color = '#8b5cf6';
-        } else {
-            titulo = 'Materiales solicitados por mes';
-            datos = datosEstadisticas.materiales;
-            color = '#f59e0b';
-        }
-        
-        document.getElementById('tituloGrafico').innerText = titulo;
-        
-        chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: datosEstadisticas.labels,
-                datasets: [{
-                    label: titulo,
-                    data: datos,
-                    backgroundColor: color,
-                    borderRadius: 8,
-                    borderSkipped: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 }
-                    }
-                }
             }
         });
-    }
+}
 
-    function cerrarGrafico() {
-        document.getElementById('modalGrafico').style.display = 'none';
+function cerrarModalIncidencia() {
+    document.getElementById('modalDetalleIncidencia').style.display = 'none';
+}
+
+let chartInstance = null;
+let datosEstadisticas = null;
+
+function abrirGrafico(tipo) {
+    document.getElementById('modalGrafico').style.display = 'flex';
+    
+    // Obtenemos el mes actual del input o de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const mesActual = urlParams.get('mes') || new Date().toISOString().slice(0, 7); // YYYY-MM
+    
+    const cargarDatos = () => {
+        return fetch(`/alumno/api/estadisticas?mes=${mesActual}`)
+            .then(res => res.json())
+            .then(data => {
+                datosEstadisticas = data;
+                dibujarGrafico(tipo);
+            });
+    };
+    
+    // Siempre cargar datos nuevos para el mes actual
+    cargarDatos();
+}
+
+function dibujarGrafico(tipo) {
+    const ctx = document.getElementById('canvasGrafico').getContext('2d');
+    
+    if (chartInstance) chartInstance.destroy();
+    
+    let titulo = '', datos = [], color = '';
+    
+    if (tipo === 'reservas') {
+        titulo = 'Reservas por mes';
+        datos = datosEstadisticas.reservas;
+        color = '#2563eb';
+    } else if (tipo === 'horas') {
+        titulo = 'Horas de laboratorio por mes';
+        datos = datosEstadisticas.horas;
+        color = '#8b5cf6';
+    } else {
+        titulo = 'Materiales solicitados por mes';
+        datos = datosEstadisticas.materiales;
+        color = '#f59e0b';
     }
-</script> {% endcomment %}
-    <script th:src="@{/js/alumno-cuenta.js}"></script>
+    
+    document.getElementById('tituloGrafico').innerText = titulo;
+    
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: datosEstadisticas.labels,
+            datasets: [{
+                label: titulo,
+                data: datos,
+                backgroundColor: color,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+}
+
+function cerrarGrafico() {
+    document.getElementById('modalGrafico').style.display = 'none';
+}
+</script>
 </body>
 </html>

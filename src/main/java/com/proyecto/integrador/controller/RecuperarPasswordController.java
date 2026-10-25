@@ -19,8 +19,8 @@ public class RecuperarPasswordController {
     @GetMapping("/recuperar/restablecer")
     public String mostrarRestablecer() {
         System.out.println("🔵 [DEBUG] Entrando a /recuperar/restablecer");
-    String resultado = "recuperar/restablecer";
-    System.out.println("🔵 [DEBUG] Retornando vista: " + resultado);
+        String resultado = "recuperar/restablecer";
+        System.out.println("🔵 [DEBUG] Retornando vista: " + resultado);
         return "recuperar/restablecer";
     }
 
@@ -68,43 +68,44 @@ public class RecuperarPasswordController {
             @RequestParam("passwordConfirm") String passwordConfirm,
             Model modelo) {
         
+        System.out.println("==================================================");
+        System.out.println("1. LLEGÓ AL CONTROLADOR");
+        System.out.println("Token recibido: " + idToken);
+        System.out.println("Password recibido: " + password);
+        System.out.println("Confirmación recibida: " + passwordConfirm);
+
         if (!password.equals(passwordConfirm)) {
+            System.out.println("2. ERROR: Las contraseñas no coinciden");
             modelo.addAttribute("error", "Las contraseñas no coinciden.");
             modelo.addAttribute("idToken", idToken);
             return "recuperar/nueva-password";
         }
         
         if (password.length() < 6) {
+            System.out.println("2. ERROR: Tiene menos de 6 caracteres");
             modelo.addAttribute("error", "La contraseña debe tener al menos 6 caracteres.");
             modelo.addAttribute("idToken", idToken);
             return "recuperar/nueva-password";
         }
         
-        boolean exito = passwordResetService.cambiarPassword(idToken, password);
-        
-        if (!exito) {
-            modelo.addAttribute("error", "Hubo un problema. Intenta de nuevo.");
-            modelo.addAttribute("idToken", idToken);
-            return "recuperar/nueva-password";
-        }
-
-        //verificacion de que la nueva contraseña no sea igual a la actual
         try {
+            System.out.println("3. Llamando al servicio...");
             boolean exito = passwordResetService.cambiarPassword(idToken, password);
             
             if (!exito) {
-                modelo.addAttribute("error", "Hubo un problema con el token. Intenta de nuevo.");
-                modelo.addAttribute("idToken", idToken);
-                return "recuperar/nueva-password";
+                System.out.println("4. ERROR: El servicio devolvió false (token inválido)");
+                modelo.addAttribute("error", "El enlace expiró o es inválido. Vuelve a intentarlo.");
+                return "recuperar/restablecer"; // Lo mandamos al inicio de todo
             }
             
-        } catch (IllegalArgumentException e) {
+            System.out.println("4. ÉXITO: Contraseña cambiada");
+            return "redirect:/login?reset=true";
 
-            modelo.addAttribute("error", e.getMessage());
+        } catch (IllegalArgumentException ex) {
+            System.out.println("4. ERROR ATRAPADO: " + ex.getMessage());
+            modelo.addAttribute("error", ex.getMessage());
             modelo.addAttribute("idToken", idToken);
             return "recuperar/nueva-password";
         }
-        
-        return "redirect:/login?reset=true";
     }
 }

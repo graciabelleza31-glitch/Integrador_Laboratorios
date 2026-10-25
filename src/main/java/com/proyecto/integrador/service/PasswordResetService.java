@@ -5,6 +5,7 @@ import com.proyecto.integrador.modelo.PasswordResetToken;
 import com.proyecto.integrador.repository.AlumnoRepository;
 import com.proyecto.integrador.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +25,11 @@ public class PasswordResetService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder; 
+
     /**
      * Paso 1: Genera un código, lo guarda en la BD y lo envía por correo.
-     * 
-     * @return El correo del alumno (enmascarado) o null si no existe.
      */
     @Transactional
     public String generarYEnviarCodigo(String idEstud) {
@@ -39,13 +41,9 @@ public class PasswordResetService {
         
         Alumno alumno = alumnoOpt.get();
         
-        // Generar código de 6 dígitos
         String codigo = String.format("%06d", new Random().nextInt(999999));
-        
-        // Generar ID del token
         String idToken = "TKN" + (System.currentTimeMillis() % 10000000);
         
-        // Crear el token
         PasswordResetToken token = new PasswordResetToken(
                 idToken,
                 alumno,
@@ -56,18 +54,14 @@ public class PasswordResetService {
         
         tokenRepositorio.save(token);
         
-        // 🔑 CORREO INSTITUCIONAL: se construye desde el idEstud
         String correoDestino = alumno.getIdEstud().toLowerCase() + "@utp.edu.pe";
-System.out.println("📧 Enviando correo a: " + correoDestino);
         
-        // Enviar correo
         emailService.enviarCodigoRestablecimiento(
                 correoDestino,
                 alumno.getNombre(),
                 codigo
         );
         
-        // Retornar el correo enmascarado
         return enmascararCorreo(correoDestino);
     }
 
@@ -92,30 +86,51 @@ System.out.println("📧 Enviando correo a: " + correoDestino);
     }
 
     /**
-     * Paso 3: Cambia la contraseña del alumno y marca el token como usado.
+     * Paso 3: Cambia la contraseña del alumno con validación doble (Opción B)
      */
     @Transactional
     public boolean cambiarPassword(String idToken, String nuevaPassword) {
         Optional<PasswordResetToken> tokenOpt = tokenRepositorio.findById(idToken);
         
         if (tokenOpt.isEmpty()) {
+            System.out.println("❌ Servicio: Token no encontrado en la BD con id: " + idToken);
             return false;
         }
         
         PasswordResetToken token = tokenOpt.get();
         
         if (token.getUsado() || token.getFechaVencimiento().isBefore(LocalDateTime.now())) {
+            System.out.println("❌ Servicio: Token usado o expirado");
             return false;
         }
         
         Alumno alumno = token.getAlumno();
+        String passwordBD = alumno.getPassword();
+
+        System.out.println("=== PRUEBA DE CONTRASEÑA (OPCIÓN B) ===");
+        System.out.println("Nueva ingresada: [" + nuevaPassword + "]");
+        System.out.println("En la BD:        [" + passwordBD + "]");
+
+        // 1. Comparamos si es igual en TEXTO PLANO
+        boolean esIgualTextoPlano = nuevaPassword.equals(passwordBD);
         
-        //validacion para que la nueva contraseña no sea igual a la actual
-        if (alumno.getPassword().equals(nuevaPassword)) {
-            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a tu contraseña actual.");
+        // 2. Comparamos si es igual ENCRIPTADO (por si en Render está con hash)
+        boolean esIgualEncriptado = false;
+        try {
+            esIgualEncriptado = passwordEncoder.matches(nuevaPassword, passwordBD);
+        } catch (Exception e) {
+            // Si falla el matches (porque no es un hash válido), ignoramos el error
         }
 
-        alumno.setPassword(nuevaPassword);
+        // 3. Si es igual por CUALQUIERA de las dos vías, lanzamos el error
+        if (esIgualTextoPlano || esIgualEncriptado) {
+            System.out.println("🛑 Servicio: ¡SON IGUALES! Lanzando error.");
+            throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la anterior.");
+        }
+
+        // 4. Guardamos la nueva contraseña en texto plano (para tu presentación)
+        System.out.println("✅ Servicio: Contraseña cambiada con éxito.");
+        alumno.setPassword(nuevaPassword); 
         alumnoRepositorio.save(alumno);
         
         token.setUsado(true);

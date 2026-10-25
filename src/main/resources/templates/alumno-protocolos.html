@@ -15,8 +15,8 @@
   <div class="contenedor-app">
     <aside th:replace="~{fragments/sidebar-alumno :: sidebarAlumno('protocolos')}"></aside>
 
-<main class="area-principal">
-    <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
+    <main class="area-principal">
+      <header th:replace="~{fragments/topbar-alumno :: topbarAlumno}"></header>
 
       <!-- SECCIÓN PROTOCOLOS -->
       <section class="seccion-checkout">
@@ -132,8 +132,10 @@
       </section>
     </main>
   </div>
+
   <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
-  {% comment %} <script>
+
+  <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function () {
       if (typeof lucide !== 'undefined') lucide.createIcons();
     });
@@ -145,28 +147,21 @@
       // Cerrar todos los acordeones
       document.querySelectorAll('.acordeon-item').forEach(acc => {
         acc.classList.remove('abierto');
-        acc.querySelector('.flecha-indicador').innerText = '▼';
+        const flecha = acc.querySelector('.flecha-indicador');
+        if (flecha) flecha.innerText = '▼';
       });
 
       // Si no estaba abierto, lo abrimos
       if (!estaAbierto) {
         item.classList.add('abierto');
-        item.querySelector('.flecha-indicador').innerText = '▲';
-      }
-
-      function descargarTerminos() {
-      const enlace = document.createElement('a');
-      enlace.href = /*[[@{/docs/Terminos_y_Condiciones_UTP.pdf}]]*/ '/docs/Terminos_y_Condiciones_UTP.pdf';
-      enlace.download = 'Terminos_y_Condiciones_UTP.pdf';
-      enlace.target = '_blank';
-      document.body.appendChild(enlace);
-      enlace.click();
-      document.body.removeChild(enlace);
+        const flecha = item.querySelector('.flecha-indicador');
+        if (flecha) flecha.innerText = '▲';
       }
     }
-  </script> {% endcomment %}
-  
-  <script th:src="@{/js/alumno-protocolos.js}"></script>
 
+    function descargarTerminos() {
+    window.open('/docs/terminos.pdf', '_blank');
+}
+  </script>
 </body>
 </html>

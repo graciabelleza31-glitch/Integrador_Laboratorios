@@ -82,33 +82,4 @@ public class TareaProgramadaService {
             System.out.println("[" + LocalDateTime.now(ZONA_PERU) + "] Total canceladas: " + canceladas);
         }
     }
-
-    @Scheduled(fixedRate = 3600000, initialDelay = 20000)
-    @Transactional
-    public void cerrarReservasEnUsoAtrasadas() {
-        LocalDate hoy = LocalDate.now(ZONA_PERU);
-        LocalDateTime ahoraCompleto = LocalDateTime.now(ZONA_PERU);
-        
-        // Busca reservas "EN USO" cuya fecha sea menor a la de hoy
-        List<Reserva> reservasColgadas = reservaRepository.findByEstadoAndFechaReservaBefore("EN USO", hoy);
-        
-        if (!reservasColgadas.isEmpty()) {
-            System.out.println("🧹 [JOB-LIMPIEZA] " + ahoraCompleto + 
-                " - Cerrando reservas 'EN USO' de días anteriores. Encontradas: " + reservasColgadas.size());
-                
-            int cerradas = 0;
-            for (Reserva r : reservasColgadas) {
-                // Las pasamos a FINALIZADO (o el estado que uses para el check-out exitoso)
-                r.setEstado("FINALIZADO");
-                reservaRepository.save(r);
-                cerradas++;
-                System.out.println("   ✅ Reserva colgada cerrada automáticamente: " + r.getIdReserva() + 
-                                 " (Fecha: " + r.getFechaReserva() + ")");
-            }
-            
-            System.out.println("[" + LocalDateTime.now(ZONA_PERU) + "] Total reservas atrasadas cerradas: " + cerradas);
-        }
-    }
-
-
 }

@@ -121,7 +121,7 @@
   </div>
 
     <div th:replace="~{fragments/topbar-alumno :: scriptsAlumno}"></div>
-  {% comment %} <script>
+  <script>
     document.addEventListener("DOMContentLoaded", function () {
       if (typeof lucide !== 'undefined') lucide.createIcons();
     });
@@ -157,9 +157,6 @@
 
       document.getElementById('badgeContadorItems').innerText = `${visibles} items`;
     }
-  </script> {% endcomment %}
-
-  <script th:src="@{/js/alumno-catalogos.js}"></script>
-
+  </script>
 </body>
 </html>

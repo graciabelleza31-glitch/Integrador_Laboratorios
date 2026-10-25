@@ -49,7 +49,7 @@
 
         <div class="datos-perfil">
             <span class="titulo-saludo" th:text="'Hola, ' + ${alumno.nombre}">Hola, Mariafernanda</span>
-            <span class="subtitulo-rol">Estudiante</span>
+            <span class="subtitulo-rol" th:text="${alumno.carrera != null ? alumno.carrera.nombre : 'Estudiante'}">Estudiante</span>
         </div>
         <div class="circulo-avatar avatar-azul" 
              th:text="${#strings.substring(alumno.nombre,0,1) + #strings.substring(alumno.apellido,0,1)}">MB</div>

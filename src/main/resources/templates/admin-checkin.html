@@ -131,8 +131,7 @@
   </div>
 
   <div th:replace="~{fragments/topbar :: scripts}"></div>
-
-{% comment %}     
+    
   <script>
     let reservaActualId = null;
     let totalItemsVerificar = 0;
@@ -257,9 +256,12 @@
       fetch(`/admin/checkin/confirmar/${reservaActualId}`, {
         method: 'POST'
       })
-      .then(res => {
-        if (!res.ok) throw new Error("Error en servidor");
-        return res.json();
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Ocurrió un error al procesar el check-in.");
+        }
+        return data;
       })
       .then(() => {
         // 1. Cerrar el modal
@@ -280,17 +282,14 @@
           document.getElementById('tarjetaSinCheckins').style.display = 'flex';
         }
       })
-      .catch(() => {
-        alert("Ocurrió un error al procesar el check-in.");
+      .catch(err => {
+        alert(err.message);
       })
       .finally(() => {
         btn.innerText = "Confirmar check-in →";
         btn.disabled = false;
       });
     }
-  </script> 
-  {% endcomment %}
-
-  <script th:src="@{/js/admin-checkin.js}"></script>
+  </script>
 </body>
 </html>

@@ -214,7 +214,7 @@
   </div>
 
   <div th:replace="~{fragments/topbar :: scripts}"></div>
-  {% comment %} <script>
+  <script>
 
     let catFiltro = 'TODOS';
 
@@ -293,8 +293,6 @@
     function cerrarModalNuevoProducto() {
       document.getElementById('modalNuevoProducto').style.display = 'none';
     }
-  </script>} {% endcomment %}
-
-  <script th:src="@{/js/admin-inventario.js}"></script>
+  </script>
 </body>
 </html>

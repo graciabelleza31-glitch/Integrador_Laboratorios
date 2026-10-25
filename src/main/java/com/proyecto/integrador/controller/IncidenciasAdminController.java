@@ -6,7 +6,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.proyecto.integrador.modelo.Alumno;
 import com.proyecto.integrador.modelo.Sancion;
 import com.proyecto.integrador.repository.AlumnoRepository;
+import com.proyecto.integrador.repository.ReservaRepository;
 import com.proyecto.integrador.repository.SancionRepository;
+import com.proyecto.integrador.service.EmailService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -31,17 +35,22 @@ import jakarta.servlet.http.HttpSession;
 public class IncidenciasAdminController {
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private SancionRepository sancionRepositorio;
 
     @Autowired
     private AlumnoRepository alumnoRepositorio;
 
+    @Autowired 
+    private ReservaRepository reservaRepositorio;
+
     @GetMapping
     @Transactional(readOnly = true)
     public String verIncidencias(HttpSession sesion, Model modelo) {
         List<Sancion> todas = sancionRepositorio.findAll();
-        List<IncidenciaCardDto> listaIncidencias = new ArrayList<>();
-
+        
         long cantAbiertas = 0;
         long cantNotificadas = 0;
         long cantResueltas = 0;
@@ -49,100 +58,77 @@ public class IncidenciasAdminController {
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-        for (Sancion s : todas) {
-            String est = (s.getEstado() != null) ? s.getEstado().toUpperCase().trim() : "PENDIENTE";
+        // 1. Agrupamos TODAS las sanciones por ID de Reserva
+        Map<String, List<Sancion>> sancionesPorReserva = todas.stream()
+                .collect(Collectors.groupingBy(s -> s.getReserva() != null ? s.getReserva().getIdReserva() : "SIN_RESERVA"));
 
-            if ("RESUELTO".equals(est) || "PAGADO".equals(est)) {
-                cantResueltas++;
-                continue; // No se muestran en la lista activa de deudas
+        List<IncidenciaCardDto> listaIncidencias = new ArrayList<>();
+
+        for (Map.Entry<String, List<Sancion>> entry : sancionesPorReserva.entrySet()) {
+            List<Sancion> sancionesDelGrupo = entry.getValue();
+            Sancion primera = sancionesDelGrupo.get(0);
+
+            // Verificamos si el grupo entero ya está resuelto
+            boolean todasResueltas = sancionesDelGrupo.stream()
+                    .allMatch(s -> "RESUELTA".equalsIgnoreCase(s.getEstado()) || "RESUELTO".equalsIgnoreCase(s.getEstado()) || "PAGADO".equalsIgnoreCase(s.getEstado()));
+
+            if (todasResueltas) {
+                cantResueltas += sancionesDelGrupo.size();
+                continue; // No se muestran en la lista activa
             }
 
-            BigDecimal monto = (s.getMontoDeuda() != null) ? s.getMontoDeuda() : BigDecimal.ZERO;
-            totalMontoPendiente = totalMontoPendiente.add(monto);
+            // Sumamos el monto total de las sanciones no resueltas del grupo
+            BigDecimal montoGrupo = sancionesDelGrupo.stream()
+                    .filter(s -> !"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"PAGADO".equalsIgnoreCase(s.getEstado()))
+                    .map(Sancion::getMontoDeuda)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            totalMontoPendiente = totalMontoPendiente.add(montoGrupo);
 
-            String labNombre = "Lab. General";
-            if (s.getReserva() != null && s.getReserva().getLaboratorio() != null) {
-                labNombre = s.getReserva().getLaboratorio().getNombre();
-            }
+            // Juntamos los nombres de los alumnos afectados y sus correos
+            List<String> nombresAlumnos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getNombre() + " " + s.getAlumno().getApellido())
+                    .distinct()
+                    .collect(Collectors.toList());
+            
+            List<String> correos = sancionesDelGrupo.stream()
+                    .filter(s -> s.getAlumno() != null)
+                    .map(s -> s.getAlumno().getIdEstud().toLowerCase() + "@utp.edu.pe")
+                    .distinct()
+                    .collect(Collectors.toList());
 
-            String alumnoNombre = "Estudiante UTP";
-            String correo = "alumno@utp.edu.pe";
-            Alumno al = s.getAlumno();
-            if (al != null) {
-                alumnoNombre = al.getNombre() + " " + al.getApellido();
-                correo = (al.getIdEstud() != null ? al.getIdEstud().toLowerCase() : "u24201349") + "@utp.edu.pe";
-            }
+            String alumnosStr = String.join(", ", nombresAlumnos);
+            String correosStr = String.join(", ", correos);
 
-            String itemNombre = (s.getProducto() != null) ? s.getProducto().getNombre() : "Material / Equipo";
-            String motivo = (s.getMotivo() != null && !s.getMotivo().isBlank()) ? s.getMotivo() : "Daño durante práctica";
+            // Verificamos si el grupo ya fue notificado (si al menos una está NOTIFICADA)
+            boolean isNotif = sancionesDelGrupo.stream()
+                    .anyMatch(s -> "NOTIFICADA".equalsIgnoreCase(s.getEstado()) || "NOTIFICADO".equalsIgnoreCase(s.getEstado()));
 
-            boolean isNotif = "NOTIFICADA".equals(est) || "NOTIFICADO".equals(est);
             if (isNotif) {
-                cantNotificadas++;
+                cantNotificadas += sancionesDelGrupo.size();
             } else {
-                cantAbiertas++;
+                cantAbiertas += sancionesDelGrupo.size();
             }
 
+            String labNombre = (primera.getReserva() != null && primera.getReserva().getLaboratorio() != null) 
+                    ? primera.getReserva().getLaboratorio().getNombre() : "Lab. General";
+            
+            String itemNombre = (primera.getProducto() != null) ? primera.getProducto().getNombre() : "Material / Equipo";
+            String motivo = (primera.getMotivo() != null && !primera.getMotivo().isBlank()) ? primera.getMotivo() : "Daño durante práctica";
             String strFechaNotif = LocalDateTime.now().minusDays(1).format(dtf);
 
             listaIncidencias.add(new IncidenciaCardDto(
-                    s.getIdSancion(),
+                    entry.getKey(), // Usamos el ID de la reserva como identificador de la tarjeta
                     itemNombre,
                     motivo,
                     labNombre,
-                    alumnoNombre,
-                    correo,
-                    "S/ " + monto.setScale(2).toString(),
+                    alumnosStr,
+                    correosStr,
+                    "S/ " + montoGrupo.setScale(2).toString(),
                     isNotif ? "Notificada" : "Pendiente",
                     isNotif,
                     strFechaNotif
-            ));
-        }
-
-        // Si la base de datos no tiene sanciones cargadas, cargar los 3 registros exactos de Figma
-        if (listaIncidencias.isEmpty()) {
-            cantAbiertas = 1;
-            cantNotificadas = 2;
-            cantResueltas = 0;
-            totalMontoPendiente = new BigDecimal("1650.00");
-
-            listaIncidencias.add(new IncidenciaCardDto(
-                    "INC-001",
-                    "Vaso de precipitados 250mL",
-                    "Cristalería rota por caída durante la práctica.",
-                    "Lab. Química",
-                    "Felipe Montoya",
-                    "U23200745@utp.edu.pe",
-                    "S/ 450.00",
-                    "Notificada",
-                    true,
-                    "2026-08-20 09:45"
-            ));
-
-            listaIncidencias.add(new IncidenciaCardDto(
-                    "INC-002",
-                    "Termómetro digital",
-                    "Pantalla dañada, no funcional al momento de devolución.",
-                    "Lab. Química",
-                    "Camila Herrera",
-                    "U24200524@utp.edu.pe",
-                    "S/ 850.00",
-                    "Pendiente",
-                    false,
-                    ""
-            ));
-
-            listaIncidencias.add(new IncidenciaCardDto(
-                    "INC-003",
-                    "Erlenmeyer 250mL",
-                    "Frasco devuelto con fractura en el cuello del mismo.",
-                    "Lab. Química",
-                    "Mariafernanda Bruno Santos",
-                    "U24201349@utp.edu.pe",
-                    "S/ 350.00",
-                    "Notificada",
-                    true,
-                    "2026-08-19 11:30"
             ));
         }
 
@@ -156,37 +142,60 @@ public class IncidenciasAdminController {
         return "admin-incidencias";
     }
 
-    // ACCIÓN 1: NOTIFICAR POR CORREO (PASA A ESTADO 'NOTIFICADA')
-    @PostMapping("/notificar/{id}")
+       // ACCIÓN 1: NOTIFICAR A TODO EL GRUPO (PASA A ESTADO 'NOTIFICADA' Y ENVÍA CORREO)
+    @PostMapping("/notificar/{idReserva}")
     @ResponseBody
     @Transactional
-    public ResponseEntity<?> notificarIncidencia(@PathVariable("id") String id) {
-        Optional<Sancion> opt = sancionRepositorio.findById(id);
-        if (opt.isPresent()) {
-            Sancion s = opt.get();
-            s.setEstado("NOTIFICADA");
-            sancionRepositorio.save(s);
+    public ResponseEntity<?> notificarGrupo(@PathVariable("idReserva") String idReserva) {
+        List<Sancion> sanciones = sancionRepositorio.findAll().stream()
+                .filter(s -> s.getReserva() != null && s.getReserva().getIdReserva().equals(idReserva))
+                .collect(Collectors.toList());
 
-            Alumno al = s.getAlumno();
-            if (al != null) {
-                // Valor exacto de tu DDL: 'BLOQUEADO_POR_DEUDA'
-                al.setEstadoCuenta("BLOQUEADO_POR_DEUDA");
-                alumnoRepositorio.save(al);
+        for (Sancion s : sanciones) {
+            if (!"RESUELTA".equalsIgnoreCase(s.getEstado()) && !"NOTIFICADA".equalsIgnoreCase(s.getEstado())) {
+                s.setEstado("NOTIFICADA");
+                sancionRepositorio.save(s);
+
+                Alumno al = s.getAlumno();
+                if (al != null) {
+                    al.setEstadoCuenta("BLOQUEADO_POR_DEUDA");
+                    alumnoRepositorio.save(al);
+
+                    // 📧 ENVÍO DE CORREO AL ESTUDIANTE CON BREVO
+                    try {
+                        String correoDestino = al.getIdEstud().toLowerCase() + "@utp.edu.pe";
+                        String nombreCompleto = al.getNombre() + " " + al.getApellido();
+                        
+                        // Llamamos al nuevo método de tu EmailService
+                        emailService.enviarCorreoIncidencia(
+                            correoDestino, 
+                            nombreCompleto, 
+                            s.getMotivo(), 
+                            s.getMontoDeuda().toString(), 
+                            idReserva
+                        );
+                        
+                    } catch (Exception e) {
+                        System.out.println("❌ Error enviando correo a " + al.getIdEstud() + ": " + e.getMessage());
+                    }
+                }
             }
         }
+        
         String fechaActual = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         return ResponseEntity.ok(Collections.singletonMap("fechaNotificado", fechaActual));
     }
 
-    // ACCIÓN 2: RESOLVER INCIDENCIA (PASA A ESTADO 'RESUELTO')
-    @PostMapping("/resolver/{id}")
+    // ACCIÓN 2: RESOLVER TODO EL GRUPO
+    @PostMapping("/resolver/{idReserva}")
     @ResponseBody
     @Transactional
-    public ResponseEntity<?> resolverIncidencia(@PathVariable("id") String id) {
-        Optional<Sancion> opt = sancionRepositorio.findById(id);
-        if (opt.isPresent()) {
-            Sancion s = opt.get();
-            // Valor exacto de tu DDL: 'RESUELTA'
+    public ResponseEntity<?> resolverGrupo(@PathVariable("idReserva") String idReserva) {
+        List<Sancion> sanciones = sancionRepositorio.findAll().stream()
+                .filter(s -> s.getReserva() != null && s.getReserva().getIdReserva().equals(idReserva))
+                .collect(Collectors.toList());
+
+        for (Sancion s : sanciones) {
             s.setEstado("RESUELTA");
             sancionRepositorio.save(s);
 
@@ -196,20 +205,21 @@ public class IncidenciasAdminController {
                     al.getIdEstud(), 
                     List.of("RESUELTA")
                 );
-
-                // Si ya no tiene deudas, se rehabilita
                 if (pendientes == 0) {
                     al.setEstadoCuenta("HABILITADO");
                     alumnoRepositorio.save(al);
                 }
             }
         }
+        reservaRepositorio.findById(idReserva).ifPresent(reserva -> {
+            reserva.setEstado("INSPECCIONADA"); 
+            reservaRepositorio.save(reserva);
+        });
         return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
     }
 
     public static class IncidenciaCardDto {
-
-        private String idSancion;
+        private String idSancion; // En este caso guardará el ID de la Reserva
         private String item;
         private String motivo;
         private String laboratorio;
@@ -233,44 +243,15 @@ public class IncidenciasAdminController {
             this.fechaNotificado = fechaNotificado;
         }
 
-        public String getIdSancion() {
-            return idSancion;
-        }
-
-        public String getItem() {
-            return item;
-        }
-
-        public String getMotivo() {
-            return motivo;
-        }
-
-        public String getLaboratorio() {
-            return laboratorio;
-        }
-
-        public String getEstudiante() {
-            return estudiante;
-        }
-
-        public String getCorreo() {
-            return correo;
-        }
-
-        public String getCosto() {
-            return costo;
-        }
-
-        public String getEstado() {
-            return estado;
-        }
-
-        public boolean isNotificada() {
-            return notificada;
-        }
-
-        public String getFechaNotificado() {
-            return fechaNotificado;
-        }
+        public String getIdSancion() { return idSancion; }
+        public String getItem() { return item; }
+        public String getMotivo() { return motivo; }
+        public String getLaboratorio() { return laboratorio; }
+        public String getEstudiante() { return estudiante; }
+        public String getCorreo() { return correo; }
+        public String getCosto() { return costo; }
+        public String getEstado() { return estado; }
+        public boolean isNotificada() { return notificada; }
+        public String getFechaNotificado() { return fechaNotificado; }
     }
 }

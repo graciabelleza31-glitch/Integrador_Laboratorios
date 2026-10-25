@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -202,6 +204,35 @@ public class CheckinController {
         }
 
         Reserva r = resOpt.get();
+
+        // =========================================================================
+        // ⭐ NUEVO (PUNTO 4): VALIDAR QUE SOLO SE HAGA CHECK-IN 15 MINUTOS ANTES
+        // =========================================================================
+        if (r.getFechaReserva() != null && r.getHoraInicio() != null && r.getHoraFin() != null) {
+            LocalDateTime ahora = LocalDateTime.now();
+            LocalDateTime inicioReserva = LocalDateTime.of(r.getFechaReserva(), r.getHoraInicio());
+            LocalDateTime finReserva = LocalDateTime.of(r.getFechaReserva(), r.getHoraFin());
+
+            // Límite: 15 minutos antes de la hora de inicio
+            LocalDateTime ventanaPermitida = inicioReserva.minusMinutes(15);
+
+            // 1. Si intenta hacer check-in faltando más de 15 minutos
+            if (ahora.isBefore(ventanaPermitida)) {
+                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+                String msg = "Solo se puede hacer check-in 15 minutos antes de la hora acordada (habilitado desde las "
+                        + ventanaPermitida.format(fmt) + " del " + r.getFechaReserva() + ").";
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", msg));
+            }
+
+            // 2. Si el horario de la reserva ya terminó
+            if (ahora.isAfter(finReserva)) {
+                return ResponseEntity.badRequest().body(
+                        Collections.singletonMap("error", "El horario de esta reserva ya finalizó.")
+                );
+            }
+        }
+        // =========================================================================
+
         r.setEstado("EN_USO");
         reservaRepositorio.save(r);
 

@@ -1,8 +1,117 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('UTP +Lab - Inspección')}"></head>
-<style th:href="@{/css/admin-inspeccion.css}"> </style>
 
+  <style>
+    .tarjeta-item-inspeccionar {
+      background-color: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      transition: all 0.15s ease;
+    }
+    .tarjeta-item-inspeccionar.marcado-danado {
+      background-color: #fff1f2;
+      border-color: #f43f5e;
+    }
+    .fila-principal-item-insp {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .acciones-estado-item {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .btn-estado-check {
+      background-color: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.15s ease;
+    }
+    .btn-estado-check.activo-conforme {
+      background-color: #ecfdf5;
+      border-color: #10b981;
+      color: #059669;
+    }
+    .btn-estado-check.activo-danado {
+      background-color: #ef4444;
+      border-color: #dc2626;
+      color: #ffffff;
+    }
+    .input-motivo-dano {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #f87171;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+      display: none;
+      background-color: #ffffff;
+    }
+    .input-motivo-dano:focus {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+    }
+
+    /* Modal de Confirmación / Resultado */
+    .modal-resultado-card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 440px;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .icono-resultado-circulo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+    .res-exito {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+    .res-danio {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+    .btn-entendido-modal {
+      background-color: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.75rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background-color 0.15s ease;
+    }
+    .btn-entendido-modal:hover {
+      background-color: #1e293b;
+    }
+  </style>
 </head>
 <body>
   <div class="contenedor-app">
@@ -28,16 +137,19 @@
                class="tarjeta-reserva-checkin-fila" 
                th:id="'tarjeta-inspeccion-' + ${ins.idReserva}">
             
-            <div class="icono-cuadro-checkin bg-quimica">
-              <span>🔬</span>
+            <div class="icono-cuadro-checkin" 
+                 th:classappend="${ins.estado == 'NO_INSPECCIONADO' ? 'bg-rayo' : 'bg-quimica'}">
+              <span th:text="${ins.estado == 'NO_INSPECCIONADO' ? '⛔' : '🔬'}">🔬</span>
             </div>
 
             <div class="info-central-checkin">
               <div class="fila-nombre-estado">
                 <strong class="nombre-lab-checkin" th:text="${ins.laboratorio}">Lab. Química</strong>
+                
+                <!-- Badge dinámico -->
                 <span class="badge-estado-pill" 
-                      style="background:#f3e8ff; color:#7e22ce;"
-                      th:text="${ins.estado == 'DEVUELTA' ? 'Devuelta' : ins.estado}">
+                      th:style="${ins.estado == 'NO_INSPECCIONADO' ? 'background:#fee2e2; color:#dc2626;' : 'background:#f3e8ff; color:#7e22ce;'}"
+                      th:text="${ins.estado == 'NO_INSPECCIONADO' ? 'No Inspeccionado' : 'Devuelta'}">
                   Devuelta
                 </span>
               </div>
@@ -55,12 +167,23 @@
 
             <div class="accion-derecha-checkin">
               <span class="codigo-reserva-checkin" th:text="${ins.idReserva}">R-001</span>
-              <button type="button" 
+              
+              <!-- Botón: Si es NO_INSPECCIONADO, se deshabilita y se pone rojo -->
+              <button th:if="${ins.estado == 'DEVUELTA'}"
+                      type="button" 
                       class="btn-verde-iniciar" 
                       style="background:#2563eb;"
                       th:data-id="${ins.idReserva}"
                       onclick="abrirModalInspeccion(this.getAttribute('data-id'))">
                 <i data-lucide="clipboard-check"></i> Inspeccionar
+              </button>
+
+              <button th:if="${ins.estado == 'NO_INSPECCIONADO'}"
+                      type="button" 
+                      class="btn-verde-iniciar" 
+                      style="background:#e2e8f0; color:#94a3b8; cursor:not-allowed;"
+                      disabled>
+                <i data-lucide="x-circle"></i> Tiempo Expirado
               </button>
             </div>
 
@@ -127,7 +250,7 @@
     </div>
 
     <!-- ========================================================
-         2. MODAL DE CONFIRMACIÓN / RESULTADO (REEMPLAZA EL ALERT)
+         2. MODAL DE CONFIRMACIÓN / RESULTADO
          ======================================================== -->
     <div id="modalResultado" class="fondo-modal-oscuro" style="display: none;">
       <div class="modal-resultado-card">
@@ -148,10 +271,8 @@
 
   </div>
 
-    <div th:replace="~{fragments/topbar :: scripts}"></div>
-
-  {% comment %} <script>
-
+  <div th:replace="~{fragments/topbar :: scripts}"></div>
+  <script>
 
     let idReservaInspActual = null;
     let listaItemsParaInspeccionar = [];
@@ -284,7 +405,7 @@
       idReservaInspActual = null;
     }
 
-    // ACCIÓN: FINALIZAR INSPECCIÓN (AJAX SIN ALERT NATIVO)
+    // ACCIÓN: FINALIZAR INSPECCIÓN
     function enviarFinalizarInspeccion() {
       if (!idReservaInspActual) return;
 
@@ -313,10 +434,8 @@
         return res.json();
       })
       .then(data => {
-        // 1. Cerrar el modal de formulario
         cerrarModalInspeccion();
 
-        // 2. ELIMINAR INMEDIATAMENTE LA TARJETA DEL DOM
         const tarjeta = document.getElementById(`tarjeta-inspeccion-${reservaIdAEliminar}`);
         if (tarjeta) {
           tarjeta.style.transition = 'all 0.3s ease';
@@ -325,7 +444,6 @@
           setTimeout(() => {
             tarjeta.remove();
             
-            // Verificar si quedan tarjetas en pantalla
             const contenedor = document.getElementById('contenedorInspeccion');
             const restantes = contenedor ? contenedor.querySelectorAll('.tarjeta-reserva-checkin-fila').length : 0;
             if (restantes === 0) {
@@ -335,14 +453,12 @@
           }, 300);
         }
 
-        // 3. MOSTRAR EL MODAL DE RESULTADO ELEGANTE (SIN ALERTS)
         if (data.huboDanios) {
           mostrarModalResultado(
             true, 
             "Daño Registrado", 
             "La inspección finalizó reportando daños. Se generó la sanción y la reserva fue trasladada al Módulo de Incidencias."
           );
-          // Incrementar badge de incidencias en el menú
           const badgeMenu = document.getElementById('badgeMenuIncidencias');
           if (badgeMenu) badgeMenu.innerText = parseInt(badgeMenu.innerText || '0') + 1;
         } else {
@@ -362,7 +478,6 @@
       });
     }
 
-    // Funciones del Modal de Resultado
     function mostrarModalResultado(huboDanio, titulo, mensaje) {
       const modal = document.getElementById('modalResultado');
       const icono = document.getElementById('iconoResultado');
@@ -385,9 +500,6 @@
     function cerrarModalResultado() {
       document.getElementById('modalResultado').style.display = 'none';
     }
-  </script> {% endcomment %}
-
-  <script th:src="@{/js/admin-inspeccion.js}"></script>
-  
+  </script>
 </body>
 </html>

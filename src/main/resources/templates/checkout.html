@@ -98,8 +98,7 @@
 
   </div>
   <div th:replace="~{fragments/topbar :: scripts}"></div>
-  
-  {% comment %} <script>
+  <script>
     lucide.createIcons();
 
     function mostrarModalDevolucion(boton) {
@@ -122,9 +121,6 @@
     function cerrarModalDevolucion() {
       document.getElementById('modalDevolucion').style.display = 'none';
     }
-  </script> {% endcomment %}
-
-  <script th:src="@{/js/checkout.js}"></script>
-
+  </script>
 </body>
 </html>
